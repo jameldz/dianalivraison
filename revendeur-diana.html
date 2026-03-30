@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diana Detox — Espace Revendeur</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --gold:#C9A84C;
+  --gold-light:#F0D080;
+  --dark:#0D0D0D;
+  --dark2:#1A1208;
+  --dark3:#241C0A;
+  --cream:#FAF7F0;
+  --cream2:#F2ECD8;
+  --text:#2C2008;
+  --muted:#7A6840;
+  --bdr:rgba(201,168,76,0.25);
+  --r:14px;
+}
+body{background:var(--dark);color:var(--cream);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+/* HERO */
+.hero{
+  background:linear-gradient(160deg,var(--dark2) 0%,var(--dark3) 60%,#2A1A00 100%);
+  padding:48px 24px 40px;
+  text-align:center;
+  border-bottom:1px solid var(--bdr);
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+  width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,0.15) 0%,transparent 70%);
+  pointer-events:none;
+}
+.logo-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(201,168,76,0.12);border:1px solid var(--bdr);
+  border-radius:30px;padding:6px 16px;font-size:11px;font-weight:600;
+  color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px;
+}
+.hero h1{
+  font-family:'Playfair Display',serif;font-size:36px;font-weight:700;
+  color:var(--cream);line-height:1.15;margin-bottom:6px;
+}
+.hero h1 span{font-style:italic;color:var(--gold);}
+.hero p{color:var(--muted);font-size:13px;margin-bottom:20px;}
+.site-link{
+  color:var(--gold);font-size:12px;font-weight:500;text-decoration:none;
+  border-bottom:1px solid rgba(201,168,76,0.4);padding-bottom:1px;
+}
+.site-link:hover{color:var(--gold-light);}
+
+/* TARIFS */
+.tarifs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:20px 16px;max-width:600px;margin:0 auto;}
+.tarif-card{
+  background:var(--dark3);border:1px solid var(--bdr);border-radius:12px;
+  padding:14px 10px;text-align:center;position:relative;overflow:hidden;
+  transition:border-color .2s;
+}
+.tarif-card.active{border-color:var(--gold);background:rgba(201,168,76,0.08);}
+.tarif-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .2s;}
+.tarif-card.active::before{opacity:1;}
+.tarif-qty{font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.tarif-prix{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold);margin-bottom:2px;}
+.tarif-unite{font-size:10px;color:var(--muted);}
+.tarif-label{font-size:10px;font-weight:600;color:var(--gold-light);margin-top:6px;letter-spacing:.5px;}
+
+/* PAGE */
+.page{max-width:520px;margin:0 auto;padding:0 16px 80px;}
+
+/* CARD */
+.card{
+  background:var(--dark3);border:1px solid var(--bdr);border-radius:var(--r);
+  margin-bottom:12px;overflow:hidden;
+}
+.card-hdr{
+  display:flex;align-items:center;gap:12px;padding:16px 18px;
+  border-bottom:1px solid var(--bdr);
+}
+.step{
+  width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),#A07830);
+  color:var(--dark);font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.card-hdr h2{font-size:15px;font-weight:600;color:var(--cream);}
+.card-body{padding:16px 18px;}
+
+/* FIELDS */
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+label{display:block;font-size:11px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+input,select,textarea{
+  width:100%;padding:11px 14px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--bdr);border-radius:10px;
+  font-size:14px;font-family:'DM Sans',sans-serif;
+  color:var(--cream);outline:none;
+  transition:border-color .2s,background .2s;
+}
+input::placeholder{color:rgba(250,247,240,0.3);}
+input:focus,select:focus{border-color:var(--gold);background:rgba(201,168,76,0.06);}
+select option{background:var(--dark2);color:var(--cream);}
+.err-msg{display:none;font-size:11px;color:#FF6B6B;margin-top:4px;font-weight:500;}
+input.err{border-color:#FF6B6B;}
+input.err + .err-msg{display:block;}
+
+/* PRODUITS */
+.prod{
+  background:rgba(255,255,255,0.03);border:1px solid var(--bdr);
+  border-radius:12px;margin-bottom:10px;overflow:hidden;
+  transition:border-color .2s;
+}
+.prod.on{border-color:var(--gold);}
+.prod-top{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;}
+.prod-ico{font-size:24px;flex-shrink:0;}
+.prod-name{font-size:14px;font-weight:600;color:var(--cream);}
+.prod-price{font-size:11px;color:var(--muted);margin-top:2px;}
+.prod-price .hint{color:rgba(201,168,76,0.6);font-size:10px;}
+.chk{
+  width:22px;height:22px;border-radius:50%;
+  border:1.5px solid var(--bdr);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:transparent;margin-left:auto;flex-shrink:0;
+  transition:all .2s;
+}
+.prod.on .chk{background:var(--gold);border-color:var(--gold);color:var(--dark);}
+.prod-qty{
+  display:none;align-items:center;gap:12px;
+  padding:10px 14px;border-top:1px solid var(--bdr);
+  background:rgba(201,168,76,0.05);
+}
+.prod.on .prod-qty{display:flex;}
+.qlbl{font-size:12px;color:var(--muted);}
+.qctrl{display:flex;align-items:center;gap:8px;}
+.qbtn{
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(201,168,76,0.15);border:1px solid var(--bdr);
+  color:var(--gold);font-size:16px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.qbtn:active{background:rgba(201,168,76,0.3);}
+.qval{
+  width:44px;text-align:center;padding:6px;font-weight:700;
+  font-size:15px;background:transparent;border:1px solid var(--bdr);
+  border-radius:8px;color:var(--cream);
+}
+.qtot{font-size:14px;font-weight:700;color:var(--gold);margin-left:auto;}
+
+/* BADGE TARIF */
+.tarif-badge{
+  border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;
+  text-align:center;margin-bottom:10px;display:none;
+}
+.tarif-badge.show{display:block;}
+.tarif-badge.revendeur{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ADE80;}
+.tarif-badge.grossiste50{background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);color:var(--gold);}
+.tarif-badge.grossiste100{background:linear-gradient(135deg,rgba(201,168,76,0.2),rgba(255,165,0,0.15));border:1px solid var(--gold);color:var(--gold-light);}
+
+/* TOTAL */
+.total{
+  background:var(--dark3);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:16px 18px;margin-bottom:12px;display:none;
+}
+.total.show{display:block;}
+.tline{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;color:var(--muted);}
+.tline.big{font-size:17px;font-weight:700;color:var(--cream);border-top:1px solid var(--bdr);margin-top:8px;padding-top:10px;}
+
+/* BOUTON */
+.btn-submit{
+  width:100%;padding:17px;
+  background:linear-gradient(135deg,var(--gold),#A07830);
+  color:var(--dark);font-size:16px;font-weight:700;
+  font-family:'DM Sans',sans-serif;border:none;border-radius:14px;
+  cursor:pointer;letter-spacing:.3px;
+  box-shadow:0 4px 20px rgba(201,168,76,0.3);
+  transition:transform .15s,box-shadow .15s;
+}
+.btn-submit:active{transform:scale(.98);}
+
+/* SUCCESS */
+#vSuccess{display:none;padding:24px 16px 80px;}
+.success-hero{text-align:center;padding:32px 0;}
+.success-ico{font-size:64px;margin-bottom:16px;}
+.success-title{font-family:'Playfair Display',serif;font-size:24px;color:var(--gold);margin-bottom:8px;}
+.success-sub{color:var(--muted);font-size:14px;}
+.fiche{background:var(--dark3);border:1px solid var(--bdr);border-radius:var(--r);padding:16px;margin-bottom:16px;}
+.fiche-hdr{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.frow{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(201,168,76,0.1);font-size:13px;gap:12px;}
+.frow:last-child{border-bottom:none;}
+.flbl{color:var(--muted);flex-shrink:0;}
+.fval{color:var(--cream);font-weight:500;text-align:right;}
+.wa-btn{
+  display:block;width:100%;padding:16px;text-align:center;
+  background:linear-gradient(135deg,#25D366,#1DA851);
+  color:#fff;font-size:15px;font-weight:700;text-decoration:none;
+  border-radius:14px;margin-bottom:10px;font-family:'DM Sans',sans-serif;
+}
+.back-btn{
+  display:block;width:100%;padding:13px;text-align:center;
+  background:transparent;border:1px solid var(--bdr);
+  color:var(--muted);font-size:14px;font-weight:500;
+  border-radius:14px;cursor:pointer;font-family:'DM Sans',sans-serif;
+}
+.mode-btn{
+  border:1px solid var(--bdr);border-radius:11px;padding:10px 6px;
+  text-align:center;cursor:pointer;background:rgba(255,255,255,0.03);
+  transition:border-color .2s,background .2s;
+}
+.mode-btn.on{border-color:var(--gold);background:rgba(201,168,76,0.1);}
+
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--dark3);border:1px solid var(--gold);color:var(--cream);
+  border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;
+  opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap;
+}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="logo-badge">✦ Espace Revendeur ✦</div>
+  <h1>Diana <span>Detox</span></h1>
+  <p>Commandes professionnelles · Tarifs dégressifs</p>
+  <a href="https://www.diana-detox.com" target="_blank" class="site-link">🌐 www.diana-detox.com</a>
+</div>
+
+<!-- GRILLE TARIFS -->
+<div class="tarifs">
+  <div class="tarif-card" id="tc1">
+    <div class="tarif-qty">1ère cmd · 15 min</div>
+    <div class="tarif-prix">45€</div>
+    <div class="tarif-unite">par unité Diana</div>
+    <div class="tarif-label">REVENDEUR</div>
+  </div>
+  <div class="tarif-card" id="tc2">
+    <div class="tarif-qty">À partir de 50</div>
+    <div class="tarif-prix">35€</div>
+    <div class="tarif-unite">par unité Diana</div>
+    <div class="tarif-label">GROSSISTE</div>
+  </div>
+  <div class="tarif-card" id="tc3">
+    <div class="tarif-qty">À partir de 100</div>
+    <div class="tarif-prix">30€</div>
+    <div class="tarif-unite">par unité Diana</div>
+    <div class="tarif-label">PREMIUM</div>
+  </div>
+</div>
+
+<div id="vForm">
+<div class="page">
+
+<!-- INFOS -->
+<div class="card">
+  <div class="card-hdr"><span class="step">1</span><h2>Vos informations</h2></div>
+  <div class="card-body">
+    <div class="field">
+      <label>Prénom & Nom *</label>
+      <input id="fNom" type="text" placeholder="Marie Dupont" autocomplete="name">
+      <div class="err-msg">Champ obligatoire</div>
+    </div>
+    <div class="field">
+      <label>Société (si applicable)</label>
+      <input id="fSociete" type="text" placeholder="Votre société">
+    </div>
+    <div class="field">
+      <label>Téléphone *</label>
+      <input id="fTel" type="tel" placeholder="06 xx xx xx xx" autocomplete="tel">
+      <div class="err-msg">Champ obligatoire</div>
+    </div>
+    <div class="field">
+      <label>Email *</label>
+      <input id="fEmail" type="email" placeholder="contact@email.com" autocomplete="email">
+      <div class="err-msg">Champ obligatoire</div>
+    </div>
+    <div class="field">
+      <label>Réseau social (Snap, Insta…)</label>
+      <input id="fSnap" type="text" placeholder="@votre_pseudo">
+    </div>
+  </div>
+</div>
+
+<!-- PRODUITS -->
+<div class="card">
+  <div class="card-hdr"><span class="step">2</span><h2>Votre commande</h2></div>
+  <div class="card-body">
+    <div class="tarif-badge revendeur" id="badgeR">💼 TARIF REVENDEUR — Diana 45€ · Daylia 15€/u</div>
+    <div class="tarif-badge grossiste50" id="badgeG50">🏆 GROSSISTE 50+ — Diana 35€ · Daylia 12€/u</div>
+    <div class="tarif-badge grossiste100" id="badgeG100">✦ PREMIUM 100+ — Diana 30€ · Daylia 10€/u</div>
+
+    <div class="prod" id="pCAF">
+      <div class="prod-top" onclick="togProd('CAF')">
+        <div class="prod-ico">☕</div>
+        <div style="flex:1">
+          <div class="prod-name">Café Diana</div>
+          <div class="prod-price">45€ · 35€ dès 50 · 30€ dès 100 <span class="hint">· min. 15 pièces</span></div>
+        </div>
+        <div class="chk">✓</div>
+      </div>
+      <div class="prod-qty">
+        <span class="qlbl">Quantité :</span>
+        <div class="qctrl">
+          <button class="qbtn" onclick="chQ('CAF',-1)">−</button>
+          <input class="qval" id="qCAF" value="15" readonly>
+          <button class="qbtn" onclick="chQ('CAF',1)">+</button>
+        </div>
+        <span class="qtot" id="tCAF">675€</span>
+      </div>
+    </div>
+
+    <div class="prod" id="pTHE">
+      <div class="prod-top" onclick="togProd('THE')">
+        <div class="prod-ico">🍵</div>
+        <div style="flex:1">
+          <div class="prod-name">Thé Diana</div>
+          <div class="prod-price">45€ · 35€ dès 50 · 30€ dès 100 <span class="hint">· min. 15 pièces</span></div>
+        </div>
+        <div class="chk">✓</div>
+      </div>
+      <div class="prod-qty">
+        <span class="qlbl">Quantité :</span>
+        <div class="qctrl">
+          <button class="qbtn" onclick="chQ('THE',-1)">−</button>
+          <input class="qval" id="qTHE" value="15" readonly>
+          <button class="qbtn" onclick="chQ('THE',1)">+</button>
+        </div>
+        <span class="qtot" id="tTHE">675€</span>
+      </div>
+    </div>
+
+    <div class="prod" id="pGEL">
+      <div class="prod-top" onclick="togProd('GEL')">
+        <div class="prod-ico">💊</div>
+        <div style="flex:1">
+          <div class="prod-name">Gélules Diana</div>
+          <div class="prod-price">45€ · 35€ dès 50 · 30€ dès 100 <span class="hint">· min. 15 pièces</span></div>
+        </div>
+        <div class="chk">✓</div>
+      </div>
+      <div class="prod-qty">
+        <span class="qlbl">Quantité :</span>
+        <div class="qctrl">
+          <button class="qbtn" onclick="chQ('GEL',-1)">−</button>
+          <input class="qval" id="qGEL" value="15" readonly>
+          <button class="qbtn" onclick="chQ('GEL',1)">+</button>
+        </div>
+        <span class="qtot" id="tGEL">675€</span>
+      </div>
+    </div>
+
+    <div class="prod" id="pDAY">
+      <div class="prod-top" onclick="togProd('DAY')">
+        <div class="prod-ico">🌿</div>
+        <div style="flex:1">
+          <div class="prod-name">Thé Daylia</div>
+          <div class="prod-price">15€/u · 12€ dès 50 · 10€ dès 100 <span class="hint">· min. 15 pièces</span></div>
+        </div>
+        <div class="chk">✓</div>
+      </div>
+      <div class="prod-qty">
+        <span class="qlbl">Quantité :</span>
+        <div class="qctrl">
+          <button class="qbtn" onclick="chQ('DAY',-1)">−</button>
+          <input class="qval" id="qDAY" value="15" readonly>
+          <button class="qbtn" onclick="chQ('DAY',1)">+</button>
+        </div>
+        <span class="qtot" id="tDAY">225€</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIVRAISON -->
+<div class="card">
+  <div class="card-hdr"><span class="step">3</span><h2>Livraison</h2></div>
+  <div class="card-body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div class="mode-btn on" id="mRemise" onclick="setModeLiv('remise')">
+        <div style="font-size:22px;margin-bottom:3px">🤝</div>
+        <div style="font-size:12px;font-weight:700;color:var(--cream)">Remise</div>
+        <div style="font-size:10px;color:var(--muted)">Marseille</div>
+      </div>
+      <div class="mode-btn" id="mEnvoi" onclick="setModeLiv('envoi')">
+        <div style="font-size:22px;margin-bottom:3px">📦</div>
+        <div style="font-size:12px;font-weight:700;color:var(--cream)">Mondial Relay</div>
+        <div style="font-size:10px;color:var(--muted)">France & Europe</div>
+      </div>
+    </div>
+
+    <!-- Envoi Mondial Relay -->
+    <div id="envoiBlock" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">
+        <div class="mode-btn on" id="rPoint" onclick="setRelais('point')">
+          <div style="font-size:18px">🏪</div>
+          <div style="font-size:10px;font-weight:700;color:var(--cream)">Point Relais</div>
+        </div>
+        <div class="mode-btn" id="rLocker" onclick="setRelais('locker')">
+          <div style="font-size:18px">🔐</div>
+          <div style="font-size:10px;font-weight:700;color:var(--cream)">Locker</div>
+        </div>
+        <div class="mode-btn" id="rDomicile" onclick="setRelais('domicile')">
+          <div style="font-size:18px">🏠</div>
+          <div style="font-size:10px;font-weight:700;color:var(--cream)">Domicile</div>
+        </div>
+      </div>
+
+      <div id="relaisLinkBlock" style="margin-bottom:12px">
+        <a id="lienMondial" href="https://www.mondialrelay.fr/trouver-le-point-relais-le-plus-proche-de-chez-moi/" target="_blank"
+          style="display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(201,168,76,0.15);border:1px solid var(--bdr);color:var(--gold);border-radius:10px;padding:11px 14px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:6px">
+          🗺️ Trouver mon point Mondial Relay →
+        </a>
+        <div style="font-size:11px;color:var(--muted);text-align:center">Copie ensuite l'adresse du point choisi ci-dessous</div>
+      </div>
+
+      <div id="relaisAddrBlock">
+        <div class="field">
+          <label>Nom du point relais *</label>
+          <input id="fRelaisNom" type="text" placeholder="Ex : Tabac du Centre">
+          <div class="err-msg">Champ obligatoire</div>
+        </div>
+        <div class="field">
+          <label>Adresse *</label>
+          <input id="fRelaisAddr" type="text" placeholder="Ex : 12 rue de la Paix">
+          <div class="err-msg">Champ obligatoire</div>
+        </div>
+        <div class="field">
+          <label>Code postal *</label>
+          <input id="fRelaisCp" type="text" inputmode="numeric" maxlength="5" placeholder="75001">
+          <div class="err-msg">Champ obligatoire</div>
+        </div>
+      </div>
+
+      <div id="domicileBlock" style="display:none">
+        <div class="field">
+          <label>Adresse complète *</label>
+          <input id="fDomAddr" type="text" placeholder="12 rue de la Paix, 75001 Paris">
+          <div class="err-msg">Champ obligatoire</div>
+        </div>
+      </div>
+
+      <div id="fraisEnvoi" style="background:rgba(201,168,76,0.1);border:1px solid var(--bdr);border-radius:9px;padding:9px 12px;font-size:13px;font-weight:700;color:var(--gold);margin-top:8px;display:none"></div>
+    </div>
+
+    <div class="field" style="margin-top:4px">
+      <label>Message / disponibilités</label>
+      <input id="fNote" type="text" placeholder="Précisions, disponibilités…">
+    </div>
+  </div>
+</div>
+
+<!-- TOTAL -->
+<div class="total" id="totalBar">
+  <div id="totalLines"></div>
+  <div class="tline big"><span>TOTAL ESTIMÉ</span><span id="totalFinal">—</span></div>
+</div>
+
+<button class="btn-submit" onclick="handleSubmit()">✦ Envoyer ma commande →</button>
+<div class="card" style="margin-bottom:12px">
+  <div class="card-hdr"><span class="step">4</span><h2>Paiement avant envoi</h2></div>
+  <div class="card-body">
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px">Le paiement est requis avant l'expédition. Contactez-nous pour recevoir nos coordonnées :</p>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <a href="https://wa.me/33651511861?text=Bonjour%2C%20je%20souhaite%20payer%20par%20PayPal%20pour%20ma%20commande%20revendeur.%20Pouvez-vous%20me%20donner%20vos%20coordonn%C3%A9es%20%3F"
+        target="_blank"
+        style="display:flex;align-items:center;gap:10px;background:rgba(201,168,76,0.08);border:1px solid var(--bdr);border-radius:11px;padding:12px 14px;text-decoration:none;color:var(--cream)">
+        <span style="font-size:22px">💳</span>
+        <div>
+          <div style="font-size:13px;font-weight:700">PayPal</div>
+          <div style="font-size:11px;color:var(--muted)">Contacter sur WhatsApp →</div>
+        </div>
+      </a>
+      <a href="https://wa.me/33651511861?text=Bonjour%2C%20je%20souhaite%20payer%20par%20Lydia%20pour%20ma%20commande%20revendeur.%20Pouvez-vous%20me%20donner%20vos%20coordonn%C3%A9es%20%3F"
+        target="_blank"
+        style="display:flex;align-items:center;gap:10px;background:rgba(201,168,76,0.08);border:1px solid var(--bdr);border-radius:11px;padding:12px 14px;text-decoration:none;color:var(--cream)">
+        <span style="font-size:22px">📱</span>
+        <div>
+          <div style="font-size:13px;font-weight:700">Lydia</div>
+          <div style="font-size:11px;color:var(--muted)">Contacter sur WhatsApp →</div>
+        </div>
+      </a>
+      <a href="https://wa.me/33651511861?text=Bonjour%2C%20je%20souhaite%20payer%20par%20Wero%20pour%20ma%20commande%20revendeur.%20Pouvez-vous%20me%20donner%20vos%20coordonn%C3%A9es%20%3F"
+        target="_blank"
+        style="display:flex;align-items:center;gap:10px;background:rgba(201,168,76,0.08);border:1px solid var(--bdr);border-radius:11px;padding:12px 14px;text-decoration:none;color:var(--cream)">
+        <span style="font-size:22px">🔵</span>
+        <div>
+          <div style="font-size:13px;font-weight:700">Wero</div>
+          <div style="font-size:11px;color:var(--muted)">Contacter sur WhatsApp →</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<p style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px">Commande confirmée après réception du paiement</p>
+
+</div>
+</div>
+
+<!-- SUCCESS -->
+<div id="vSuccess">
+  <div class="success-hero">
+    <div class="success-ico">✦</div>
+    <div class="success-title">Commande envoyée</div>
+    <div class="success-sub">Nous vous confirmons par WhatsApp sous 24h</div>
+  </div>
+  <div class="page">
+    <div class="fiche">
+      <div class="fiche-hdr">Récapitulatif</div>
+      <div id="ficheBody"></div>
+    </div>
+    <a id="waBtn" href="#" class="wa-btn">💬 Envoyer sur WhatsApp</a>
+    <button class="back-btn" onclick="goBack()">← Modifier ma commande</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var LIVREUR = '33773514284';
+var DASHBOARD_URL = 'https://dashboardlivraison.netlify.app/';
+
+var PRODS = {
+  CAF:{name:'Café Diana',ico:'☕'},
+  THE:{name:'Thé Diana',ico:'🍵'},
+  GEL:{name:'Gélules Diana',ico:'💊'},
+  DAY:{name:'Thé Daylia',ico:'🌿'}
+};
+
+var MIN_QTY = 15;
+
+function getPrixDiana(total){
+  if(total>=100) return 30;
+  if(total>=50) return 35;
+  return 45;
+}
+function getPrixDaylia(total){
+  if(total>=100) return 10;
+  if(total>=50) return 12;
+  return 15;
+}
+
+function togProd(id){
+  var el=document.getElementById('p'+id);
+  el.classList.toggle('on');
+  if(el.classList.contains('on')){
+    document.getElementById('q'+id).value=MIN_QTY;
+  }
+  updateTotal();
+}
+
+function chQ(id,d){
+  var el=document.getElementById('q'+id);
+  var newVal=Math.max(MIN_QTY,Math.min(999,parseInt(el.value)+d));
+  el.value=newVal;
+  updateTotal();
+}
+
+function getQtyDiana(){
+  var q=0;
+  ['CAF','THE','GEL'].forEach(function(id){
+    if(document.getElementById('p'+id).classList.contains('on'))
+      q+=parseInt(document.getElementById('q'+id).value)||0;
+  });
+  return q;
+}
+function getQtyDaylia(){
+  if(!document.getElementById('pDAY').classList.contains('on')) return 0;
+  return parseInt(document.getElementById('qDAY').value)||0;
+}
+
+function updateTotal(){
+  var qDiana=getQtyDiana();
+  var qDaylia=getQtyDaylia();
+  var qTotal=qDiana+qDaylia;
+  var pDiana=getPrixDiana(qTotal);
+  var pDaylia=getPrixDaylia(qTotal);
+
+  // Badges
+  document.getElementById('badgeR').classList.toggle('show',qTotal>=15&&qTotal<50);
+  document.getElementById('badgeG50').classList.toggle('show',qTotal>=50&&qTotal<100);
+  document.getElementById('badgeG100').classList.toggle('show',qTotal>=100);
+
+  // Tarif cards highlight
+  document.getElementById('tc1').classList.toggle('active',qTotal>=15&&qTotal<50);
+  document.getElementById('tc2').classList.toggle('active',qTotal>=50&&qTotal<100);
+  document.getElementById('tc3').classList.toggle('active',qTotal>=100);
+
+  // Update totaux produits
+  var lines='';
+  var sub=0;
+  ['CAF','THE','GEL'].forEach(function(id){
+    if(document.getElementById('p'+id).classList.contains('on')){
+      var q=parseInt(document.getElementById('q'+id).value)||0;
+      var t=pDiana*q;
+      sub+=t;
+      document.getElementById('t'+id).textContent=t+'€';
+      lines+='<div class="tline"><span>'+PRODS[id].ico+' '+PRODS[id].name+' ×'+q+'</span><span>'+t+'€</span></div>';
+    }
+  });
+  if(document.getElementById('pDAY').classList.contains('on')){
+    var qD=parseInt(document.getElementById('qDAY').value)||0;
+    var tD=pDaylia*qD;
+    sub+=tD;
+    document.getElementById('tDAY').textContent=tD+'€';
+    lines+='<div class="tline"><span>🌿 Thé Daylia ×'+qD+'</span><span>'+tD+'€</span></div>';
+  }
+
+  var bar=document.getElementById('totalBar');
+  if(sub>0){
+    bar.classList.add('show');
+    var frais=calcFraisEnvoi();
+    if(frais>0) lines+='<div class="tline"><span>🚚 Frais envoi</span><span>'+frais+'€</span></div>';
+    document.getElementById('totalLines').innerHTML=lines;
+    document.getElementById('totalFinal').textContent=(sub+frais).toLocaleString('fr-FR')+'€';
+  } else {
+    bar.classList.remove('show');
+  }
+  updateFraisDisplay();
+}
+
+var modeLiv='remise';
+var modeRelais='point';
+
+// Poids produits (en grammes)
+var POIDS={CAF:100,THE:120,GEL:50,DAY:50};
+
+function calcPoids(){
+  var g=0;
+  ['CAF','THE','GEL','DAY'].forEach(function(id){
+    if(document.getElementById('p'+id).classList.contains('on'))
+      g+=(POIDS[id]||0)*(parseInt(document.getElementById('q'+id).value)||0);
+  });
+  return g;
+}
+function calcFraisEnvoi(){
+  if(modeLiv!=='envoi') return 0;
+  var g=calcPoids();
+  if(g<=150) return 7.5;
+  if(g<=300) return 9.5;
+  return 11.5;
+}
+
+function setModeLiv(m){
+  modeLiv=m;
+  document.getElementById('mRemise').classList.toggle('on',m==='remise');
+  document.getElementById('mEnvoi').classList.toggle('on',m==='envoi');
+  document.getElementById('envoiBlock').style.display=m==='envoi'?'block':'none';
+  updateTotal();
+}
+
+function setRelais(r){
+  modeRelais=r;
+  ['point','locker','domicile'].forEach(function(v){
+    var el=document.getElementById('r'+v.charAt(0).toUpperCase()+v.slice(1));
+    if(el)el.classList.toggle('on',v===r);
+  });
+  var isDom=r==='domicile';
+  document.getElementById('relaisLinkBlock').style.display=isDom?'none':'block';
+  document.getElementById('relaisAddrBlock').style.display=isDom?'none':'block';
+  document.getElementById('domicileBlock').style.display=isDom?'block':'none';
+  var lien=document.getElementById('lienMondial');
+  if(lien&&!isDom) lien.textContent=r==='locker'?'🔐 Trouver mon Locker Mondial Relay →':'🗺️ Trouver mon point Mondial Relay →';
+  updateFraisDisplay();
+}
+
+function updateFraisDisplay(){
+  var el=document.getElementById('fraisEnvoi');
+  if(!el)return;
+  if(modeLiv!=='envoi'){el.style.display='none';return;}
+  var g=calcPoids();
+  var f=calcFraisEnvoi();
+  if(g===0){el.style.display='none';return;}
+  el.style.display='block';
+  el.textContent='⚖️ Poids estimé : '+g+'g → 🚚 Frais envoi : '+f+'€';
+}
+
+function handleSubmit(){
+  var nom=document.getElementById('fNom').value.trim();
+  var tel=document.getElementById('fTel').value.trim();
+  var email=document.getElementById('fEmail').value.trim();
+  if(!nom){showErr('fNom');toast('⚠️ Remplis ton nom');return;}
+  if(!tel){showErr('fTel');toast('⚠️ Remplis ton téléphone');return;}
+  if(!email){showErr('fEmail');toast('⚠️ Remplis ton email');return;}
+
+  var addrLivraison='';
+  var frais=calcFraisEnvoi();
+  if(modeLiv==='envoi'){
+    if(modeRelais==='domicile'){
+      addrLivraison=document.getElementById('fDomAddr').value.trim();
+      if(!addrLivraison){toast('⚠️ Remplis l\'adresse de livraison');return;}
+    } else {
+      var rNom=document.getElementById('fRelaisNom').value.trim();
+      var rAddr=document.getElementById('fRelaisAddr').value.trim();
+      var rCp=document.getElementById('fRelaisCp').value.trim();
+      if(!rNom||!rAddr||!rCp){toast('⚠️ Remplis l\'adresse du point relais');return;}
+      addrLivraison=rNom+' — '+rAddr+', '+rCp;
+    }
+  } else {
+    addrLivraison='Remise en main propre — Marseille';
+  }
+
+  var qDiana=getQtyDiana();
+  var qDaylia=getQtyDaylia();
+  if(qDiana+qDaylia<MIN_QTY){toast('⚠️ Minimum '+MIN_QTY+' pièces pour commande revendeur');return;}
+
+  var qTotal=qDiana+qDaylia;
+  var pDiana=getPrixDiana(qTotal);
+  var pDaylia=getPrixDaylia(qTotal);
+  var societe=document.getElementById('fSociete').value.trim();
+  var snap=document.getElementById('fSnap').value.trim();
+  var note=document.getElementById('fNote').value.trim();
+  var sub=0;
+  var prodsLines='';
+  var prodsRecap=[];
+  ['CAF','THE','GEL'].forEach(function(id){
+    if(document.getElementById('p'+id).classList.contains('on')){
+      var q=parseInt(document.getElementById('q'+id).value)||0;
+      var t=pDiana*q;sub+=t;
+      prodsLines+='• '+q+'× '+PRODS[id].name+' — '+pDiana+'€/u = '+t+'€\n';
+      prodsRecap.push(PRODS[id].ico+' '+PRODS[id].name+' ×'+q+' = '+t+'€');
+    }
+  });
+  if(document.getElementById('pDAY').classList.contains('on')){
+    var qD=parseInt(document.getElementById('qDAY').value)||0;
+    var tD=pDaylia*qD;sub+=tD;
+    prodsLines+='• '+qD+'× Thé Daylia — '+pDaylia+'€/u = '+tD+'€\n';
+    prodsRecap.push('🌿 Thé Daylia ×'+qD+' = '+tD+'€');
+  }
+  var tarifLabel=qTotal>=100?'Premium 100+':qTotal>=50?'Grossiste 50+':'Revendeur 15+';
+  var relaisType=modeRelais==='locker'?'Locker':modeRelais==='domicile'?'Domicile':'Point Relais';
+  var livLabel=modeLiv==='remise'?'🤝 Remise en main propre (Marseille)':'📦 Mondial Relay ('+relaisType+') — '+addrLivraison+(frais?' — '+frais+'€':'');
+
+  var msg='✦ COMMANDE REVENDEUR DIANA\n'
+    +'━━━━━━━━━━━━━━━━━━\n'
+    +'👤 '+nom+(societe?' — '+societe:'')+'\n'
+    +(snap?'👻 '+snap+'\n':'')
+    +'📞 '+tel+'\n'
+    +'📧 '+email+'\n'
+    +'\n🛍️ COMMANDE ('+tarifLabel+') :\n'
+    +prodsLines
+    +'💰 TOTAL : '+(sub+frais).toLocaleString('fr-FR')+'€'+(frais?' (dont '+frais+'€ envoi)':'')+'\n'
+    +'\n'+livLabel+'\n'
+    +(note?'\n📝 '+note+'\n':'')
+    +'\n━━━━━━━━━━━━━━━━━━\n'
+    +'🌐 www.diana-detox.com';
+
+  var recapRows=[
+    ['📋 Type','Commande Revendeur'],
+    ['👤 Nom',nom+(societe?' · '+societe:'')],
+    ['📧 Email',email],
+    ['📞 Tél',tel],
+    snap?['👻 Réseau',snap]:null,
+    ['🛍️ Produits',prodsRecap.join('<br>')],
+    ['💼 Tarif',tarifLabel],
+    ['💰 Total','<strong>'+(sub+frais).toLocaleString('fr-FR')+'€</strong>'+(frais?' <span style="font-size:11px;color:var(--muted)">(dont '+frais+'€ envoi)</span>':'')],
+    ['🚚 Livraison',livLabel],
+    note?['📝 Note',note]:null,
+  ].filter(Boolean);
+
+  document.getElementById('ficheBody').innerHTML=recapRows.map(function(r){
+    return '<div class="frow"><span class="flbl">'+r[0]+'</span><span class="fval">'+r[1]+'</span></div>';
+  }).join('');
+
+  var telWa=tel.replace(/\s/g,'').replace(/^0/,'33');
+  document.getElementById('waBtn').href='https://wa.me/'+LIVREUR+'?text='+encodeURIComponent(msg);
+  document.getElementById('vForm').style.display='none';
+  document.getElementById('vSuccess').style.display='block';
+  window.scrollTo(0,0);
+}
+
+function showErr(id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  el.classList.add('err');
+  el.focus();
+}
+
+function goBack(){
+  document.getElementById('vSuccess').style.display='none';
+  document.getElementById('vForm').style.display='block';
+  window.scrollTo(0,0);
+}
+
+function toast(msg){
+  var el=document.getElementById('toast');
+  el.textContent=msg;el.classList.remove('show');
+  void el.offsetWidth;el.classList.add('show');
+  setTimeout(function(){el.classList.remove('show');},2800);
+}
+
+// Init
+updateTotal();
+</script>
+</body>
+</html>
