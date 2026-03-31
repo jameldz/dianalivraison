@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<title>Livraison Diana</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rd:#D4607A;--rs:#FDE8EF;--lt:#FFF5F8;--ms:#FEF0F5;--cr:#FFF8FB;
+  --gd:#B8922A;--gs:#FDF3DC;
+  --bdr:rgba(212,96,122,0.15);--ink:#2D1520;--k2:#7A4055;--k3:#C490A0;
+  --gn:#22C55E;--gnl:#DCFCE7;--re:#EF4444;--rel:#FEF2F2;--r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-height:100vh;}
+.page{max-width:480px;margin:0 auto;padding-bottom:80px;}
+.hero{background:linear-gradient(150deg,#E8637F,#D4607A 40%,#C8924A);padding:36px 28px 30px;text-align:center;position:relative;}
+.hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:22px;background:var(--cr);border-radius:22px 22px 0 0;}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:26px;font-style:italic;color:#fff;margin-bottom:4px;}
+.hero p{color:rgba(255,255,255,0.6);font-size:12px;}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.2);color:#fff;border:1.5px solid rgba(255,255,255,0.4);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:800;margin-top:12px;}
+.body{padding:0 16px;}
+.card{background:#fff;border:1.5px solid var(--bdr);border-radius:var(--r);margin-top:12px;overflow:hidden;box-shadow:0 4px 16px rgba(212,96,122,0.07);}
+.card-hdr{background:var(--ms);padding:10px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;}
+.card-hdr h2{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--rd);}
+.step{background:linear-gradient(135deg,var(--rd),var(--gd));color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;}
+.card-body{padding:16px;}#cardProd .card-body{padding:0;}#cardProd .prod{margin-bottom:0;border-radius:0;border-left:none;border-right:none;border-bottom:none;}#cardProd .prod:first-child{border-top:none;}#cardProd .prod:last-child{border-bottom:1.5px solid var(--bdr);}
+.profil{background:#fff;border:1.5px solid var(--bdr);border-radius:var(--r);margin:14px 16px 0;padding:14px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(212,96,122,0.1);}
+.pava{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--rs),var(--gs));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.pinfo{flex:1;min-width:0;}
+.pname{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.psub{font-size:12px;color:var(--k2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pedit{background:var(--rs);border:1px solid var(--bdr);border-radius:8px;padding:6px 12px;font-size:11px;font-weight:800;color:var(--rd);cursor:pointer;white-space:nowrap;font-family:inherit;}
+.field{margin-bottom:12px;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--k2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px;}
+.field input,.field select,.field textarea{width:100%;padding:12px 13px;border:1.5px solid var(--bdr);border-radius:11px;font-size:15px;font-family:'Nunito',sans-serif;background:var(--lt);color:var(--ink);outline:none;-webkit-appearance:none;}
+.field input:focus,.field select:focus{border-color:#F4A7B9;background:#fff;}
+.field input.err{border-color:var(--re);background:var(--rel);}
+.field textarea{resize:none;height:72px;font-size:14px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.err-msg{display:none;font-size:12px;font-weight:800;color:var(--re);background:var(--rel);border-left:3px solid var(--re);border-radius:8px;padding:7px 12px;margin-top:5px;}
+.err-msg.show{display:block;}
+.awrap{position:relative;}
+.asug{display:none;position:absolute;top:calc(100% - 2px);left:0;right:0;z-index:200;background:#fff;border:1.5px solid #F4A7B9;border-top:none;border-radius:0 0 11px 11px;box-shadow:0 8px 24px rgba(212,96,122,0.15);max-height:220px;overflow-y:auto;}
+.asug-item{padding:11px 13px;cursor:pointer;border-bottom:1px solid var(--ms);}
+.asug-item:active{background:var(--ms);}
+.asug-main{font-size:13px;font-weight:700;}
+.asug-sub{font-size:11px;color:var(--k2);margin-top:1px;}
+.aok{display:none;background:var(--gnl);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:8px 12px;margin-top:6px;font-size:12px;color:var(--gn);align-items:center;gap:8px;}
+.aok.show{display:flex;}
+@keyframes blink-gratuit{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.96);}}
+.achg{background:none;border:none;color:var(--gn);cursor:pointer;font-size:11px;font-weight:700;margin-left:auto;text-decoration:underline;font-family:inherit;}
+.prod{border:1.5px solid var(--bdr);border-radius:11px;padding:12px 13px;background:var(--lt);margin-bottom:9px;}
+.prod:last-child{margin-bottom:0;}
+.prod.on{border-color:var(--rd);background:var(--rs);}
+.prod-top{display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none;}
+.prod-ico{font-size:24px;flex-shrink:0;}
+.prod-name{font-size:14px;font-weight:800;flex:1;}
+.prod-price{font-size:12px;color:var(--k2);}
+.chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.prod.on .chk{background:linear-gradient(135deg,var(--rd),var(--gd));border-color:var(--rd);color:#fff;}
+.prod-qty{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr);align-items:center;gap:12px;}
+.prod.on .prod-qty{display:flex;}
+.qlbl{font-size:12px;color:var(--k2);flex:1;}
+.qctrl{display:flex;align-items:center;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden;}
+.qbtn{width:36px;height:36px;background:var(--ms);border:none;font-size:20px;cursor:pointer;color:var(--rd);font-family:inherit;display:flex;align-items:center;justify-content:center;}
+.qbtn:active{background:var(--rd);color:#fff;}
+.qval{width:40px;text-align:center;font-size:15px;font-weight:800;border:none;border-left:1px solid var(--bdr);border-right:1px solid var(--bdr);height:36px;background:var(--lt);color:var(--ink);font-family:inherit;outline:none;}
+.qtot{font-size:13px;font-weight:800;color:var(--rd);}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.mode-btn{border:1.5px solid var(--bdr);border-radius:11px;padding:10px 8px;text-align:center;cursor:pointer;background:var(--lt);user-select:none;}
+.mode-btn.on{border-color:var(--rd);background:var(--rs);}
+.mode-btn.on .mode-lbl{color:var(--rd);}
+.mode-ico{font-size:22px;margin-bottom:3px;}
+.mode-lbl{font-size:12px;font-weight:800;color:var(--ink);}
+.mode-sub{font-size:10px;color:var(--k2);margin-top:1px;}
+.mode-btn.col3{grid-column:span 1;}
+.mode-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:4px;}
+.day-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.day-itm{border:1.5px solid var(--bdr);border-radius:10px;padding:8px 6px;text-align:center;background:transparent;cursor:pointer;}
+.day-itm.on{border-color:var(--rd);background:var(--rs);}
+.day-ico{font-size:18px;margin-bottom:0;display:none;}
+.day-nm{font-size:12px;font-weight:800;}
+.day-sub{font-size:10px;color:var(--k2);margin-bottom:5px;}
+.dctrl{display:flex;align-items:center;justify-content:center;border:1.5px solid var(--bdr);border-radius:8px;overflow:hidden;background:transparent;}
+.dbtn{width:32px;height:32px;background:var(--ms);border:none;font-size:16px;cursor:pointer;color:var(--rd);font-family:inherit;}
+.dval{width:30px;text-align:center;font-size:14px;font-weight:800;border:none;background:transparent;color:var(--ink);}
+.day-recap{display:none;background:var(--rs);border-radius:8px;padding:9px 12px;margin-top:10px;font-size:12px;color:var(--rd);font-weight:800;text-align:center;}
+.day-recap.show{display:block;}
+.dates-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px;}
+.date-btn{border:1.5px solid var(--bdr);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;background:var(--lt);user-select:none;}
+.date-btn.on{background:var(--rs);border-color:var(--rd);}
+.date-btn.on .dday{color:var(--rd);}
+.dday{font-size:10px;font-weight:700;color:var(--k2);}
+.dnum{font-size:15px;font-weight:900;margin:2px 0;}
+.dmois{font-size:10px;color:var(--k3);}
+.tsb{padding:7px 13px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--lt);color:var(--k2);font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;}
+.tsb.on{background:var(--rs);border-color:var(--rd);color:var(--rd);}
+.slot{border:1.5px solid var(--bdr);border-radius:11px;padding:12px 14px;cursor:pointer;background:var(--lt);display:flex;align-items:center;gap:12px;margin-bottom:8px;user-select:none;}
+.slot:last-child{margin-bottom:0;}
+.slot.on{background:var(--rs);border-color:var(--rd);}
+.slot-ico{font-size:24px;flex-shrink:0;}
+.slot-lbl{font-size:14px;font-weight:800;}
+.slot.on .slot-lbl{color:var(--rd);}
+.slot-range{font-size:11px;color:var(--k3);margin-top:1px;}
+.slot-chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;flex-shrink:0;}
+.slot.on .slot-chk,.slot2.on .slot-chk{background:linear-gradient(135deg,var(--rd),var(--gd));border-color:var(--rd);color:#fff;}
+.slot2{border:1.5px solid var(--bdr);border-radius:11px;padding:11px 14px;cursor:pointer;background:var(--lt);display:flex;align-items:center;user-select:none;margin-bottom:8px;}
+.slot2.on{background:var(--rs);border-color:var(--rd);}
+.slot2-lbl{font-size:14px;font-weight:800;flex:1;}
+.slot2.on .slot2-lbl{color:var(--rd);}
+.slot.disabled,.slot2.disabled,.date-btn.disabled{opacity:.35;pointer-events:none;filter:grayscale(1);}
+.total{background:linear-gradient(135deg,var(--rd),#C44070 50%,var(--gd));border-radius:var(--r);margin:12px 16px 0;padding:14px 16px;color:#fff;display:none;flex-direction:column;gap:3px;}
+.total.show{display:flex;}
+.tline{display:flex;justify-content:space-between;font-size:13px;}
+.tline .dim{opacity:.65;}
+.tline.big{font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;padding-top:7px;margin-top:4px;border-top:1px solid rgba(255,255,255,.2);}
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:calc(100% - 32px);margin:12px 16px 0;background:linear-gradient(135deg,#25D366,#1DA851);color:#fff;border:none;border-radius:var(--r);padding:17px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 4px 16px rgba(37,211,102,0.3);}
+.legal{text-align:center;font-size:11px;color:var(--k3);margin:8px 16px 0;}
+#vSuccess{display:none;}
+.s-wrap{max-width:440px;margin:0 auto;padding:50px 18px 60px;text-align:center;}
+.s-ico{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--rs),var(--gs));border:3px solid #F4A7B9;font-size:32px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.s-wrap h2{font-family:'Cormorant Garamond',serif;font-size:26px;font-style:italic;color:var(--rd);margin-bottom:6px;}
+.s-wrap p{font-size:13px;color:var(--k2);line-height:1.6;}
+.fiche{background:#fff;border:1.5px solid var(--bdr);border-radius:var(--r);margin:16px 0;overflow:hidden;text-align:left;}
+.fiche-hdr{background:linear-gradient(135deg,var(--rd),#C44070);color:#fff;padding:11px 15px;font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;}
+.fiche-body{padding:12px 15px;}
+.frow{display:flex;padding:7px 0;border-bottom:1px solid var(--ms);font-size:13px;}
+.frow:last-child{border-bottom:none;}
+.flbl{color:var(--k2);width:110px;flex-shrink:0;font-weight:600;}
+.fval{color:var(--ink);font-weight:700;flex:1;}
+.dispo-block{margin-bottom:6px;background:var(--lt);border-left:3px solid var(--rd);border-radius:0 8px 8px 0;padding:7px 10px;}
+.dispo-block:last-child{margin-bottom:0;}
+.dispo-date{font-size:12px;font-weight:800;color:var(--rd);margin-bottom:3px;}
+.dispo-slots{display:flex;flex-wrap:wrap;gap:4px;}
+.dispo-tag{font-size:11px;background:var(--rs);color:#9B2042;border-radius:20px;padding:2px 9px;font-weight:700;}
+.btn2{width:100%;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;}
+.btn2.green{background:#25D366;color:#fff;}
+.btn2.soft{background:var(--ms);color:var(--rd);}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:flex-end;justify-content:center;}
+.overlay.show{display:flex;}
+.modal{background:var(--cr);border-radius:20px 20px 0 0;padding:22px 18px 40px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
+.modal h3{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:var(--rd);margin-bottom:16px;}
+.mbtns{display:flex;gap:10px;margin-top:16px;}
+.mbtns button{flex:1;padding:13px;border-radius:10px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;border:none;}
+.msave{background:linear-gradient(135deg,var(--rd),var(--gd));color:#fff;}
+.mcancel{background:var(--ms);color:var(--rd);}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#D4607A;color:#fff;padding:16px 32px;border-radius:30px;font-size:18px;font-weight:900;z-index:999;opacity:0;pointer-events:none;box-shadow:0 4px 24px rgba(212,96,122,0.5);transition:opacity .2s;text-align:center;max-width:90vw;}
+.toast.show{opacity:1;}
+#vLoad{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:var(--cr);}
+@keyframes vibrer{0%,100%{transform:translateX(0)}20%{transform:translateX(-3px)}40%{transform:translateX(3px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
+@keyframes wiggle{0%,100%{transform:translateX(0) rotate(0deg);}15%{transform:translateX(-4px) rotate(-1deg);}30%{transform:translateX(4px) rotate(1deg);}45%{transform:translateX(-3px) rotate(-0.5deg);}60%{transform:translateX(3px) rotate(0.5deg);}75%{transform:translateX(-2px);}90%{transform:translateX(2px);}}
+.snap-shake{animation:wiggle 1.8s ease-in-out infinite;display:block;}.snap-btn-pulse{animation:wiggle 1.2s ease-in-out infinite;display:inline-flex;}
+.snap-shake input{border-color:#F4A7B9 !important;}
+
+
+
+/* FICHE PRODUIT */
+#ficheOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:900;display:none;align-items:flex-end;}
+#ficheModal{background:#fff;border-radius:20px 20px 0 0;width:100%;height:90vh;overflow-y:auto;padding-bottom:30px;}
+#ficheModalHeader{background:linear-gradient(135deg,#E8637F,#C8924A);padding:16px 18px;border-radius:20px 20px 0 0;position:sticky;top:0;}
+.fiche-accordion{border-bottom:1px solid #f0e0e5;}
+.fiche-acc-btn{width:100%;padding:14px 18px;background:none;border:none;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:700;color:#2D1520;cursor:pointer;font-family:inherit;text-align:left;}
+.fiche-acc-btn span:last-child{font-size:18px;transition:transform .3s;color:var(--rd);}
+.fiche-acc-btn.open span:last-child{transform:rotate(45deg);}
+.fiche-acc-body{display:none;padding:0 18px 14px;font-size:13px;color:#555;line-height:1.7;}
+.fiche-acc-body.open{display:block;}
+.fiche-check{color:var(--rd);font-weight:700;margin-right:6px;}
+</style>
+</head>
+<body>
+
+<div id="vLoad"><div style="font-size:48px;margin-bottom:12px">🛵</div><p style="font-size:14px;color:var(--k2)">Chargement…</p></div>
+
+<div id="vForm" style="display:none">
+<div class="page">
+<div class="hero">
+  <div style="font-size:44px;margin-bottom:8px">🌸🛵🌸</div>
+  <img src="data:image/jpeg;base64,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" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.5);display:block;margin:0 auto 8px">
+  <h1>Livraison Diana</h1>
+  <div id="heroSiteLink"></div>
+  <div id="heroSnapLink"></div>
+  <p id="heroSub">Marseille uniquement · Paiement à la livraison</p>
+  <div class="badge" id="heroBadge">🚀 Livraison 5 €</div>
+</div>
+
+<div class="profil" id="profilCard" style="display:none">
+  <div class="pava">👋</div>
+  <div class="pinfo"><div class="pname" id="pNom"></div><div class="psub" id="pSub"></div></div>
+  <button class="pedit" onclick="openEdit()">✏️ Modifier</button>
+</div>
+
+<div class="body">
+
+<!-- MODE LIVRAISON -->
+<div class="card">
+  <div class="card-hdr"><span class="step">1</span><h2>Comment veux-tu recevoir ta commande ?</h2></div>
+  <div class="card-body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:10px">
+      <div class="mode-btn on" id="mEnvoi" onclick="setModeLiv('envoi')">
+        <div class="mode-ico">📦</div>
+        <div class="mode-lbl">Envoi</div>
+        <div class="mode-sub">Mondial Relay…</div>
+      </div>
+      <div class="mode-btn" id="mPlace" onclick="setModeLiv('place')">
+        <div class="mode-ico">🏠</div>
+        <div class="mode-lbl">Sur place</div>
+        <div class="mode-sub">Tu viens</div>
+      </div>
+      <div class="mode-btn" id="mLiv" onclick="setModeLiv('livraison')">
+        <div class="mode-ico">🛵</div>
+        <div class="mode-lbl" style="font-size:11px">Remise en main propre</div>
+        <div class="mode-sub">Je te livre</div>
+      </div>
+    </div>
+    <div id="livreurExtra" style="display:none">
+      <div style="font-size:11px;font-weight:700;color:var(--k2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Transporteur</div>
+      <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:12px">
+        <div class="mode-btn on" id="tMondial" style="cursor:default">
+          <div class="mode-ico">📦</div>
+          <div class="mode-lbl" style="font-size:11px">Mondial Relay</div>
+        </div>
+      </div>
+      <div id="mondialOptions">
+        <div style="font-size:11px;font-weight:700;color:var(--k2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Point de retrait</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:12px">
+          <div class="mode-btn on" id="rPoint" onclick="setRelais('point')">
+            <div class="mode-ico">🏪</div>
+            <div class="mode-lbl" style="font-size:10px">Point Relais</div>
+          </div>
+          <div class="mode-btn" id="rLocker" onclick="setRelais('locker')">
+            <div class="mode-ico">🔐</div>
+            <div class="mode-lbl" style="font-size:10px">Locker</div>
+          </div>
+          <div class="mode-btn" id="rDomicile" onclick="setRelais('domicile')">
+            <div class="mode-ico">🏠</div>
+            <div class="mode-lbl" style="font-size:10px">Domicile</div>
+          </div>
+        </div>
+        <!-- Bloc point/locker : email seulement -->
+        <div id="relaisEmailBlock">
+          <div style="background:var(--lt);border:1px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:10px">
+            <div style="font-size:13px;font-weight:700;color:var(--rd);margin-bottom:6px">📦 Comment ça marche ?</div>
+            <div style="font-size:12px;color:var(--k2);line-height:1.6">
+              1️⃣ Remplis ton email ci-dessous<br>
+              2️⃣ On t'envoie le lien pour choisir ton point<br>
+              3️⃣ Tu choisis ton point ou locker directement
+            </div>
+          </div>
+          <div class="field">
+            <label>Email pour recevoir le lien Mondial Relay *</label>
+            <input id="fRelaisEmail" type="email" placeholder="ton@email.com" oninput="clearErr(this);var fe=document.getElementById('fEmail');if(fe)fe.value=this.value;">
+            <div class="err-msg" id="err-fRelaisEmail">⚠️ Remplis ton email</div>
+          </div>
+        </div>
+        <!-- Bloc domicile : juste email -->
+        <div id="relaisDomicileBlock" style="display:none">
+          <div style="background:var(--lt);border:1px solid var(--bdr);border-radius:10px;padding:12px">
+            <div style="font-size:12px;font-weight:800;color:var(--rd);margin-bottom:4px">📍 Livraison à ton adresse</div>
+            <div style="font-size:12px;color:var(--k2)">L'adresse saisie dans tes informations sera utilisée pour la livraison à domicile.</div>
+          </div>
+          <input id="fDomAddr" type="hidden" value="">
+          <input id="fDomCp" type="hidden" value="">
+          <input id="fDomVille" type="hidden" value="">
+        </div>
+        <!-- Champs cachés pour compatibilité JS -->
+        <input id="fRelaisNom" type="hidden" value="">
+        <input id="fRelaisAddr" type="hidden" value="">
+        <input id="fRelaisCp" type="hidden" value="">
+      </div>
+    </div>
+    <div id="placeAddrInfo" style="display:none;margin-top:10px;background:var(--gnl);border:1.5px solid rgba(34,197,94,.3);border-radius:9px;padding:10px 12px">
+      <div style="font-size:12px;font-weight:800;color:var(--gn);margin-bottom:3px">📍 Adresse de récupération</div>
+      <div style="font-size:14px;font-weight:700;color:var(--ink)">Caisse d'Epargne — Place Saint Eugène<br>13007 Marseille</div>
+    </div>
+  </div>
+</div>
+
+<!-- IDENTITÉ -->
+<div class="card" id="cardId">
+  <div class="card-hdr"><span class="step">2</span><h2>Tes informations</h2></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 16px 0">
+    <div id="gFemme" onclick="setGenre('f')" style="border:1.5px solid var(--rd);background:var(--rs);border-radius:10px;padding:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:800;color:var(--rd)">👩 Femme</div>
+    <div id="gHomme" onclick="setGenre('m')" style="border:1.5px solid var(--bdr);background:var(--lt);border-radius:10px;padding:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:var(--k2)">👨 Homme</div>
+  </div>
+  <div class="card-body">
+    <div class="field">
+      <label>Prénom et Nom *</label>
+      <input id="fNom" type="text" placeholder="Marie Dupont" autocomplete="name" oninput="clearErr(this)">
+      <div class="err-msg" id="err-fNom">⚠️ Remplis ton prénom et nom</div>
+    </div>
+    <div class="field">
+      <label>Réseaux sociaux 👻</label>
+      <div class="snap-shake"><input id="fSnap" type="text" placeholder="@ton_pseudo (Snap, Insta, TikTok…)"></div>
+      <div style="font-size:12px;color:#B8922A;font-weight:700;margin-top:5px;animation:blink 1.5s ease-in-out infinite">💬 Mets ton pseudo — c'est comme ça que je te reconnais !</div>
+    </div>
+    <div class="field">
+      <label>Téléphone *</label>
+      <input id="fTel" type="tel" placeholder="06 xx xx xx xx" autocomplete="tel" oninput="clearErr(this)">
+      <div class="err-msg" id="err-fTel">⚠️ Remplis ton numéro de téléphone</div>
+    </div>
+    <div class="field">
+      <label>Email *</label>
+      <input id="fEmail" type="email" placeholder="ton@email.com" autocomplete="email" oninput="clearErr(this);updateMondialRelayLink();var fr=document.getElementById('fRelaisEmail');if(fr)fr.value=this.value;">
+      <div class="err-msg" id="err-fEmail">⚠️ Remplis ton adresse email</div>
+    </div>
+    <div class="field">
+      <label>Qui t'a recommandé ? 🎁 (facultatif)</label>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button id="pGenreF" onclick="setParrGenre('f')" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid var(--rd);background:var(--rs);font-size:13px;font-weight:800;color:var(--rd);cursor:pointer;font-family:inherit">👩 Marraine</button>
+        <button id="pGenreM" onclick="setParrGenre('m')" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--lt);font-size:13px;font-weight:700;color:var(--k2);cursor:pointer;font-family:inherit">👨 Parrain</button>
+      </div>
+      <input id="fParrainTel" type="tel" placeholder="📞 Son numéro (06...)" style="margin-bottom:6px">
+      <input id="fParrainSnap" type="text" placeholder="👻 Son pseudo Snap exact">
+      <input id="fParrain" type="hidden">
+      <div style="font-size:10px;color:var(--k2);font-weight:700;margin-top:4px;background:var(--lt);border-radius:6px;padding:5px 8px">📌 Le numéro est obligatoire pour le parrainage · le Snap est facultatif</div>
+      <div id="parrTxtCredit" style="font-size:11px;color:#2E7D32;font-weight:600;margin-top:4px">🌟 Grâce à toi, elle gagne <strong>5€ de crédit</strong> sur sa prochaine commande !</div>
+      <div style="font-size:11px;color:#B91C1C;font-weight:700;margin-top:3px">⚠️ Vérifie bien le numéro et le pseudo — si c'est incorrect, le parrainage ne sera pas comptabilisé !</div>
+      <div onclick="this.querySelector('.parr-details').style.display=this.querySelector('.parr-details').style.display==='block'?'none':'block'" style="cursor:pointer;margin-top:6px;background:linear-gradient(135deg,#FFF8E1,#FFF0D0);border:1.5px solid #E8C870;border-radius:10px;padding:10px 12px">
+        <div id="parrTxtGainTitle" style="font-size:12px;font-weight:800;color:#7A5A00">🏆 Ce que ta marraine peut gagner ▾</div>
+        <div class="parr-details" style="display:none;margin-top:8px;font-size:11px;color:#7A5A00;line-height:1.8">
+          💰 <strong>5€ de crédit</strong> à chaque personne qui commande grâce à <span class="parr-pronom">elle</span><br>
+          🛍️ <span class="parr-pronom-maj">Elle</span> utilise ses crédits pour <strong>commander ce qu'<span class="parr-pronom">elle</span> veut</strong> (Café, Thé, Gélules...)<br>
+          <div style="margin:6px 0;padding:6px 8px;background:rgba(255,255,255,0.6);border-radius:6px">
+            📊 <strong>Exemple :</strong><br>
+            5 personnes = <strong>25€</strong> de crédit → 1 Daylia gratuit<br>
+            11 personnes = <strong>55€</strong> de crédit → 1 Diana gratuit<br>
+            22 personnes = <strong>110€</strong> de crédit → 2 Diana gratuits
+          </div>
+          🥉 <strong>10 personnes</strong> → statut Ambassadeur/rice<br>
+          🥈 <strong>20 personnes</strong> → Silver<br>
+          🧖‍♀️ <strong>30 personnes</strong> → Gold + Box Spa offerte !<br>
+          💎 <strong>50 personnes</strong> → Box Prestige !<br>
+          🎁 Puis une <strong>Box cadeau toutes les 10 personnes</strong><br>
+          <div style="margin-top:8px;padding:8px;background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border-radius:6px;font-size:12px;font-weight:800;color:#2E7D32;text-align:center" id="parrTxtDevenir">
+            💡 Toi aussi tu peux devenir marraine !<br>Recommande-nous à tes proches et gagne tes crédits 🚀
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT 2 -->
+<div class="card">
+  <div class="card-body" style="padding:12px 16px">
+    <div id="tel2Wrap" style="display:none;margin-bottom:10px">
+      <div class="row2">
+        <div class="field"><label>Nom contact 2</label><input id="fTel2Nom" type="text" placeholder="ex : Maman"></div>
+        <div class="field"><label>Numéro</label><input id="fTel2" type="tel" inputmode="numeric" placeholder="06 xx xx xx xx"></div>
+      </div>
+    </div>
+    <button type="button" id="tel2Btn" onclick="toggleTel2()" style="background:var(--ms);border:1.5px solid var(--bdr);border-radius:9px;padding:7px 14px;font-size:12px;font-weight:800;color:var(--rd);cursor:pointer;font-family:inherit">＋ Ajouter un 2ème contact</button>
+  </div>
+</div>
+
+<!-- ADRESSE -->
+<div class="card" id="cardAddr">
+  <div class="card-hdr"><span class="step">3</span><h2>Adresse de livraison</h2></div>
+  <div class="card-body">
+    <div class="field">
+      <label>Adresse *</label>
+      <div class="awrap">
+        <input id="fAddr" type="text" placeholder="Ex : 12 rue Paradis…" autocomplete="off" oninput="onAddr(this.value);clearErr(this)" onfocus="onAddr(this.value)">
+        <div class="asug" id="aSug"></div>
+      </div>
+      <div class="aok" id="aOk"><span>✅</span><span id="aOkTxt"></span><button class="achg" onclick="resetAddr()">Modifier</button></div>
+      <div class="err-msg" id="err-fAddr">⚠️ Remplis ton adresse</div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Code postal *</label>
+        <input id="fCp" type="text" inputmode="numeric" placeholder="13001" maxlength="5" oninput="onCp(this.value);clearErr(this)">
+        <div class="err-msg" id="err-fCp">⚠️ Remplis le code postal</div>
+      </div>
+      <div class="field">
+        <label>Ville</label>
+        <input id="fVille" value="Marseille" style="background:var(--gnl);color:#1E7E34;font-weight:700;cursor:not-allowed" readonly>
+      </div>
+    </div>
+    <div class="field"><label>Complément</label><input id="fCompl" type="text" placeholder="Bât. B, 3e étage, code 1234…"></div>
+  </div>
+</div>
+
+<!-- PRODUITS -->
+<div class="card" id="cardProd">
+  <div class="card-hdr"><span class="step" id="sProd">4</span><h2>Que veux-tu commander ?</h2></div>
+  <div class="card-body">
+    <div class="prod" id="pGEL">
+      <div class="prod-top" onclick="togProd('GEL')"><img src="data:image/jpeg;base64,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" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0"><div style="flex:1;margin-left:10px"><div class="prod-name">Gélules Diana <button onclick="event.stopPropagation();openFiche('GEL')" style="background:var(--rs);border:1px solid var(--bdr);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--rd);cursor:pointer;font-family:inherit;margin-left:6px">ℹ️ Infos</button></div><div class="prod-price">55 € / unité <span class="prix-gros" style="font-size:10px;color:#B8922A;display:none">· 45€ dès 15 · 35€ dès 50 · 30€ dès 100</span></div></div><div class="chk">✓</div></div>
+      <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('GEL',-1)">−</button><input class="qval" id="qGEL" value="1" readonly><button class="qbtn" onclick="chQ('GEL',1)">+</button></div><span class="qtot" id="tGEL">55€</span></div>
+    </div>
+  </div>
+<div class="prod" id="pTHE">
+      <div class="prod-top" onclick="togProd('THE')"><img src="data:image/jpeg;base64,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" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0"><div style="flex:1;margin-left:10px"><div class="prod-name">Thé Diana <button onclick="event.stopPropagation();openFiche('THE')" style="background:var(--rs);border:1px solid var(--bdr);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--rd);cursor:pointer;font-family:inherit;margin-left:6px">ℹ️ Infos</button></div><div class="prod-price">55 € / unité <span class="prix-gros" style="font-size:10px;color:#B8922A;display:none">· 45€ dès 15 · 35€ dès 50 · 30€ dès 100</span></div></div><div class="chk">✓</div></div>
+      <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('THE',-1)">−</button><input class="qval" id="qTHE" value="1" readonly><button class="qbtn" onclick="chQ('THE',1)">+</button></div><span class="qtot" id="tTHE">55€</span></div>
+    </div>
+    <div class="prod" id="pCAF">
+      <div class="prod-top" onclick="togProd('CAF')"><img src="data:image/jpeg;base64,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" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0"><div style="flex:1;margin-left:10px"><div class="prod-name">Café Diana <button onclick="event.stopPropagation();openFiche('CAF')" style="background:var(--rs);border:1px solid var(--bdr);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--rd);cursor:pointer;font-family:inherit;margin-left:6px">ℹ️ Infos</button></div><div class="prod-price">55 € / unité <span class="prix-gros" style="font-size:10px;color:#B8922A;display:none">· 45€ dès 15 · 35€ dès 50 · 30€ dès 100</span></div></div><div class="chk">✓</div></div>
+      <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('CAF',-1)">−</button><input class="qval" id="qCAF" value="1" readonly><button class="qbtn" onclick="chQ('CAF',1)">+</button></div><span class="qtot" id="tCAF">55€</span></div>
+    </div>
+    <div class="prod" id="pDAY">
+      <div class="prod-top" onclick="togDaylia()"><img src="data:image/jpeg;base64,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" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0"><div style="flex:1;margin-left:10px"><div class="prod-name">Thé Daylia <button onclick="event.stopPropagation();openFiche('DAY')" style="background:#E8F5E9;border:1px solid #A5D6A7;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:#2E7D32;cursor:pointer;font-family:inherit;margin-left:6px">ℹ️ Infos</button></div><div class="prod-price">1→25€ · 2→45€ · 3→60€ · 4+→20€/thé <span class="prix-gros" style="font-size:10px;color:#B8922A;display:none">· 15€/u dès 15 · 12€/u dès 50 · 10€/u dès 100</span></div></div><div class="chk">✓</div></div>
+      <div id="dayPanel" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr)">
+        <div class="day-promo">🎁 Filtre offert à ta 1ère commande Daylia !</div>
+        <div class="day-grid" id="dayGrid"></div>
+        <div class="day-recap" id="dayRecap"></div>
+      </div>
+    </div>
+    </div>
+
+<!-- FRAIS ENVOI -->
+<div id="fraisEnvoi" style="display:none;margin:0 0 10px;background:linear-gradient(135deg,var(--rs),#FFF0F5);border:1.5px solid var(--bdr);border-radius:11px;padding:12px 14px;font-size:13px;font-weight:800;color:var(--rd)"></div>
+
+<!-- DISPO -->
+<div class="card" id="cardDispo">
+  <div class="card-hdr"><span class="step" id="sDispo">5</span><h2>Quand es-tu disponible ?</h2></div>
+  <div class="card-body">
+    <div id="banner24h" style="background:#FFF8E6;border:1px solid #F0C060;border-radius:9px;padding:9px 13px;font-size:12px;color:#7A5A00;margin-bottom:12px">⚡ Livraison <strong>sous 24h</strong> dans la mesure du possible</div>
+    <div id="bannerUrgence" style="display:none;background:linear-gradient(135deg,#FFF0F0,#FFE0E0);border:1.5px solid #FF4444;border-radius:9px;padding:9px 13px;font-size:12px;font-weight:800;color:#CC0000;margin-bottom:12px;text-align:center;animation:blink 1.2s ease-in-out infinite">🔥 Stock limité — Commande vite avant rupture !</div>
+    <div style="font-size:11px;color:var(--k2);margin-bottom:8px">Clique sur une date puis choisis tes créneaux <strong style="color:var(--rd)">*</strong></div>
+    <div class="dates-grid" id="datesGrid"></div>
+    <div id="dateSlotPanel" style="display:none;margin-top:10px;background:var(--lt);border:1.5px solid var(--bdr);border-radius:11px;padding:13px">
+      <div style="font-size:12px;font-weight:800;color:var(--rd);margin-bottom:10px" id="dateSlotTitle"></div>
+      <div id="errSlots" style="display:none;font-size:13px;font-weight:800;color:var(--re);background:var(--rel);border-left:3px solid var(--re);border-radius:8px;padding:8px 12px;margin-bottom:10px">⚠️ Choisis au moins un créneau horaire</div>
+      <div id="dispoTabsWrap" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="tsb on" id="tsb0" onclick="setDispoTab(0)">🌅 Matin/Soir</button>
+        <button class="tsb" id="tsb1" onclick="setDispoTab(1)">⏱ Toutes les 2h</button>
+        <button class="tsb" id="tsb2" onclick="setDispoTab(2)">🎯 Heure précise</button>
+        <button class="tsb" id="tsb3" onclick="setDispoTab(3)">✏️ Je choisis</button>
+      </div>
+      <div id="dispoHint" style="font-size:11px;color:#B8922A;font-weight:700;margin-bottom:10px;animation:blink 1.5s ease-in-out infinite">⏰ On fait notre max pour livrer dans le créneau choisi !</div>
+      <!-- Créneaux 30min pour Sur place -->
+      <div id="dm30min" style="display:none;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px">
+        <div class="slot2" data-v="8h00-8h30"   onclick="toggleDispoSlot(this)"><div class="slot2-lbl">8h00</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="8h30-9h00"   onclick="toggleDispoSlot(this)"><div class="slot2-lbl">8h30</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="9h00-9h30"   onclick="toggleDispoSlot(this)"><div class="slot2-lbl">9h00</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="9h30-10h00"  onclick="toggleDispoSlot(this)"><div class="slot2-lbl">9h30</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="10h00-10h30" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">10h00</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="10h30-11h00" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">10h30</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="11h00-11h30" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">11h00</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="11h30-12h00" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">11h30</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="12h00-12h30" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">12h00</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="12h30-13h00" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">12h30</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="13h00-13h30" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">13h00</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="13h30-14h00" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">13h30</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="14h00-14h30" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">14h00</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="14h30-15h00" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">14h30</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="15h00-15h30" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">15h00</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="15h30-16h00" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">15h30</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="16h00-16h30" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">16h00</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="16h30-17h00" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">16h30</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="17h00-17h30" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">17h00</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="17h30-18h00" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">17h30</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="18h00-18h30" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">18h00</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="18h30-19h00" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">18h30</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="19h00-19h30" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">19h00</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="19h30-20h00" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">19h30</div><div class="slot-chk">✓</div></div>
+      </div>
+      <div id="dm0">
+        <div class="slot" data-v="Matin (8h-12h)" onclick="toggleDispoSlot(this)"><div class="slot-ico">🌅</div><div style="flex:1"><div class="slot-lbl">Matin</div><div class="slot-range">8h-12h</div></div><div class="slot-chk">✓</div></div>
+        <div class="slot" data-v="Midi (12h-14h)" onclick="toggleDispoSlot(this)"><div class="slot-ico">☀️</div><div style="flex:1"><div class="slot-lbl">Midi</div><div class="slot-range">12h-14h</div></div><div class="slot-chk">✓</div></div>
+        <div class="slot" data-v="Après-midi (14h-18h)" onclick="toggleDispoSlot(this)"><div class="slot-ico">🌤️</div><div style="flex:1"><div class="slot-lbl">Après-midi</div><div class="slot-range">14h-18h</div></div><div class="slot-chk">✓</div></div>
+        <div class="slot" data-v="Soir (18h-21h)" onclick="toggleDispoSlot(this)"><div class="slot-ico">🌙</div><div style="flex:1"><div class="slot-lbl">Soir</div><div class="slot-range">18h-21h</div></div><div class="slot-chk">✓</div></div>
+        <div class="slot" data-v="Soirée (21h-00h)" onclick="toggleDispoSlot(this)"><div class="slot-ico">🌛</div><div style="flex:1"><div class="slot-lbl">Soirée</div><div class="slot-range">21h-00h</div></div><div class="slot-chk">✓</div></div>
+      </div>
+      <div id="dm1" style="display:none;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="slot2" data-v="8h-10h"  onclick="toggleDispoSlot(this)"><div class="slot2-lbl">8h – 10h</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="10h-12h" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">10h – 12h</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="12h-14h" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">12h – 14h</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="14h-16h" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">14h – 16h</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="16h-18h" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">16h – 18h</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="18h-20h" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">18h – 20h</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="20h-22h" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">20h – 22h</div><div class="slot-chk">✓</div></div>
+        <div class="slot2" data-v="22h-00h" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">22h – 00h</div><div class="slot-chk">✓</div></div>
+      </div>
+      <div id="dm2" style="display:none;grid-template-columns:repeat(4,1fr);gap:6px">
+        <div class="date-btn" data-v="8h"  onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">8h</div></div>
+        <div class="date-btn" data-v="9h"  onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">9h</div></div>
+        <div class="date-btn" data-v="10h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">10h</div></div>
+        <div class="date-btn" data-v="11h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">11h</div></div>
+        <div class="date-btn" data-v="12h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">12h</div></div>
+        <div class="date-btn" data-v="13h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">13h</div></div>
+        <div class="date-btn" data-v="14h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">14h</div></div>
+        <div class="date-btn" data-v="15h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">15h</div></div>
+        <div class="date-btn" data-v="16h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">16h</div></div>
+        <div class="date-btn" data-v="17h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">17h</div></div>
+        <div class="date-btn" data-v="18h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">18h</div></div>
+        <div class="date-btn" data-v="19h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">19h</div></div>
+        <div class="date-btn" data-v="20h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">20h</div></div>
+        <div class="date-btn" data-v="21h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">21h</div></div>
+        <div class="date-btn" data-v="22h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">22h</div></div>
+        <div class="date-btn" data-v="23h" onclick="toggleDispoSlot(this)"><div class="dnum" style="font-size:13px">23h</div></div>
+      </div>
+      <div id="dm3" style="display:none">
+        <div class="row2">
+          <div class="field"><label>À partir de</label>
+            <select id="fDe" onchange="saveLibre()">
+              <option value="">--</option>
+              <option>8h00</option><option>8h30</option><option>9h00</option><option>9h30</option><option>10h00</option><option>10h30</option><option>11h00</option><option>11h30</option><option>12h00</option><option>12h30</option><option>13h00</option><option>13h30</option><option>14h00</option><option>14h30</option><option>15h00</option><option>15h30</option><option>16h00</option><option>16h30</option><option>17h00</option><option>17h30</option><option>18h00</option><option>18h30</option><option>19h00</option><option>19h30</option><option>20h00</option><option>20h30</option><option>21h00</option><option>21h30</option><option>22h00</option><option>22h30</option><option>23h00</option><option>23h30</option>
+            </select>
+          </div>
+          <div class="field"><label>Jusqu'à</label>
+            <select id="fJusqua" onchange="saveLibre()">
+              <option value="">--</option>
+              <option>8h30</option><option>9h00</option><option>9h30</option><option>10h00</option><option>10h30</option><option>11h00</option><option>11h30</option><option>12h00</option><option>12h30</option><option>13h00</option><option>13h30</option><option>14h00</option><option>14h30</option><option>15h00</option><option>15h30</option><option>16h00</option><option>16h30</option><option>17h00</option><option>17h30</option><option>18h00</option><option>18h30</option><option>19h00</option><option>19h30</option><option>20h00</option><option>20h30</option><option>21h00</option><option>21h30</option><option>22h00</option><option>22h30</option><option>23h00</option><option>23h30</option><option>00h00</option>
+            </select>
+          </div>
+        </div>
+        <div id="heureErreur" style="display:none;font-size:11px;color:var(--re);font-weight:700;margin-top:6px;text-align:center">⚠️ L'heure de fin doit être après l'heure de début</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div class="card" id="cardNotes">
+  <div class="card-hdr"><span>📝</span><h2>Note pour le livreur (optionnel)</h2></div>
+  <div class="card-body"><div class="field"><textarea id="fNotes" placeholder="Porte bleue à gauche, appelle avant…"></textarea></div></div>
+</div>
+
+</div>
+
+<!-- PAIEMENT -->
+<div class="card" id="cardPay">
+  <div class="card-hdr"><span>💳</span><h2>Mode de paiement</h2></div>
+  <div class="card-body">
+    <div id="payOptions" style="display:none">
+      <div style="font-size:12px;color:var(--k2);margin-bottom:10px;font-weight:600">Paiement requis avant l'envoi — choisis ton moyen :</div>
+      <div style="background:#FFF3CD;border:2px solid #F9A825;border-radius:9px;padding:12px;font-size:13px;color:#7A5A00;font-weight:800;margin-bottom:10px;text-align:center;line-height:1.5;animation:blink 1.5s ease-in-out infinite">
+        ⚠️ IMPORTANT : Après avoir payé, <u>reviens ici</u> pour valider ta commande !<br>
+        <span style="font-size:12px;font-weight:600">👆 Appuie sur la flèche retour de ton téléphone ou retrouve cet onglet dans ton navigateur, puis clique sur <strong>« Vérifier ma commande »</strong> en bas.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px" id="payBtns">
+        <div style="background:#003087;border-radius:12px;overflow:hidden">
+          <div onclick="togglePaypal()" style="display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;color:#fff">
+            <span style="font-size:22px">💳</span>
+            <div style="flex:1">
+              <div style="font-weight:800;font-size:14px">Payer par PayPal</div>
+              <div id="paypalMontant" style="font-size:12px;opacity:.8"></div>
+            </div>
+            <span id="ppArrow" style="font-size:16px;transition:transform .3s">▼</span>
+          </div>
+          <div id="paypalDetails" style="display:none;padding:0 16px 14px;color:#fff">
+            <div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:12px;font-size:12px;line-height:2;margin-bottom:10px">
+              1️⃣ Clique sur <strong>«&nbsp;Ouvrir PayPal&nbsp;»</strong> — connecte-toi ou crée un compte gratuit<br>
+              2️⃣ En bas appuie sur <strong>"Envoyer"</strong> (icône avion papier)<br>
+              3️⃣ Dans la barre de recherche tape :<br>
+              <div id="paypalEmailDisplay" style="background:rgba(0,0,0,0.2);border-radius:6px;padding:6px 10px;margin:4px 0;font-family:monospace;font-size:13px;letter-spacing:.5px">chargement…</div>
+              4️⃣ Saisis le <strong>montant exact</strong> indiqué ci-dessus<br>
+              5️⃣ ⚠️ <strong>IMPORTANT</strong> — avant de confirmer, choisis :<br>
+              <div style="background:rgba(255,200,0,0.25);border:1px solid rgba(255,200,0,0.5);border-radius:6px;padding:6px 10px;margin:4px 0;font-weight:900;font-size:13px" id="entreProches">👥 "Envoyer à un proche" ou "Entre proches"</div>
+              <div style="font-size:11px;opacity:.8">Sans ça il y a des frais supplémentaires !</div>
+              6️⃣ Confirme le paiement ✅
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onclick="copierEmail()" style="flex:1;padding:9px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">📋 Copier l'email</button>
+              <a id="btnPaypal" href="https://www.paypal.com" target="_blank" style="flex:1;padding:9px;background:rgba(255,255,255,0.9);color:#003087;border-radius:8px;font-size:12px;font-weight:800;text-decoration:none;display:flex;align-items:center;justify-content:center">Ouvrir PayPal →</a>
+            </div>
+          </div>
+        </div>
+        <a id="btnLydia" href="https://pay.lydia.me/l?t=sabram0rcs" target="_blank"
+          style="display:flex;align-items:center;gap:12px;background:#7B2D8B;color:#fff;border-radius:12px;padding:13px 16px;text-decoration:none;font-weight:800;font-size:14px">
+          <span style="font-size:22px">📱</span>
+          <div style="flex:1">
+            <div>Payer par Lydia</div>
+            <div style="font-size:11px;font-weight:400;opacity:.8">Lien direct</div>
+            <div style="font-size:10px;opacity:.7" id="lydiaFraisInfo"></div>
+          </div>
+          <span style="margin-left:auto">→</span>
+        </a>
+        
+      </div>
+      <div style="background:var(--rs);border:1px solid var(--bdr);border-radius:9px;padding:9px 12px;font-size:12px;color:var(--rd);font-weight:700;margin-top:10px;text-align:center">
+        📌 Envoie ta preuve de paiement par WhatsApp après avoir payé
+      </div>
+    </div>
+    <div id="payEspecesOnly" style="background:var(--lt);border-radius:9px;padding:8px 12px;font-size:13px;font-weight:800;color:var(--k2)">💵 Espèces à la livraison</div>
+  </div>
+</div>
+
+<div class="total" id="totalBar">
+  <div id="totalLines"></div>
+  <div class="tline" id="livLine"><span class="dim">Livraison</span><span>5,00 €</span></div>
+  <div class="tline big"><span>TOTAL</span><span id="totalFinal">—</span></div>
+</div>
+<!-- Info messages Snap - sur place uniquement, juste pour information -->
+<div id="infoSnapPlace" style="display:none;margin:10px 16px 0;background:linear-gradient(135deg,#FFF9C4,#FFFDE7);border:1.5px solid #F9A825;border-radius:12px;padding:14px">
+  <div style="font-size:13px;font-weight:800;color:#7A5A00;margin-bottom:10px">👻 Pour info — messages à envoyer sur Snap le jour J</div>
+  <div style="font-size:12px;color:#5A4200;background:rgba(255,255,255,0.7);border-radius:8px;padding:9px;margin-bottom:8px;line-height:1.6">
+    <strong>1️⃣ Avant de partir :</strong><br>
+    "Bonjour ! Je pars récupérer ma commande Diana Detox, je serai là dans 10-15 min 🛵"
+  </div>
+  <div style="font-size:12px;color:#5A4200;background:rgba(255,255,255,0.7);border-radius:8px;padding:9px;line-height:1.6">
+    <strong>2️⃣ Quand tu es sur place :</strong><br>
+    "Je suis là ! Je suis devant la Caisse Epargne Place Saint Eugène 13007 :)"
+  </div>
+</div>
+
+<button class="wa-btn" onclick="handleSubmit()">Vérifier ma commande →</button>
+<div class="legal" id="legalLine">Livraison 5 € · Paiement espèces à la livraison</div>
+</div>
+</div>
+
+<!-- SUCCESS -->
+<div id="vSuccess">
+<div class="s-wrap">
+  <div class="s-ico">✅</div>
+  <h2>Commande envoyée !</h2>
+  <div class="fiche">
+    <div class="fiche-hdr">📋 Récapitulatif</div>
+    <div class="fiche-body" id="ficheBody"></div>
+  </div>
+
+  <!-- Bouton principal : envoyer/renvoyer au livreur -->
+  <a id="waBtnVisible" href="#" onclick="window.open(document.getElementById('waBtn').href,'_blank')" style="display:block;text-align:center;background:linear-gradient(135deg,#25D366,#1DA851);color:#fff;border-radius:12px;padding:14px;font-size:15px;font-weight:800;text-decoration:none;margin-bottom:10px;box-shadow:0 4px 14px rgba(37,211,102,0.3);cursor:pointer">✅ Valider ma commande sur WhatsApp</a>
+
+  <!-- WA livreur (caché mais le lien est prêt) -->
+  <a id="waBtn" href="#" style="display:none"></a>
+
+  <!-- Parrainage (si parrain renseigné) -->
+  <div id="parrainSection" style="display:none;background:#F5F3FF;border:1.5px solid #C4B5FD;border-radius:12px;padding:12px;margin-bottom:10px">
+    <div id="parrainInfo" style="font-size:13px;font-weight:800;color:#5B21B6;margin-bottom:8px"></div>
+    <button id="notifMarrBtn" onclick="notifMarraineRecap()" style="width:100%;padding:12px;background:linear-gradient(135deg,#25D366,#1DA851);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit">💬 Notifier sur WhatsApp</button>
+    <div style="font-size:11px;color:#7C3AED;line-height:1.5;margin-top:6px">⚠️ Parrainage validé après vérification + paiement</div>
+  </div>
+
+  <button class="btn2 soft" onclick="goBack()">✏️ Modifier</button>
+  <button class="btn2 soft" onclick="newOrder()" style="margin-top:6px;background:#fff;border:1.5px solid var(--bdr)">🆕 Nouvelle commande</button>
+</div>
+</div>
+
+<!-- MODAL PROFIL -->
+<div class="overlay" id="editOverlay" onclick="if(event.target===this)closeEdit()">
+<div class="modal">
+  <h3>✏️ Modifier mon profil</h3>
+  <div class="field"><label>Prénom et Nom *</label><input id="eNom" type="text" autocomplete="name"></div>
+  <div class="field"><label>Réseaux sociaux 👻</label><input id="eSnap" type="text"></div>
+  <div class="field"><label>Téléphone *</label><input id="eTel" type="tel"></div>
+  <div class="field">
+    <label>Adresse *</label>
+    <div class="awrap"><input id="eAddr" type="text" autocomplete="off" oninput="onEditAddr(this.value)"><div class="asug" id="eSug"></div></div>
+    <div class="aok" id="eOk"><span>✅</span><span id="eOkTxt"></span><button class="achg" onclick="resetEditAddr()">Modifier</button></div>
+  </div>
+  <div class="row2">
+    <div class="field"><label>Code postal *</label><input id="eCp" type="text" maxlength="5" oninput="onCp(this.value)"></div>
+    <div class="field"><label>Ville</label><input id="eVille" value="Marseille" readonly style="background:var(--gnl);color:#1E7E34;font-weight:700;cursor:not-allowed"></div>
+  </div>
+  <div class="field"><label>Complément</label><input id="eCompl" type="text"></div>
+  <div class="mbtns"><button class="mcancel" onclick="closeEdit()">Annuler</button><button class="msave" onclick="saveEdit()">Sauvegarder ✓</button></div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var LIVREUR = '33773514284';
+
+// Détection du vendeur via URL (?v=sabra / ?v=ilyes / ?v=syriane)
+var VENDEURS = {
+  sabra:  {nom:'Sabra',   tel:'33651511861', snap:'trextea1300',    site:'https://www.diana-detox.com', paypal:'cifusil@yahoo.fr', lydia:'https://pay.lydia.me/l?t=sabram0rcs'},
+  ilyes:  {nom:'Ilyes',   tel:'33699890346', snap:'trextea1300',    site:'https://www.diana-detox.com', paypal:'cifusil@yahoo.fr', lydia:'https://pay.lydia.me/l?t=sabram0rcs'},
+  syriane:{nom:'Syriane', tel:'33782833581', snap:'diana.detox',    site:null, paypal:'syriane.mokhaissi@gmail.com', lydia:null, lydiaTel:'0782833581', lydiaEmail:'syriane.mokhaissi@gmail.com'}
+};
+var urlParams = new URLSearchParams(window.location.search);
+var vendeurKey = (urlParams.get('v')||'').toLowerCase();
+var vendeur = VENDEURS[vendeurKey] || VENDEURS['sabra'];
+
+// Hero dynamique selon vendeur
+(function(){
+  var snap = vendeur ? vendeur.snap : 'trextea1300';
+  var site = vendeur ? vendeur.site : 'https://www.diana-detox.com';
+  var siteEl = document.getElementById('heroSiteLink');
+  var snapEl = document.getElementById('heroSnapLink');
+  if(siteEl){
+    if(site){
+      siteEl.innerHTML = '<a href="'+site+'" target="_blank" style="color:rgba(255,255,255,0.85);font-size:12px;font-weight:800;text-decoration:underline;display:block;margin-bottom:8px">🌐 '+site.replace('https://www.','')+'</a>';
+    }
+  }
+  if(snapEl && snap){
+    snapEl.innerHTML = '<a href="https://www.snapchat.com/add/'+snap+'" target="_blank" class="snap-btn-pulse" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,252,0,0.2);border:1.5px solid rgba(255,252,0,0.5);border-radius:20px;padding:6px 14px;text-decoration:none;margin-bottom:8px"><svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFC00"><path d="M12.065 2c2.572 0 5.197 1.444 6.312 4.126.347.837.416 1.73.416 2.646 0 .6-.04 1.19-.08 1.78l.027-.003c.232 0 .464-.053.696-.053.696 0 1.16.53 1.16 1.16 0 .695-.58 1.044-1.16 1.16-.232.047-.464.07-.696.115-.58.093-1.044.696-1.276 1.392-.116.35-.116.58 0 .812.232.464.812.928 1.508 1.508.464.348.928.812.928 1.508 0 .928-.812 1.624-1.624 1.624-.232 0-.464-.047-.696-.116-.58-.232-1.16-.464-1.856-.464-.348 0-.696.047-.928.116-.696.232-1.392.812-2.32 1.392-.58.348-1.276.58-2.32.58s-1.74-.232-2.32-.58c-.928-.58-1.624-1.16-2.32-1.392-.232-.07-.58-.116-.928-.116-.696 0-1.276.232-1.856.464-.232.07-.464.116-.696.116-.812 0-1.624-.696-1.624-1.624 0-.696.464-1.16.928-1.508.696-.58 1.276-1.044 1.508-1.508.116-.232.116-.464 0-.812-.232-.696-.696-1.3-1.276-1.392-.232-.047-.464-.068-.696-.115-.58-.116-1.16-.465-1.16-1.16 0-.63.464-1.16 1.16-1.16.232 0 .464.053.696.053l.027.003c-.04-.59-.08-1.18-.08-1.78 0-.916.069-1.81.416-2.646C6.838 3.444 9.493 2 12.065 2z"/></svg><span style="color:#FFFC00;font-size:12px;font-weight:800">👻 '+snap+'</span></a>';
+  }
+})();
+// Initialiser l'email PayPal et Lydia dès le chargement
+(function(){
+  var ppEmail = vendeur ? vendeur.paypal : 'cifusil@yahoo.fr';
+  var ppDisplay = document.getElementById('paypalEmailDisplay');
+  if(ppDisplay) ppDisplay.textContent = ppEmail;
+  // Lydia
+  var ly = document.getElementById('btnLydia');
+  if(ly && vendeur){
+    if(vendeur.lydia){
+      ly.href = vendeur.lydia;
+    } else if(vendeur.lydiaTel){
+      ly.href = 'https://lydia-app.com';
+      var lyLabel = ly.querySelector('div');
+      var lydiaDest = vendeur.lydiaEmail || vendeur.lydiaTel;
+      if(lyLabel) lyLabel.innerHTML = '<div>Payer par Lydia</div><div style="font-size:10px;opacity:.7">Envoie à : '+lydiaDest+'</div>';
+    }
+  }
+})();
+var VENDEUSE = '33651511861';
+var CONTACT = '33651511861'; // numéro de contact caché
+var DASHBOARD_URL = 'https://dianalivraison.vercel.app/';
+var profil = null;
+var returning = false;
+var lastMsg='';
+var lastMagic='';
+var lastConfirmMsg='';
+var lastClientTel='';
+var lastParrain='';
+var lastParrainTel='';
+var lastParrainSnap='';
+var lastGenre='f';
+var parrGenre='f'; // genre du parrain/marraine (pas du client)
+var lastClientGenre='f';
+
+function setParrGenre(g){
+  parrGenre=g;
+  var bf=document.getElementById('pGenreF');
+  var bm=document.getElementById('pGenreM');
+  if(g==='f'){
+    bf.style.borderColor='var(--rd)';bf.style.background='var(--rs)';bf.style.color='var(--rd)';bf.style.fontWeight='800';
+    bm.style.borderColor='var(--bdr)';bm.style.background='var(--lt)';bm.style.color='var(--k2)';bm.style.fontWeight='700';
+  } else {
+    bm.style.borderColor='var(--rd)';bm.style.background='var(--rs)';bm.style.color='var(--rd)';bm.style.fontWeight='800';
+    bf.style.borderColor='var(--bdr)';bf.style.background='var(--lt)';bf.style.color='var(--k2)';bf.style.fontWeight='700';
+  }
+  // Update texts
+  var pronom=g==='f'?'elle':'lui';
+  var pronomMaj=g==='f'?'Elle':'Il';
+  var label=g==='f'?'marraine':'parrain';
+  document.getElementById('parrTxtCredit').innerHTML='🌟 Grâce à toi, '+(g==='f'?'elle':'il')+' gagne <strong>5€ de crédit</strong> sur sa prochaine commande !';
+  document.getElementById('parrTxtGainTitle').textContent='🏆 Ce que ton '+label+' peut gagner ▾';
+  document.getElementById('parrTxtDevenir').innerHTML='💡 Toi aussi tu peux devenir '+label+' !<br>Recommande-nous à tes proches et gagne tes crédits 🚀';
+  document.querySelectorAll('.parr-pronom').forEach(function(el){el.textContent=pronom;});
+  document.querySelectorAll('.parr-pronom-maj').forEach(function(el){el.textContent=pronomMaj;});
+}
+var addrOk = false;
+var editAddrOk = false;
+var PRODS = {CAF:{name:'Café Diana',ico:'☕',price:55},THE:{name:'Thé Diana',ico:'🍵',price:55},GEL:{name:'Gélules Diana',ico:'💊',price:55}};
+
+// Stock — mis à jour depuis JSONbin
+var STOCK = {CAF:999,THE:999,GEL:999,DN:999,SD:999,ST:999,PM:999,GU:999};
+var DAYLIA = [
+  {id:'DN', name:'🌙 Douce Nuit',  ico:'', desc:'Le soir — détox nocturne, sommeil profond'},
+  {id:'SD', name:'✨ Super Detox', ico:'', desc:'Coupe-faim puissant + brûle-graisse — action double !'},
+  {id:'ST', name:'🍃 Slim Tea',    ico:'', desc:'Matin — brûle-graisse, coupe-faim toute la journée'},
+  {id:'PM', name:'💧 Purify Me',   ico:'', desc:'Purifie l\'organisme de l\'intérieur, élimine les excès, draine et agit sur la perte de poids et les envies de sucre'},
+  {id:'GU', name:'🌟 Skin Glow',   ico:'', desc:'Rétention d\'eau, jambes lourdes, gonflements — purifie, draine et améliore la digestion en profondeur'}
+];
+var dQty = {DN:0,SD:0,ST:0,PM:0,GU:0};
+var modeLiv = 'envoi';
+var modePay = 'especes';
+var modeTransport = 'mondial';
+var modeRelais = 'point';
+
+// Poids en grammes par produit
+var POIDS = {CAF:100, THE:120, GEL:50};
+var POIDS_DAYLIA = 50; // par unité
+
+function calcPoids(){
+  var total = 0;
+  Object.keys(PRODS).forEach(function(id){
+    var el=document.getElementById('p'+id);
+    if(el&&el.classList.contains('on')){
+      var qty=parseInt(document.getElementById('q'+id).value)||1;
+      total += (POIDS[id]||0)*qty;
+    }
+  });
+  total += dTotal() * POIDS_DAYLIA;
+  return total;
+}
+
+function calcFraisEnvoi(){
+  if(modeLiv==='place') return 0;
+  if(modeLiv!=='envoi') return 5;
+  var g = calcPoids();
+  // Tarifs Mondial Relay 2026 (point relais / locker)
+  // Domicile = +2€ sur le tarif point relais
+  var base;
+  if(g<=500)  base=6;
+  else if(g<=1000) base=7;
+  else if(g<=2000) base=8;
+  else if(g<=5000) base=9.5;
+  else base=11.5;
+  if(modeRelais==='domicile') base+=2;
+  return Math.round(base*100)/100;
+}
+
+function setTransport(t){
+  modeTransport='mondial';
+  updateFraisEnvoi();
+}
+
+function updateAdresseDisplay(){
+  var villeEl=document.getElementById('fVille');
+  var cpEl=document.getElementById('fCp');
+  // Envoi domicile → adresse client libre
+  // Envoi point/locker → cacher cardAddr, le champ relais suffit
+  // Remise en main propre → adresse client Marseille
+  // Sur place → adresse fixe, pas de cardAddr
+  var showAddr = (modeLiv==='livraison') || (modeLiv==='envoi' && modeRelais==='domicile');
+  var showPlace = (modeLiv==='place');
+  var envoi = (modeLiv==='envoi');
+  document.getElementById('cardAddr').style.display=showAddr?'block':'none';
+  document.getElementById('placeAddrInfo').style.display=showPlace?'block':'none';
+  if(villeEl){
+    if(envoi && modeRelais==='domicile'){
+      villeEl.readOnly=false;villeEl.value='';villeEl.style.background='';villeEl.style.color='';villeEl.style.cursor='';villeEl.placeholder='Ville';
+      if(cpEl){cpEl.placeholder='Code postal';}
+    } else {
+      villeEl.readOnly=true;villeEl.value='Marseille';villeEl.style.background='var(--gnl)';villeEl.style.color='#1E7E34';villeEl.style.cursor='not-allowed';
+    }
+  }
+}
+
+var genre='f'; // f=femme, m=homme par défaut femme
+
+function setGenre(g){
+  genre=g;
+  var gf=document.getElementById('gFemme');
+  var gm=document.getElementById('gHomme');
+  if(g==='f'){
+    gf.style.borderColor='var(--rd)';gf.style.background='var(--rs)';gf.style.color='var(--rd)';gf.style.fontWeight='800';
+    gm.style.borderColor='var(--bdr)';gm.style.background='var(--lt)';gm.style.color='var(--k2)';gm.style.fontWeight='700';
+  } else {
+    gm.style.borderColor='var(--rd)';gm.style.background='var(--rs)';gm.style.color='var(--rd)';gm.style.fontWeight='800';
+    gf.style.borderColor='var(--bdr)';gf.style.background='var(--lt)';gf.style.color='var(--k2)';gf.style.fontWeight='700';
+  }
+  // Adapter le placeholder du nom
+  var fNom=document.getElementById('fNom');
+  if(fNom)fNom.placeholder=g==='m'?'Mohamed Dupont':'Marie Dupont';
+  // Adapter les messages snap info
+  updateSnapInfo();
+}
+
+function updateSnapInfo(){
+  var e=document.getElementById('infoSnapPlace');
+  if(!e)return;
+  var arrive=genre==='m'?'Je suis arrivé':'Je suis arrivée';
+  e.innerHTML='<div style="font-size:13px;font-weight:800;color:#7A5A00;margin-bottom:10px">👻 Pour info — messages à envoyer sur Snap le jour J</div>'
+    +'<div style="font-size:12px;color:#5A4200;background:rgba(255,255,255,0.7);border-radius:8px;padding:9px;margin-bottom:8px;line-height:1.6">'
+    +'<strong>1️⃣ Avant de partir :</strong><br>'
+    +'"Bonjour ! Je pars récupérer ma commande Diana Detox, je serai là dans 10-15 min 🛵"</div>'
+    +'<div style="font-size:12px;color:#5A4200;background:rgba(255,255,255,0.7);border-radius:8px;padding:9px;line-height:1.6">'
+    +'<strong>2️⃣ Quand tu es sur place :</strong><br>'
+    +'"'+arrive+' ! Je suis devant la Caisse Epargne Place Saint Eugène 13007 :)"</div>';
+}
+
+function updateMondialRelayLink(){}
+
+function setRelais(r){
+  modeRelais=r;
+  ['point','locker','domicile'].forEach(function(v){
+    var el=document.getElementById('r'+v.charAt(0).toUpperCase()+v.slice(1));
+    if(el)el.classList.toggle('on',v===r);
+  });
+  var isDom=r==='domicile';
+  var emailBlock=document.getElementById('relaisEmailBlock');
+  var domBlock=document.getElementById('relaisDomicileBlock');
+  if(emailBlock) emailBlock.style.display=isDom?'none':'block';
+  if(domBlock) domBlock.style.display=isDom?'block':'none';
+  if(isDom){
+    // Forcer affichage cardAddr et cardId pour domicile
+    var cAddr=document.getElementById('cardAddr');
+    var cId=document.getElementById('cardId');
+    if(cAddr)cAddr.style.display='block';
+    if(cId&&cId.style.display==='none')cId.style.display='block';
+    // Copier l'adresse client dans les champs domicile
+    var fa=document.getElementById('fAddr'),fcp=document.getElementById('fCp'),fv=document.getElementById('fVille');
+    var da=document.getElementById('fDomAddr'),dcp=document.getElementById('fDomCp'),dv=document.getElementById('fDomVille');
+    if(fa&&da)da.value=fa.value;
+    if(fcp&&dcp)dcp.value=fcp.value;
+    if(fv&&dv)dv.value=fv.value;
+  } else {
+    // Point/Locker : cacher cardAddr
+    var cAddr2=document.getElementById('cardAddr');
+    if(cAddr2&&modeLiv==='envoi')cAddr2.style.display='none';
+  }
+  updateAdresseDisplay();
+  updateFraisEnvoi();
+}
+
+function setModeLiv(m){
+  modeLiv=m;
+  var map={livraison:'mLiv',place:'mPlace',envoi:'mEnvoi'};
+  Object.keys(map).forEach(function(k){
+    var el=document.getElementById(map[k]);
+    if(el)el.classList.toggle('on',k===m);
+  });
+  // Badge hero
+  var badge=document.getElementById('heroBadge');
+  var prods=getProds();var subCheck=prods.reduce(function(s,p){return s+p.total;},0);var isGratuit=subCheck>=150;
+  if(badge){
+    if(m==='livraison') badge.textContent=isGratuit?'🚚 Livraison GRATUITE 🎉':'🚀 Livraison 5 €';
+    else if(m==='place') badge.textContent='🏠 Récupération gratuite';
+    else badge.textContent=isGratuit?'📦 Envoi GRATUIT 🎉':'📦 Envoi Mondial Relay';
+  }
+  // Ligne livraison dans le total bar
+  var livLine=document.getElementById('livLine');
+  if(livLine){
+    if(m==='place') livLine.style.display='none';
+    else if(m==='livraison'){livLine.style.display='';livLine.querySelector('span:last-child').textContent=isGratuit?'GRATUIT 🎉':'5,00 €';if(isGratuit)livLine.querySelector('span:last-child').style.color='#22C55E';else livLine.querySelector('span:last-child').style.color='';}
+    // envoi: géré par updateFraisEnvoi
+  }
+  // Sous-titre hero
+  var heroSub=document.getElementById('heroSub');
+  if(heroSub){
+    if(m==='envoi') heroSub.textContent='France & Europe · Envoi Mondial Relay';
+    else heroSub.textContent='Marseille uniquement · Paiement à la livraison';
+  }
+  // Ligne légale sous le bouton
+  var legal=document.getElementById('legalLine');
+  if(legal){
+    if(m==='livraison') legal.textContent=isGratuit?'Livraison GRATUITE dès 150€ · Paiement espèces à la livraison':'Livraison 5 € · Paiement espèces à la livraison';
+    else if(m==='place') legal.textContent='Récupération gratuite · Paiement espèces sur place';
+    else legal.textContent=isGratuit?'Envoi GRATUIT dès 150€ · Paiement en ligne':'Envoi Mondial Relay · Paiement en ligne';
+  }
+  // Transporteur Mondial Relay
+  document.getElementById('livreurExtra').style.display=m==='envoi'?'block':'none';
+  // Adresse selon mode + type relais
+  updateAdresseDisplay();
+  // Bandeau 24h
+  document.getElementById('banner24h').style.display=(m==='livraison')?'block':'none';
+  // Reset panel dispo quand mode change
+  document.getElementById('dateSlotPanel').style.display='none';
+  activeDate=null;
+  document.querySelectorAll('#datesGrid .date-btn').forEach(function(b){b.classList.remove('on');});
+  // Disponibilités
+  document.getElementById('cardDispo').style.display=m==='envoi'?'none':'block';
+  var h2Dispo=document.querySelector('#cardDispo .card-hdr h2');
+  if(h2Dispo) h2Dispo.textContent=m==='place'?'Quand prévois-tu de venir ? (optionnel)':'Quand es-tu disponible ?';
+  // Griser aujourd'hui pour livraison à domicile (besoin de s'organiser)
+  var todayChip=document.getElementById('dchip0');
+  if(todayChip){
+    if(m==='livraison'){
+      todayChip.classList.add('disabled');
+      todayChip.onclick=null;
+      todayChip.setAttribute('onclick','');
+      todayChip.style.opacity='.35';
+      todayChip.style.pointerEvents='none';
+      // Si aujourd'hui était sélectionné, le désélectionner
+      if(todayChip.classList.contains('on')){
+        todayChip.classList.remove('on');
+        var dot0=document.getElementById('ddot0');if(dot0)dot0.style.display='none';
+        var v0=todayChip.dataset.v;if(v0&&dispoState[v0])dispoState[v0].slots=[];
+        document.getElementById('dateSlotPanel').style.display='none';
+        activeDate=null;
+      }
+    } else if(todayChip.textContent.indexOf('Fermé')===-1){
+      todayChip.classList.remove('disabled');
+      todayChip.style.opacity='';
+      todayChip.style.pointerEvents='';
+      var v0b=todayChip.dataset.v;
+      todayChip.setAttribute('onclick',"selectDate('"+v0b+"',0)");
+    }
+  }
+  // Note livreur
+  document.getElementById('cardNotes').style.display=(m==='envoi'||m==='place')?'none':'block';
+  var isp=document.getElementById('infoSnapPlace');if(isp)isp.style.display=m==='place'?'block':'none';
+  // Paiement
+  document.getElementById('payOptions').style.display=m==='envoi'?'block':'none';
+  document.getElementById('payEspecesOnly').style.display=m!=='envoi'?'block':'none';
+  if(m!=='envoi'){setModePay('especes');}
+  else if(modePay==='especes'){setModePay('paypal');}
+  updateFraisEnvoi();
+  updateTotal();
+}
+
+var ADRESSE_PLACE = 'Caisse d\'Epargne — Place Saint Eugène, 13007 Marseille';
+
+function updateFraisEnvoi(){
+  var el=document.getElementById('fraisEnvoi');
+  if(!el)return;
+  var prods=getProds();
+  if(modeLiv!=='envoi'||!prods.length){el.style.display='none';return;}
+  var g=calcPoids();
+  var frais=calcFraisEnvoi();
+  el.style.display='block';
+  el.innerHTML='⚖️ Poids estimé : <strong>'+g+'g</strong> → 🚚 Frais d\'envoi : <strong>'+frais+'€</strong>';
+}
+
+function setModePay(m){
+  modePay=m;
+  var map={paypal:'pPay',lydia:'pLyd'};
+  Object.keys(map).forEach(function(k){
+    var el=document.getElementById(map[k]);
+    if(el)el.classList.toggle('on',k===m);
+  });
+  var mkPay=function(label,icon){
+    var msg=encodeURIComponent('Bonjour, je souhaite payer par '+label+'. Pouvez-vous me donner vos coordonnées ?');
+    return '<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px">'+icon+' Pour payer par '+label+', contacte-moi sur WhatsApp :</div>'
+      +'<a href="https://wa.me/'+CONTACT+'?text='+msg+'" style="display:block;text-align:center;background:linear-gradient(135deg,#25D366,#1DA851);color:#fff;border-radius:10px;padding:11px;font-size:14px;font-weight:800;text-decoration:none">💬 Contacter sur WhatsApp</a>';
+  };
+  var infos={
+    paypal: mkPay('PayPal','💳'),
+    lydia:  mkPay('Lydia','📱'),
+  };
+}
+
+async function init() {
+  try { var _p=localStorage.getItem('diana_profile');if(_p){try{profil=JSON.parse(_p);returning=true;}catch(e){}} } catch(e){}
+  document.getElementById('vLoad').style.display='none';
+  document.getElementById('vForm').style.display='block';
+  if(returning){
+    document.getElementById('cardId').style.display='none';
+    document.getElementById('cardAddr').style.display='none'; // will be shown by updateAdresseDisplay
+    document.getElementById('profilCard').style.display='flex';
+    document.getElementById('pNom').textContent=profil.nom;
+    document.getElementById('pSub').textContent=profil.addr+', '+profil.cp+' '+profil.ville;
+    document.getElementById('sProd').textContent='1';
+    document.getElementById('sDispo').textContent='2';
+  }
+  // Charger le stock depuis JSONbin
+  try{
+    var jkey='$2a$10$QwR3ZKDScPi7VtndpScSr.04zeMC.AgOXJcajfyUEXdD7ScoUWHp6';
+    var rs=await fetch('https://api.jsonbin.io/v3/b/69c514b9aa77b81da91fbcc7/latest',{headers:{'X-Master-Key':jkey}});
+    if(rs.ok){var ds=await rs.json();if(ds.record&&ds.record.stock){STOCK=Object.assign(STOCK,ds.record.stock);updateStockDisplay();}}
+  }catch(e){}
+  await buildDates();
+  buildDaylia();
+  setModeLiv('envoi');
+}
+
+function updateStockDisplay(){
+  var stockFaible=false;
+  // Griser les produits en rupture
+  Object.keys(STOCK).forEach(function(id){
+    var el=document.getElementById('p'+id)||document.getElementById('di'+id);
+    if(!el)return;
+    var rupture=STOCK[id]<=0;
+    var faible=STOCK[id]>0&&STOCK[id]<=50;
+    if(rupture){
+      el.style.opacity='0.4';el.style.pointerEvents='none';
+      var nm=el.querySelector('.prod-name,.day-nm');if(nm)nm.innerHTML+=' <span style="font-size:10px;color:#CC0000;font-weight:800">RUPTURE</span>';
+    } else if(faible){
+      stockFaible=true;
+    }
+  });
+  // Bannière urgence si au moins un produit ≤50
+  var b=document.getElementById('bannerUrgence');
+  if(b)b.style.display=stockFaible?'block':'none';
+}
+
+function buildDaylia(){
+  document.getElementById('dayGrid').innerHTML=DAYLIA.map(function(v){
+    return '<div class="day-itm" id="di'+v.id+'"><div class="day-ico">'+v.ico+'</div><div class="day-nm">'+v.name+'</div><div class="day-sub">'+v.desc+'</div>'
+      +'<div class="dctrl"><button class="dbtn" onclick="event.stopPropagation();chDay(\''+v.id+'\',-1)">−</button><span class="dval" id="dv'+v.id+'">0</span><button class="dbtn" onclick="event.stopPropagation();chDay(\''+v.id+'\',1)">+</button></div></div>';
+  }).join('');
+}
+
+function chDay(id,d){
+  dQty[id]=Math.max(0,dQty[id]+d);
+  document.getElementById('dv'+id).textContent=dQty[id];
+  document.getElementById('di'+id).classList.toggle('on',dQty[id]>0);
+  var n=dTotal();
+  document.getElementById('pDAY').classList.toggle('on',n>0);
+  document.getElementById('dayPanel').style.display=n>0?'block':'none';
+  var recap=document.getElementById('dayRecap');
+  if(!n){recap.classList.remove('show');updateTotal();return;}
+  var lines=DAYLIA.filter(function(v){return dQty[v.id]>0;}).map(function(v){return (dQty[v.id]>1?dQty[v.id]+'× ':'')+v.name;}).join(' + ');
+  var promoTxt=hasDiana()?' (20€/pièce avec un Diana !)':'';
+  recap.textContent=lines+' → '+dPrice()+'€'+promoTxt+' 🎁 Filtre offert (1ère commande)';
+  recap.classList.add('show');
+  updateTotal();
+}
+function togDaylia(){var on=document.getElementById('pDAY').classList.contains('on');if(!on){document.getElementById('pDAY').classList.add('on');document.getElementById('dayPanel').style.display='block';}else if(dTotal()===0){document.getElementById('pDAY').classList.remove('on');document.getElementById('dayPanel').style.display='none';}}
+function dTotal(){return Object.values(dQty).reduce(function(s,v){return s+v;},0);}
+function hasDiana(){var has=false;Object.keys(PRODS).forEach(function(id){if(document.getElementById('p'+id).classList.contains('on'))has=true;});return has;}
+function dPrice(){var n=dTotal();if(!n)return 0;if(hasDiana())return n*20;if(n===1)return 25;if(n===2)return 45;if(n===3)return 60;return 60+(n-3)*20;}
+function togProd(id){document.getElementById('p'+id).classList.toggle('on');updateTotal();updateDayliaRecap();}
+function updateDayliaRecap(){
+  var n=dTotal();if(!n)return;
+  var recap=document.getElementById('dayRecap');
+  var lines=DAYLIA.filter(function(v){return dQty[v.id]>0;}).map(function(v){return (dQty[v.id]>1?dQty[v.id]+'× ':'')+v.name;}).join(' + ');
+  var promoTxt=hasDiana()?' (20€/pièce avec un Diana !)':'';
+  recap.textContent=lines+' → '+dPrice()+'€'+promoTxt+' 🎁 Filtre offert (1ère commande)';
+}
+function chQ(id,d){
+  var el=document.getElementById('q'+id);
+  el.value=Math.max(1,Math.min(99,parseInt(el.value)+d));
+  updateTotal(); // recalcule tout avec le bon tarif
+  // Mettre à jour l'affichage du prix unitaire selon volume total
+  var qtyDiana=0;
+  Object.keys(PRODS).forEach(function(k){if(document.getElementById('p'+k).classList.contains('on')){qtyDiana+=parseInt(document.getElementById('q'+k).value)||1;}});
+  var prix=getPrixDiana(qtyDiana);
+  var q=parseInt(el.value)||1;
+  document.getElementById('t'+id).textContent=(prix*q)+'€';
+}
+function getPrixDiana(qtyTotale){
+  if(qtyTotale>=100) return 30;
+  if(qtyTotale>=50) return 35;
+  if(qtyTotale>=15) return 45;
+  return 55;
+}
+function getPrixDaylia(qtyTotale){
+  if(qtyTotale>=100) return 10;
+  if(qtyTotale>=50) return 12;
+  if(qtyTotale>=15) return 15;
+  return null;
+}
+
+function getProds(){
+  var list=[];
+  // Calculer les quantités totales pour les tarifs de gros
+  var qtyDiana=0;
+  Object.keys(PRODS).forEach(function(id){if(document.getElementById('p'+id).classList.contains('on')){qtyDiana+=parseInt(document.getElementById('q'+id).value)||1;}});
+  var qtyDaylia=dTotal();
+  // Prix Diana selon volume
+  var prixDiana=getPrixDiana(qtyDiana);
+  Object.keys(PRODS).forEach(function(id){
+    if(document.getElementById('p'+id).classList.contains('on')){
+      var q=parseInt(document.getElementById('q'+id).value)||1;
+      list.push({name:PRODS[id].name,ico:PRODS[id].ico,price:prixDiana,qty:q,total:prixDiana*q});
+    }
+  });
+  // Prix Daylia selon volume
+  if(qtyDaylia>0){
+    var prixDayliaGros=getPrixDaylia(qtyDaylia);
+    var hasDianaCombo=qtyDiana>0;
+    var names=DAYLIA.filter(function(v){return dQty[v.id]>0;}).map(function(v){return (dQty[v.id]>1?dQty[v.id]+'× ':'')+v.name;}).join(' + ');
+    var totalDaylia;
+    var prixUnit;
+    if(prixDayliaGros){
+      prixUnit=prixDayliaGros;
+      totalDaylia=prixDayliaGros*qtyDaylia;
+    } else if(hasDianaCombo){
+      prixUnit=20;
+      totalDaylia=20*qtyDaylia;
+    } else {
+      prixUnit=dPrice();
+      totalDaylia=dPrice();
+    }
+    list.push({name:'Thé Daylia — '+names,ico:'🍵',price:prixUnit,qty:(prixDayliaGros||hasDianaCombo)?qtyDaylia:1,total:totalDaylia});
+  }
+  return list;
+}
+function updateTotal(){
+  var prods=getProds();var bar=document.getElementById('totalBar');
+  if(!prods.length){bar.classList.remove('show');return;}
+  bar.classList.add('show');
+  var sub=prods.reduce(function(s,p){return s+p.total;},0);
+  var frais=calcFraisEnvoi();
+  // Livraison gratuite à partir de 150€
+  var gratuit = sub>=150;
+  if(gratuit) frais=0;
+  var livLine=document.getElementById('livLine');
+  if(livLine){
+    if(modeLiv==='place'){livLine.style.display='none';}
+    else if(modeLiv==='envoi'){livLine.style.display='none';}
+    else{livLine.style.display='';livLine.querySelector('span:last-child').textContent=gratuit?'GRATUIT 🎉':'5,00 €';if(gratuit)livLine.querySelector('span:last-child').style.color='#22C55E';else livLine.querySelector('span:last-child').style.color='';}
+  }
+  // Badge tarif gros
+  var qtyDiana=0;Object.keys(PRODS).forEach(function(id){if(document.getElementById('p'+id).classList.contains('on')){qtyDiana+=parseInt(document.getElementById('q'+id).value)||1;}});
+  var qtyDaylia=dTotal();
+  var badges='';
+  if(gratuit) badges+='<div style="background:linear-gradient(135deg,#22C55E,#15803D);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;text-align:center;animation:blink-gratuit 1.5s ease-in-out infinite">🚚 LIVRAISON GRATUITE — à partir de 150€ !</div>';
+  if(qtyDiana>=100||qtyDaylia>=100) badges+='<div style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#7A4F00;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:900;margin-bottom:8px;text-align:center">🏆 TARIF GROSSISTE 100+ — Diana 30€ · Daylia 10€/u</div>';
+  else if(qtyDiana>=50||qtyDaylia>=50) badges+='<div style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#7A4F00;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:900;margin-bottom:8px;text-align:center">🏆 TARIF GROSSISTE 50+ — Diana 35€ · Daylia 12€/u</div>';
+  else if(qtyDiana>=15||qtyDaylia>=15) badges+='<div style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);color:#2E7D32;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:900;margin-bottom:8px;text-align:center">💼 TARIF REVENDEUR 15+ — Diana 45€ · Daylia 15€/u</div>';
+  // Afficher/cacher les hints de prix gros
+  var showGros=(qtyDiana+qtyDaylia)>=15;
+  document.querySelectorAll('.prix-gros').forEach(function(el){el.style.display=showGros?'inline':'none';});
+  document.getElementById('totalLines').innerHTML=badges+prods.map(function(p){return '<div class="tline"><span class="dim">'+p.ico+' '+p.name+(p.qty>1?' ×'+p.qty:'')+'</span><span>'+p.total+' €</span></div>';}).join('');
+  document.getElementById('totalFinal').textContent=(sub+frais).toFixed(2).replace('.',',')+' €';
+  updateFraisEnvoi();
+  updatePayLinks();
+}
+
+function togglePaypal(){
+  var d=document.getElementById('paypalDetails');
+  var arr=document.getElementById('ppArrow');
+  var open=d.style.display==='none';
+  d.style.display=open?'block':'none';
+  if(arr)arr.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+  if(open){
+    // Faire vibrer "Entre proches" 
+    setTimeout(function(){
+      var ep=document.getElementById('entreProches');
+      if(ep){ep.style.animation='none';void ep.offsetWidth;ep.style.animation='vibrer 0.6s ease-in-out 4';}
+    },300);
+  }
+}
+
+function copierSnap(n){
+  var id=typeof n==='string'?'snapMsg'+n:'snapMsg'+n;
+  var el=document.getElementById(id);
+  if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(function(){toast('📋 Message copié ! Colle-le sur Snap 👻');}).catch(function(){toast(el.textContent);});
+}
+
+function continuerVersRecap(){
+  document.getElementById('vSuccess').style.display='block';
+  window.scrollTo(0,0);
+}
+
+function copierEmail(){
+  var email=vendeur?vendeur.paypal:'cifusil@yahoo.fr';
+  navigator.clipboard.writeText(email).then(function(){toast('📋 Email copié !');}).catch(function(){toast(email);});
+}
+
+function updatePayLinks(){
+  var prods=getProds();if(!prods.length)return;
+  var sub=prods.reduce(function(s,p){return s+p.total;},0);
+  var frais=calcFraisEnvoi();
+  var displayEl=document.getElementById('totalFinal');
+  var total=displayEl?displayEl.textContent.replace(',','.').replace(' €','').replace('€','').trim():(sub+frais).toFixed(2);
+  if(isNaN(parseFloat(total)))total=(sub+frais).toFixed(2);
+  // PayPal email dynamique
+  var ppEmail=vendeur?vendeur.paypal:'cifusil@yahoo.fr';
+  var ppDisplay=document.getElementById('paypalEmailDisplay');
+  if(ppDisplay)ppDisplay.textContent=ppEmail;
+  var pp=document.getElementById('btnPaypal');
+  if(pp){
+    pp.href='https://www.paypal.com';
+    var pm=document.getElementById('paypalMontant');
+    if(pm)pm.textContent='Montant : '+total+'€';
+  }
+  var lydiaFrais=Math.floor(parseFloat(total)/50)*2;
+  var lydiaTotal=(parseFloat(total)+lydiaFrais).toFixed(2);
+  var ly=document.getElementById('btnLydia');
+  if(ly){
+    if(vendeur&&vendeur.lydia){
+      ly.href=vendeur.lydia;
+    } else if(vendeur&&vendeur.lydiaTel){
+      ly.href='https://lydia-app.com';
+      var lyLabel=ly.querySelector('div');
+      var lydiaDest=vendeur.lydiaEmail||vendeur.lydiaTel;
+      if(lyLabel)lyLabel.innerHTML='<div>Payer par Lydia</div><div style="font-size:10px;opacity:.7">Envoie à : '+lydiaDest+'</div>';
+    } else {
+      ly.href='https://pay.lydia.me/l?t=sabram0rcs';
+    }
+    var lfi=document.getElementById('lydiaFraisInfo');
+    if(lfi)lfi.textContent=lydiaFrais>0?'Total à payer : '+lydiaTotal+'€ (frais inclus)':'Montant : '+total+'€';
+  }
+}
+function toggleTel2(){var w=document.getElementById('tel2Wrap');var b=document.getElementById('tel2Btn');var open=w.style.display==='none';w.style.display=open?'block':'none';b.textContent=open?'− Supprimer le 2ème contact':'＋ Ajouter un 2ème contact';}
+
+function toH(s){var m=(s||'').match(/(\d+)h(\d*)/);if(!m)return null;var h=parseInt(m[1]);var min=(parseInt(m[2])||0)/60;return (h===0&&min===0)?24:h+min;}
+
+var dispoState={};
+var activeDate=null;
+var dispoTab=0;
+var dispoDateIdx={};
+
+async function buildDates(){
+  var g=document.getElementById('datesGrid');
+  var jj=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  var mm=['jan.','fév.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+  var jf={semaine:[],dates:[]};
+  var jbin='69c514b9aa77b81da91fbcc7';
+  var jkey='$2a$10$QwR3ZKDScPi7VtndpScSr.04zeMC.AgOXJcajfyUEXdD7ScoUWHp6';
+  // JSONbin EN PREMIER — source de vérité
+  try{
+    var r=await fetch('https://api.jsonbin.io/v3/b/'+jbin+'/latest',{headers:{'X-Master-Key':jkey}});
+    if(r.ok){var d2=await r.json();if(d2.record&&d2.record.joursFermes){jf=d2.record.joursFermes;localStorage.setItem('diana_joursfermes',JSON.stringify(jf));}}
+  }catch(e){
+    // Fallback localStorage si pas de réseau
+    try{var s=localStorage.getItem('diana_joursfermes');if(s)jf=JSON.parse(s);}catch(e2){}
+  }
+  var h='';
+  dispoState={};dispoDateIdx={};
+  for(var i=0;i<10;i++){
+    var d=new Date();d.setDate(d.getDate()+i);
+    var lbl=i===0?"Auj'":i===1?'Dem.':jj[d.getDay()];
+    var val=jj[d.getDay()]+' '+d.getDate()+' '+mm[d.getMonth()];
+    var dateStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    var isClosed=(jf.semaine||[]).indexOf(d.getDay())!==-1||(jf.dates||[]).indexOf(dateStr)!==-1;
+    dispoState[val]={slots:[],de:'',ju:''};
+    dispoDateIdx[val]=i;
+    h+='<div class="date-btn'+(isClosed?' disabled':'')+'" id="dchip'+i+'" data-v="'+val+'" data-i="'+i+'"'+(isClosed?'':' onclick="selectDate(\''+val+'\','+i+')"')+'>'
+      +'<div class="dday">'+lbl+'</div><div class="dnum">'+d.getDate()+'</div><div class="dmois">'+mm[d.getMonth()]+'</div>'
+      +(isClosed?'<div style="font-size:9px;color:var(--re,#EF4444);font-weight:800">Fermé</div>':'<div id="ddot'+i+'" style="display:none;width:6px;height:6px;background:var(--rd);border-radius:50%;margin:2px auto 0"></div>')
+      +'</div>';
+  }
+  g.innerHTML=h;
+}
+
+function selectDate(val,idx){
+  if(modeLiv==='place'){
+    // Effacer les créneaux de toutes les autres dates
+    Object.keys(dispoState).forEach(function(k){
+      if(k!==val) dispoState[k].slots=[];
+    });
+    document.querySelectorAll('#datesGrid .date-btn').forEach(function(b){
+      if(b.dataset.v!==val){b.classList.remove('on');var dot=document.getElementById('ddot'+b.dataset.i);if(dot)dot.style.display='none';}
+    });
+  }
+  openDatePanel(val,idx);
+}
+
+function openDatePanel(val,idx){
+  if(modeLiv==='place'){
+    // Sur place : une seule date sélectionnable
+    activeDate=val;
+    document.querySelectorAll('#datesGrid .date-btn').forEach(function(b){b.classList.toggle('on',b.dataset.v===val);});
+    document.getElementById('dateSlotTitle').textContent='📅 '+val+' — Choisis ton créneau de 30 min';
+    // Cacher absolument tout sauf dm30min
+    document.getElementById('dateSlotPanel').style.display='block';
+    document.getElementById('dispoTabsWrap').style.display='none';
+    document.getElementById('dispoHint').style.display='none';
+    ['dm0','dm1','dm2','dm3'].forEach(function(id){document.getElementById(id).style.display='none';});
+    document.getElementById('dm30min').style.display='grid';
+    document.getElementById('errSlots').style.display='none';
+    // Marquer le créneau déjà sélectionné si existant
+    var st=dispoState[val];
+    document.querySelectorAll('#dm30min .slot2').forEach(function(el){
+      el.classList.toggle('on', st.slots.indexOf(el.dataset.v)!==-1);
+    });
+    // Griser les créneaux passés pour aujourd'hui (sur place)
+    updatePastSlotsForDate(idx===0);
+    return;
+  }
+  if(activeDate===val){
+    activeDate=null;
+    document.getElementById('dateSlotPanel').style.display='none';
+    document.querySelectorAll('#datesGrid .date-btn').forEach(function(b){b.classList.remove('on');});
+    return;
+  }
+  activeDate=val;
+  document.querySelectorAll('#datesGrid .date-btn').forEach(function(b){b.classList.toggle('on',b.dataset.v===val);});
+  document.getElementById('dateSlotTitle').textContent='📅 '+val;
+  document.getElementById('dispoTabsWrap').style.display='flex';
+  document.getElementById('dispoHint').style.display='block';
+  document.getElementById('dm30min').style.display='none';
+  var st=dispoState[val];
+  document.querySelectorAll('#dm0 .slot,#dm1 .slot2,#dm2 .date-btn').forEach(function(el){
+    el.classList.toggle('on',st.slots.indexOf(el.dataset.v)!==-1);
+  });
+  document.getElementById('fDe').value=st.de||'';
+  document.getElementById('fJusqua').value=st.ju||'';
+  document.getElementById('heureErreur').style.display='none';
+  updatePastSlotsForDate(idx===0);
+  setDispoTab(dispoTab);
+  document.getElementById('dateSlotPanel').style.display='block';
+}
+
+function updatePastSlotsForDate(isToday){
+  document.querySelectorAll('#dm0 .slot,#dm1 .slot2,#dm2 .date-btn,#dm30min .slot2').forEach(function(el){el.classList.remove('disabled');});
+  if(!isToday)return;
+  var now=new Date();var hNow=now.getHours()+now.getMinutes()/60;
+  var hMin=hNow+1; // minimum 1h dans le futur
+  // Grands créneaux (Matin/Midi/Après-midi/Soir)
+  var m0start={'Matin (8h-12h)':8,'Midi (12h-14h)':12,'Après-midi (14h-18h)':14,'Soir (18h-21h)':18,'Soirée (21h-00h)':21};
+  document.querySelectorAll('#dm0 .slot').forEach(function(el){
+    var start=m0start[el.dataset.v];
+    var past=start!==undefined&&hMin>=start+1;
+    var m0end={'Matin (8h-12h)':12,'Midi (12h-14h)':14,'Après-midi (14h-18h)':18,'Soir (18h-21h)':21,'Soirée (21h-00h)':24};
+    var end=m0end[el.dataset.v];
+    past=end&&end!==24&&hMin>=end;
+    el.classList.toggle('disabled',past);if(past)el.classList.remove('on');
+  });
+  // Créneaux 30 min (livraison normale)
+  document.querySelectorAll('#dm1 .slot2').forEach(function(el){
+    var parts=(el.dataset.v||'').split('-');
+    var startH=toH(parts[0]||'');
+    var past=startH!==null&&startH!==24&&hMin>=startH;
+    el.classList.toggle('disabled',past);if(past)el.classList.remove('on');
+  });
+  // Créneaux 30 min (sur place)
+  document.querySelectorAll('#dm30min .slot2').forEach(function(el){
+    var parts=(el.dataset.v||'').split('-');
+    var startH=toH(parts[0]||'');
+    var past=startH!==null&&startH!==24&&hMin>=startH;
+    el.classList.toggle('disabled',past);if(past)el.classList.remove('on');
+  });
+  // Horaire libre
+  document.querySelectorAll('#dm2 .date-btn[data-v]').forEach(function(el){
+    var hv=toH(el.dataset.v);
+    var past=hv!==null&&hMin>=hv;
+    el.classList.toggle('disabled',past);if(past)el.classList.remove('on');
+  });
+}
+
+function setDispoTab(t){
+  dispoTab=t;
+  document.querySelectorAll('#tsb0,#tsb1,#tsb2,#tsb3').forEach(function(b,i){b.classList.toggle('on',i===t);});
+  document.getElementById('dm0').style.display=t===0?'block':'none';
+  document.getElementById('dm1').style.display=t===1?'grid':'none';
+  document.getElementById('dm2').style.display=t===2?'grid':'none';
+  document.getElementById('dm3').style.display=t===3?'block':'none';
+}
+
+function toggleDispoSlot(el){
+  if(!activeDate)return;
+  if(el.classList.contains('disabled'))return;
+  var v=el.dataset.v;
+  var arr=dispoState[activeDate].slots;
+  if(modeLiv==='place'){
+    // Un seul créneau autorisé
+    document.querySelectorAll('#dm30min .slot2').forEach(function(s){s.classList.remove('on');});
+    dispoState[activeDate].slots=[v];
+    el.classList.add('on');
+  } else {
+    var x=arr.indexOf(v);
+    if(x===-1)arr.push(v);else arr.splice(x,1);
+    el.classList.toggle('on',dispoState[activeDate].slots.indexOf(v)!==-1);
+  }
+  document.getElementById('errSlots').style.display='none';
+  updateDateDot(activeDate);
+}
+
+function saveLibre(){
+  if(!activeDate)return;
+  var de=document.getElementById('fDe').value;
+  var ju=document.getElementById('fJusqua').value;
+  dispoState[activeDate].de=de;
+  dispoState[activeDate].ju=ju;
+  var toMin=function(s){var p=(s||'').replace('h',':').split(':');var h=parseInt(p[0]);var m=parseInt(p[1])||0;return(h===0&&m===0)?1440:h*60+m;};
+  var err=document.getElementById('heureErreur');
+  if(de&&ju&&de!='--'&&ju!='--'){err.style.display=toMin(ju)<=toMin(de)?'block':'none';}else{err.style.display='none';}
+  updateDateDot(activeDate);
+}
+
+function updateDateDot(val){
+  var idx=dispoDateIdx[val];
+  if(idx===undefined)return;
+  var st=dispoState[val];
+  var has=st.slots.length>0||(st.de&&st.de!='--')||(st.ju&&st.ju!='--');
+  var dot=document.getElementById('ddot'+idx);
+  if(dot)dot.style.display=has?'block':'none';
+}
+
+function getDispoData(){
+  var res=[];
+  Object.keys(dispoState).forEach(function(val){
+    var st=dispoState[val],parts=[];
+    if(st.slots.length)parts=parts.concat(st.slots);
+    if(st.de&&st.de!='--'&&st.ju&&st.ju!='--')parts.push(st.de+' – '+st.ju);
+    else if(st.de&&st.de!='--')parts.push('À partir de '+st.de);
+    else if(st.ju&&st.ju!='--')parts.push("Jusqu'à "+st.ju);
+    if(parts.length)res.push({date:val,slots:parts});
+  });
+  return res;
+}
+
+var addrT,editT;
+function onAddr(v){if(addrOk)return;clearTimeout(addrT);if(!v||v.length<3){document.getElementById('aSug').style.display='none';return;}addrT=setTimeout(function(){fetchAddrSug(v,false);},250);}
+function onEditAddr(v){if(editAddrOk)return;clearTimeout(editT);if(!v||v.length<3){document.getElementById('eSug').style.display='none';return;}editT=setTimeout(function(){fetchAddrSug(v,true);},250);}
+function resetAddr(){['fAddr','fCp'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('aOk').classList.remove('show');addrOk=false;}
+function resetEditAddr(){['eAddr','eCp'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('eOk').classList.remove('show');editAddrOk=false;}
+function fetchAddrSug(q,isEdit){
+  var sugId=isEdit?'eSug':'aSug',addrId=isEdit?'eAddr':'fAddr',cpId=isEdit?'eCp':'fCp',okId=isEdit?'eOk':'aOk',okTxtId=isEdit?'eOkTxt':'aOkTxt';
+  var sug=document.getElementById(sugId);
+  fetch('https://api-adresse.data.gouv.fr/search/?q='+encodeURIComponent(q)+'&limit=6&autocomplete=1')
+    .then(function(r){return r.json();}).then(function(d){
+      var items=d.features||[];if(!items.length){sug.style.display='none';return;}
+      sug.innerHTML='';
+      items.forEach(function(f){var p=f.properties;var div=document.createElement('div');div.className='asug-item';div.innerHTML='<div class="asug-main">'+(p.name||'')+'</div><div class="asug-sub">'+(p.postcode||'')+' '+(p.city||'')+'</div>';div.addEventListener('click',function(){
+        // Garder le numéro de rue saisi par l'utilisateur
+        var saisi=document.getElementById(addrId).value.trim();
+        var numMatch=saisi.match(/^(\d+\s*(?:bis|ter|quater)?)/i);
+        var num=numMatch?numMatch[1].trim()+' ':'';
+        var rue=p.name||'';
+        // Si la suggestion contient déjà un numéro, l'utiliser tel quel
+        var addrFinal=rue.match(/^\d/)?(num?num+rue.replace(/^\d+\s*/,''):rue):(num+rue);
+        document.getElementById(addrId).value=addrFinal;
+        document.getElementById(cpId).value=p.postcode||'';document.getElementById(okTxtId).textContent=p.label||'';document.getElementById(okId).classList.add('show');sug.style.display='none';if(isEdit)editAddrOk=true;else addrOk=true;});sug.appendChild(div);});
+      sug.style.display='block';
+    }).catch(function(){});
+}
+function onCp(val){
+  if(val.length===5){fetch('https://api-adresse.data.gouv.fr/search/?q='+val+'&type=municipality&limit=1').then(function(r){return r.json();}).then(function(d){}).catch(function(){});}
+}
+document.addEventListener('click',function(e){if(!e.target.closest('.awrap')){document.getElementById('aSug').style.display='none';document.getElementById('eSug').style.display='none';}});
+
+function openEdit(){
+  document.getElementById('eNom').value=profil.nom;document.getElementById('eSnap').value=profil.snap||'';document.getElementById('eTel').value=profil.tel;
+  document.getElementById('eAddr').value=profil.addr;document.getElementById('eCp').value=profil.cp;document.getElementById('eCompl').value=profil.compl||'';
+  editAddrOk=true;document.getElementById('editOverlay').classList.add('show');
+}
+function closeEdit(){document.getElementById('editOverlay').classList.remove('show');}
+async function saveEdit(){
+  var nom=document.getElementById('eNom').value.trim();var tel=document.getElementById('eTel').value.trim();var addr=document.getElementById('eAddr').value.trim();var cp=document.getElementById('eCp').value.trim();
+  if(!nom||!tel||!addr||!cp){toast('⚠️ Remplis tous les champs');return;}
+  profil={nom,snap:document.getElementById('eSnap').value.trim(),tel,addr,cp,ville:'Marseille',compl:document.getElementById('eCompl').value.trim()};
+  try{localStorage.setItem('diana_profile',JSON.stringify(profil));}catch(e){}
+  document.getElementById('pNom').textContent=nom;document.getElementById('pSub').textContent=addr+', '+cp+' Marseille';
+  closeEdit();toast('✅ Profil mis à jour !');
+}
+
+function clearErr(el){if(el.value.trim()){el.classList.remove('err');var m=document.getElementById('err-'+el.id);if(m)m.classList.remove('show');}}
+function showErr(id){
+  var el=document.getElementById(id);if(!el)return;
+  el.classList.add('err');
+  var m=document.getElementById('err-'+id);if(m){m.classList.remove('show');void m.offsetWidth;m.classList.add('show');}
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function orderNum(){var d=new Date();return String(d.getFullYear()).slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0');}
+
+var toastTimer;
+function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},4000);}
+function clearToast(){document.getElementById('toast').classList.remove('show');}
+
+async function handleSubmit(){
+  // 1. Produits
+  var prods=getProds();
+  if(!prods.length){document.getElementById('sProd').closest('.card').scrollIntoView({behavior:'smooth',block:'center'});toast('⚠️ Choisis au moins un produit');return;}
+
+  // 2. Dispo (dates + créneaux liés)
+  var dispoData=getDispoData();
+  if(!dispoData.length && (modeLiv==='livraison'||modeLiv==='place')){
+    document.getElementById('datesGrid').scrollIntoView({behavior:'smooth',block:'center'});
+    toast('⚠️ Choisis au moins une date et un créneau');return;
+  }
+  if(document.getElementById('heureErreur').style.display==='block'){toast('⚠️ Heure de fin avant heure de début !');return;}
+
+  // 5. Infos perso
+  var nom,snap,tel,addr,cp,ville,compl,email;
+  if(returning){
+    nom=profil.nom;snap=profil.snap||'';tel=profil.tel;
+    addr=modeLiv==='place'?ADRESSE_PLACE:(modeLiv==='envoi'&&modeRelais!=='domicile'?
+      (modeRelais==='domicile'?('Livraison domicile — lien envoyé à : '+(document.getElementById('fDomAddr')?document.getElementById('fDomAddr').value.trim():'')):('Mondial Relay — lien envoyé à : '+(document.getElementById('fRelaisEmail')?document.getElementById('fRelaisEmail').value.trim():'')))
+      :profil.addr);
+    cp=profil.cp||'';ville=profil.ville||'Marseille';compl=profil.compl||'';
+    email=profil.email||document.getElementById('fEmail').value.trim();
+    // Valider adresse relais si besoin
+    if(modeLiv==='envoi'){
+      if(modeRelais==='domicile'){
+        var da=document.getElementById('fDomAddr');
+        var dc=document.getElementById('fDomCp');
+        if(da&&!da.value.trim()){showErr('fDomAddr');return;}
+        if(dc&&!dc.value.trim()){showErr('fDomCp');return;}
+      } else {
+        var re2=document.getElementById('fRelaisEmail');
+        if(re2&&!re2.value.trim()){showErr('fRelaisEmail');return;}
+      }
+    }
+  } else {
+    nom=document.getElementById('fNom').value.trim();
+    if(!nom){showErr('fNom');return;}
+    email=document.getElementById('fEmail').value.trim();
+    if(!email){showErr('fEmail');return;}
+    tel=document.getElementById('fTel').value.trim();
+    if(!tel){showErr('fTel');return;}
+    if(modeLiv==='envoi' && modeRelais==='domicile'){
+      var domAddr=document.getElementById('fDomAddr')?document.getElementById('fDomAddr').value.trim():'';
+      var domCp=document.getElementById('fDomCp')?document.getElementById('fDomCp').value.trim():'';
+      var domVille=document.getElementById('fDomVille')?document.getElementById('fDomVille').value.trim():'';
+      if(!domAddr){showErr('fDomAddr');return;}
+      if(!domCp){showErr('fDomCp');return;}
+      if(!domVille){showErr('fDomVille');return;}
+      addr=domAddr+', '+domCp+' '+domVille;
+      cp=domCp;ville=domVille;
+      snap=document.getElementById('fSnap').value.trim();compl='';
+    } else if(modeLiv==='envoi' && modeRelais!=='domicile'){
+      var relaisEmailVal=document.getElementById('fRelaisEmail')?document.getElementById('fRelaisEmail').value.trim():'';
+      if(!relaisEmailVal){showErr('fRelaisEmail');return;}
+      addr='Envoi Mondial Relay — lien à envoyer à : '+relaisEmailVal;
+      cp='';ville='';
+      snap=document.getElementById('fSnap').value.trim();
+      compl='';
+    } else {
+      addr=modeLiv==='place'?ADRESSE_PLACE:document.getElementById('fAddr').value.trim();
+      if(!addr&&modeLiv!=='place'){showErr('fAddr');return;}
+      cp=document.getElementById('fCp').value.trim();
+      if(!cp&&modeLiv!=='place'){showErr('fCp');return;}
+      ville=document.getElementById('fVille').value||'Marseille';
+      snap=document.getElementById('fSnap').value.trim();
+      compl=document.getElementById('fCompl').value.trim();
+    }
+    profil={nom,snap,tel,email,addr,cp,ville,compl:compl||''};
+    try{localStorage.setItem('diana_profile',JSON.stringify(profil));}catch(e){}
+    returning=true;
+  }
+
+  // Snap depuis formulaire
+  var snapField=document.getElementById('fSnap');
+  if(snapField&&snapField.value.trim())snap=snapField.value.trim();
+
+  var tel2='',tel2Nom='';
+  var w=document.getElementById('tel2Wrap');
+  if(w&&w.style.display!=='none'){tel2=document.getElementById('fTel2').value.trim();tel2Nom=document.getElementById('fTel2Nom').value.trim();}
+  var tel2Str=tel2?(tel2Nom?tel2Nom+' : '+tel2:tel2):'';
+  var parrainTel=document.getElementById('fParrainTel').value.trim();
+  var parrainSnap=document.getElementById('fParrainSnap').value.trim();
+  // Parrainage actif si au moins le numéro est rempli
+  var parrainValid=!!parrainTel;
+  if(parrainSnap&&!parrainTel){
+    if(!confirm('⚠️ Pour le parrainage, le numéro de téléphone est obligatoire.\n\nSnap : '+parrainSnap+'\nNuméro : ❌ manquant\n\nContinuer sans parrainage ?')) return;
+    parrainSnap='';
+  }
+  var parrain=parrainValid?parrainTel:'';
+  var parrainFull='';
+  if(parrainTel&&parrainSnap) parrainFull=parrainTel+' / '+parrainSnap;
+  else if(parrainTel) parrainFull=parrainTel;
+  var notes=document.getElementById('fNotes').value.trim();
+  var num=orderNum();
+  var sub=prods.reduce(function(s,p){return s+p.total;},0);
+  var frais=calcFraisEnvoi();
+  // Livraison gratuite à partir de 150€ de produits
+  if(sub>=150) frais=0;
+  var remiseFidel=false;
+  var nbCmdClient=0;
+  try{
+    var jkey2='$2a$10$QwR3ZKDScPi7VtndpScSr.04zeMC.AgOXJcajfyUEXdD7ScoUWHp6';
+    var r11=await fetch('https://api.jsonbin.io/v3/b/69c514b9aa77b81da91fbcc7/latest',{headers:{'X-Master-Key':jkey2}});
+    if(r11.ok){
+      var d11=await r11.json();
+      var allOrders=d11.record.orders||[];
+      var telClean=tel.replace(/\s/g,'').replace(/^0/,'33');
+      nbCmdClient=allOrders.filter(function(o){return (o.tel||'').replace(/\s/g,'').replace(/^0/,'33')===telClean;}).length+1;
+      // Toutes les 5 commandes = frais de port offerts
+      if(nbCmdClient%5===0){remiseFidel=true;frais=0;}
+    }
+  }catch(e){}
+  var total=sub+frais;
+  var dispoStr=dispoData.map(function(d){return d.date+' : '+d.slots.join(', ');}).join('\n');
+  var prodsLines=prods.map(function(p){return p.name+(p.qty>1?' x'+p.qty:'')+' — '+p.total+'€';}).join('\n');
+  var relaisLabels={point:'Point Relais',locker:'Locker',domicile:'Domicile'};
+  var relaisAddr=document.getElementById('fRelaisEmail')?document.getElementById('fRelaisEmail').value.trim():'';
+  var transportStr='Mondial Relay — '+(relaisLabels[modeRelais]||'Point Relais')+(relaisAddr?' → '+relaisAddr:'');
+  var livLabels={livraison:'🛵 Remise en main propre',place:'🏠 Récupération sur place',envoi:'📦 Envoi — '+transportStr};
+  var payLabels={especes:'💵 Espèces',paypal:'💳 PayPal',virement:'🏦 Virement',lydia:'📱 Lydia'};
+  var livStr=livLabels[modeLiv]||modeLiv;
+  var payStr=payLabels[modePay]||modePay;
+  var telWa=tel.replace(/\s/g,'').replace(/^0/,'33');
+  var jj=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  var mm=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  var today=new Date();
+  var todayStr=jj[today.getDay()]+' '+today.getDate()+' '+mm[today.getMonth()];
+  // Utilise la première date de dispo de la cliente, sinon date du jour
+  // Trouver la date de dispo la plus proche (celle avec l'index le plus petit dans la grille)
+  var livraisonStr = todayStr;
+  if(dispoData.length) {
+    var jj2b=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    var mm2b=['jan.','fév.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+    var earliest = null;
+    var earliestDiff = 999;
+    dispoData.forEach(function(d){
+      // Comparer la date dispo avec les 10 prochains jours pour trouver laquelle est la plus proche
+      for(var i=0;i<10;i++){
+        var dd=new Date();dd.setDate(dd.getDate()+i);
+        var val=jj2b[dd.getDay()]+' '+dd.getDate()+' '+mm2b[dd.getMonth()];
+        if(d.date===val && i < earliestDiff){earliestDiff=i;earliest=d.date;}
+      }
+    });
+    livraisonStr = earliest || dispoData[0].date;
+  }
+  var snapInstructions='';
+  if(modeLiv==='place'){
+    snapInstructions='\n\n👻 Quand tu es prête, envoie-moi ces 2 messages sur Snap :\n'
+      +'\n1️⃣ Avant de partir :\n'
+      +'"Bonjour ! Je pars maintenant pour récupérer ma commande. Je serai là dans 10-15 min :)"\n'
+      +'\n2️⃣ Quand tu es devant la Caisse Epargne :\n'
+      +'"'+(genre==='m'?'Je suis arrivé':'Je suis arrivée')+' ! Je suis devant la Caisse Epargne Place Saint Eugène 13007"';
+  }
+  // Compteur fidélité pour le message de confirmation
+  var fideliteMsg='';
+  try{
+    var jkey3='$2a$10$QwR3ZKDScPi7VtndpScSr.04zeMC.AgOXJcajfyUEXdD7ScoUWHp6';
+    var rf=await fetch('https://api.jsonbin.io/v3/b/69c514b9aa77b81da91fbcc7/latest',{headers:{'X-Master-Key':jkey3}});
+    if(rf.ok){
+      var df=await rf.json();
+      var allOrds=df.record.orders||[];
+      var telClean2=tel.replace(/\s/g,'').replace(/^0/,'33');
+      var nbCmd=allOrds.filter(function(o){return (o.tel||'').replace(/\s/g,'').replace(/^0/,'33')===telClean2;}).length+1;
+      var restant=5-(nbCmd%5);
+      if(restant===5) restant=0; // on est pile sur un multiple de 5
+      var cadeauStr=modeLiv==='place'?'tu as -5€':modeLiv==='envoi'?'les frais de port sont offerts':'la livraison est offerte';
+      if(restant===0){
+        var cadeauStr2=modeLiv==='place'?'-5€ sur cette commande':modeLiv==='envoi'?'les frais de port offerts':'la livraison offerte';
+        fideliteMsg='\n\n🎁 C\'est ta '+nbCmd+'ème commande — '+cadeauStr2+' ! Merci pour ta fidélité ❤️';
+      } else if(restant<=3){
+        fideliteMsg='\n\n🎁 Plus que '+restant+' commande'+(restant>1?'s':'')+' et '+cadeauStr+' ! ('+nbCmd+'ème commande)';
+      }
+    }
+  }catch(e){}
+  var creneauStr = dispoData.length ? dispoData.map(function(d){return d.date+' ('+d.slots.join(', ')+')';}).join(', ') : '';
+  // Récap créneaux propre pour message client
+  var rdvStr = '';
+  if(dispoData.length===1){
+    rdvStr = dispoData[0].date+' — '+dispoData[0].slots.join(', ');
+  } else if(dispoData.length>1){
+    rdvStr = dispoData.map(function(d){return d.date+' ('+d.slots.join(', ')+')';}).join('\n');
+  }
+  var confirmMsg;
+  if(modeLiv==='envoi'){
+    confirmMsg='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 Produits : '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 Total : '+total.toFixed(2)+'€\n\nSi ta commande est réglée, tu vas recevoir un lien par mail pour choisir ton point Mondial Relay (locker ou relais).\n\nMerci de me renvoyer un message sur WhatsApp une fois que c\'est fait 🙏'+fideliteMsg;
+  } else if(modeLiv==='place'){
+    confirmMsg='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 Produits : '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 Total : '+total.toFixed(2)+'€'+(rdvStr?'\n\n📅 Rendez-vous le '+rdvStr+' pour la récupération.':'')+'\n📍 Caisse d\'Epargne — Place Saint Eugène, 13007 Marseille\n\n⚠️ En cas de changement, merci de me prévenir le plus tôt possible par WhatsApp. À bientôt !'+fideliteMsg+snapInstructions;
+  } else {
+    confirmMsg='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 Produits : '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 Total : '+total.toFixed(2)+'€'+(rdvStr?'\n\n📅 Rendez-vous le '+rdvStr+' pour la livraison.':'')+'\n📍 '+addr+(cp?', '+cp:'')+(ville?' '+ville:'')+'\n\n⚠️ En cas de changement, merci de me prévenir le plus tôt possible par WhatsApp. À bientôt !'+fideliteMsg;
+  }
+  var filtre = dTotal() > 0;
+  var email = document.getElementById('fEmail').value.trim();
+  var oAddr;
+  if(modeLiv==='envoi' && modeRelais!=='domicile'){
+    oAddr = 'Mondial Relay — '+email;
+  } else {
+    oAddr = addr+', '+cp+' '+ville+(compl?' ('+compl+')':'');
+  }
+  var oData={id:Date.now().toString(),num,nom,snap,tel,email,addr:oAddr,prods:prods.map(function(p){return p.name;}).join(', '),slot:dispoStr,total,filtre:filtre,modeLiv:modeLiv,modePay:modePay,vendeur:vendeur?vendeur.nom:'',parrain:parrain,parrainTel:parrainTel,parrainSnap:parrainSnap,genre:genre,parrGenre:parrGenre,nbCmd:nbCmdClient,livGratuite:remiseFidel||(sub>=150)};
+  var magic=DASHBOARD_URL+'#add='+btoa(unescape(encodeURIComponent(JSON.stringify(oData))));
+  lastMagic=magic;
+  lastConfirmMsg=confirmMsg;
+  lastClientTel=tel.replace(/\s/g,'').replace(/^0/,'33');
+
+  // Construire le mode livraison détaillé
+  var livDetail = livStr;
+  if(modeLiv==='envoi'){
+    var relaisType=(modeRelais==='locker'?'📦 LOCKER':modeRelais==='domicile'?'🏠 DOMICILE':'🏪 POINT RELAIS');
+    livDetail='📦 *Envoi Mondial Relay — '+relaisType+'*';
+  } else if(modeLiv==='place'){
+    livDetail='🏠 *Récupération sur place*';
+  } else {
+    livDetail='🛵 *Remise en main propre*';
+  }
+  // Adresse nettoyée pour envoi
+  var addrLine = modeLiv==='envoi'
+    ? (modeRelais==='domicile' ? addr : (relaisAddr?'📍 Email Mondial Relay : '+relaisAddr:''))
+    : '• Adresse : '+addr+(cp?', '+cp:'')+(ville?' '+ville:'')+(compl?' ('+compl+')':'');
+
+  lastMsg=''
+    +'👉 Confirmer : https://wa.me/'+tel.replace(/\s/g,'').replace(/^0/,'33')+'\n\n'
+    +'📦 *COMMANDE #'+num+'*\n'
+    +(vendeur?'🏪 '+vendeur.nom+'\n':'')
+    +'\n👤 '+nom+'\n'
+    +'📞 '+tel+'\n'
+    +(email?'📧 '+email+'\n':'')
+    +(snap?'👻 '+snap+'\n':'')
+    +addrLine+'\n'
+    +'\n🛍️ '+prods.map(function(p){return p.qty+'× '+p.name+' — '+p.total+'€';}).join(' · ')+'\n'
+    +(frais?'📦 '+(modeLiv==='envoi'?'Port':'Livr.')+' '+frais+'€\n':'')
+    +(sub>=150&&modeLiv!=='place'?'🚚 Livr. GRATUITE\n':'')
+    +(remiseFidel&&sub<150?'🎁 Port offert (fidélité)\n':'')
+    +'💰 *'+total.toFixed(2)+'€*\n'
+    +'\n'+livDetail+'\n'
+    +'💳 '+payStr+'\n'
+    +(modeLiv!=='envoi'&&dispoData.length?'\n📅 '+dispoData.map(function(d){return d.date+' : '+d.slots.join(', ');}).join(' · ')+'\n':'')
+    +(notes?'📝 '+notes+'\n':'')
+    +(parrain?'🎁 '+(parrGenre==='m'?'Parrain':'Marraine')+' : '+parrainFull+'\n':'');
+
+  var dispoHtml=dispoData.map(function(d){
+    var tags=d.slots.map(function(s){return '<span class="dispo-tag">'+s+'</span>';}).join('');
+    return '<div class="dispo-block"><div class="dispo-date">📅 '+d.date+'</div><div class="dispo-slots">'+tags+'</div></div>';
+  }).join('');
+
+  document.getElementById('ficheBody').innerHTML=[
+    ['🔖 Commande','#'+num],
+    vendeur?['🏪 Vendeur',vendeur.nom]:null,
+    (vendeur && vendeur.site ? ['🌐 Site','<a href="'+vendeur.site+'" target="_blank" style="color:var(--rd);font-weight:800">'+vendeur.site.replace('https://www.','')+'</a>'] : (!vendeur ? ['🌐 Site','<a href="https://www.diana-detox.com" target="_blank" style="color:var(--rd);font-weight:800">www.diana-detox.com</a>'] : null)),
+    ['👤 Nom',nom],
+    email?['📧 Email',email]:null,
+    ['👻 Réseau',snap||'❌ Pas de pseudo renseigné'],
+    ['📞 Tél',tel+(tel2Str?'<br>'+tel2Str:'')],
+    ['📍 Adresse',addr+', '+cp+' '+ville+(compl?' — '+compl:'')],
+    ['🛍️ Produits',prods.map(function(p){return p.qty+'× '+p.name;}).join('<br>')],
+    ['💰 Total','<strong>'+total.toFixed(2)+'€</strong>'+(frais?' (dont '+frais+'€ envoi)':remiseFidel?' <span style="color:#22C55E;font-weight:900">🎁 FRAIS OFFERTS (fidélité)</span>':sub>=150?' <span style="color:#22C55E;font-weight:900">🚚 LIVR. GRATUITE ≥150€</span>':'')],
+    nbCmdClient?['⭐ Fidélité',nbCmdClient+'ème commande'+(remiseFidel?' — frais offerts !':'')]:null,
+    ['🚚 Mode',livStr],
+    ['💳 Paiement',payStr],
+    notes?['📝 Notes',notes]:null,
+    parrain?['🎁 '+(parrGenre==='m'?'Parrain':'Marraine'),parrainFull]:null
+  ].filter(Boolean).map(function(r){return '<div class="frow"><span class="flbl">'+r[0]+'</span><span class="fval">'+r[1]+'</span></div>';}).join('')
+  +'<div style="padding:8px 0;border-top:1px solid var(--ms)"><div style="font-size:11px;font-weight:700;color:var(--k2);margin-bottom:6px">📅 DISPONIBILITÉS</div>'+dispoHtml+'</div>'
+  ;
+
+  var waUrl='https://wa.me/'+LIVREUR+'?text='+encodeURIComponent(lastMsg);
+  document.getElementById('waBtn').href=waUrl;
+  document.getElementById('vForm').style.display='none';
+  document.getElementById('vSuccess').style.display='block';
+  // Parrainage section
+  var parrSec=document.getElementById('parrainSection');
+  if(parrain){
+    parrSec.style.display='block';
+    document.getElementById('parrainInfo').innerHTML='🎁 '+(parrGenre==='m'?'Parrain':'Marraine')+' : <strong>'+parrainFull+'</strong>'
+      +(parrainTel?'<br>📞 '+parrainTel:'')+(parrainSnap?'<br>👻 '+parrainSnap:'');
+    document.getElementById('notifMarrBtn').textContent='💬 Notifier '+(parrGenre==='m'?'le parrain':'la marraine')+' sur WhatsApp';
+    lastParrain=parrain;
+    lastParrainTel=parrainTel;
+    lastParrainSnap=parrainSnap;
+    lastGenre=parrGenre;
+    lastClientGenre=genre;
+  } else {
+    parrSec.style.display='none';
+    lastParrain='';
+  }
+  window.scrollTo(0,0);
+}
+
+function openDash(){if(lastMagic)window.open(lastMagic,'_blank');}
+
+function copierMsgLivreur(){
+  if(!lastMsg){toast('⚠️ Aucun message');return;}
+  navigator.clipboard.writeText(lastMsg).then(function(){toast('📋 Message livreur copié !');}).catch(function(){toast(lastMsg.slice(0,50)+'…');});
+}
+
+function sendConfirmWA(){
+  if(!lastConfirmMsg||!lastClientTel){toast('⚠️ Pas de message ou pas de numéro');return;}
+  window.open('https://wa.me/'+lastClientTel+'?text='+encodeURIComponent(lastConfirmMsg),'_blank');
+}
+
+function copierConfirm(){
+  if(!lastConfirmMsg){toast('⚠️ Aucun message de confirmation');return;}
+  navigator.clipboard.writeText(lastConfirmMsg).then(function(){toast('📋 Confirmation copiée !');}).catch(function(){toast(lastConfirmMsg.slice(0,50)+'…');});
+}
+
+function notifMarraineRecap(){
+  if(!lastParrainTel&&!lastParrainSnap){toast('⚠️ Pas de numéro ni snap du parrain');return;}
+  var qui=lastClientGenre==='m'?'Un ami':'Une amie';
+  var msg='🎁 Bonne nouvelle !\n\n'+qui+' vient de passer commande grâce à toi → +5€ sur ta cagnotte parrainage !\n\nContinue à partager ton lien de commande — à chaque personne qui commande, tu gagnes 5€ 🚀\n\nMerci pour ta confiance ❤️';
+  if(lastParrainTel){
+    var tel=lastParrainTel.replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
+    window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msg),'_blank');
+  } else {
+    navigator.clipboard.writeText(msg).then(function(){toast('📋 Message copié ! Colle-le sur Snap à '+lastParrainSnap+' 👻');}).catch(function(){toast(msg.slice(0,50)+'…');});
+  }
+}
+
+function goBack(){
+  document.getElementById('vSuccess').style.display='none';
+  document.getElementById('vForm').style.display='block';
+  // Toujours afficher les champs pour permettre la modification
+  if(profil){
+    document.getElementById('cardId').style.display='block';
+    document.getElementById('cardAddr').style.display='block';
+    document.getElementById('profilCard').style.display='none';
+    document.getElementById('fNom').value=profil.nom||'';
+    document.getElementById('fSnap').value=profil.snap||'';
+    document.getElementById('fTel').value=profil.tel||'';
+    document.getElementById('fAddr').value=profil.addr||'';
+    document.getElementById('fCp').value=profil.cp||'';
+    document.getElementById('fCompl').value=profil.compl||'';
+    returning=false;
+  }
+  window.scrollTo(0,0);
+}
+
+async function newOrder(){
+  Object.keys(PRODS).forEach(function(id){document.getElementById('p'+id).classList.remove('on');document.getElementById('q'+id).value=1;document.getElementById('t'+id).textContent='55€';});
+  Object.keys(dQty).forEach(function(k){dQty[k]=0;});
+  document.getElementById('pDAY').classList.remove('on');document.getElementById('dayPanel').style.display='none';document.getElementById('dayRecap').classList.remove('show');
+  buildDaylia();
+  await buildDates();
+  activeDate=null;
+  document.getElementById('dateSlotPanel').style.display='none';
+  setModeLiv('envoi');
+  setModePay('especes');
+  setTransport('mondial');
+  setRelais('point');
+  document.getElementById('cardDispo').style.display='block';
+  document.getElementById('cardNotes').style.display='block';
+  document.getElementById('fNotes').value='';document.getElementById('fParrain').value='';document.getElementById('fParrainTel').value='';document.getElementById('fParrainSnap').value='';document.getElementById('totalBar').classList.remove('show');
+  parrGenre='f';setParrGenre('f');
+  document.getElementById('vSuccess').style.display='none';document.getElementById('vForm').style.display='block';
+  window.scrollTo(0,0);
+}
+
+init();
+
+// ── FICHE PRODUIT ──────────────────────────────────────────
+var FICHES = {
+  GEL: {
+    titre: '💊 Gélules Diana Detox',
+    sous: 'Complément alimentaire minceur — 30 kapsül',
+    sections: [
+      {t:'✅ Pourquoi les Gélules ?', c:'<p><span class="fiche-check">✓</span>Stimule le métabolisme et accélère la combustion des graisses</p><p><span class="fiche-check">✓</span>Contrôle les envies de sucre et les grignotages</p><p><span class="fiche-check">✓</span>Coupe-faim naturel puissant</p><p><span class="fiche-check">✓</span>Résultats visibles dès les premières semaines d’après les retours clientes</p><p style="background:#FFF0F3;border-radius:8px;padding:10px;margin-top:8px;font-size:12px;color:var(--rd)"><strong>Protocole 3 mois :</strong><br>• 1er mois → action sur la rétention d’eau<br>• 2e et 3e mois → brûle-graisse en profondeur</p>'},
+      {t:'🌿 11 ingrédients actifs', c:'<ul style="padding-left:18px;margin:0"><li>Écorce de Gunpowder Tree</li><li>L-carnitine</li><li>Cardamome</li><li>Gingembre</li><li>Garcinia</li><li>Lepidium</li><li>Galanga</li><li>Fenouil</li><li>Cannelle</li><li>Clou de girofle</li><li>Aneth</li></ul>'},
+      {t:'📋 Utilisation', c:'<p><strong>1 gélule par jour</strong> — à jeun, 1 heure avant le petit-déjeuner, avec un grand verre d’eau.</p><p>⚠️ Ne jamais dépasser 1 gélule/jour — formule très concentrée.</p><p style="background:#E3F2FD;border-radius:8px;padding:10px;margin-top:8px;font-size:12px;color:#1565C0"><strong>💧 Hydratation = clé du succès !</strong><br>Plus tu bois d’eau, mieux les actifs se diffusent dans ton corps. Vise 2 à 3 litres par jour minimum.</p><p style="background:#E8F5E9;border-radius:8px;padding:10px;margin-top:8px;font-size:12px;color:#2E7D32"><strong>🌿 Astuce 100% efficacité :</strong><br>Utilise les thés Daylia EN MÊME TEMPS que ta cure Diana (tout le mois) pour une efficacité maximale.<br>Puis pendant la pause de 10 jours entre les cures Diana, continue les Daylia : ils maintiennent ton effet coupe-faim, poursuivent ta progression de perte de poids et t’évitent l’effet yo-yo. C’est là que les clientes obtiennent les meilleurs résultats !</p><p style="background:#E8F5E9;border-radius:8px;padding:10px;margin-top:10px;font-size:12px;color:#2E7D32"><strong>Recommandations pour de meilleurs résultats :</strong><br>• Éviter de boire plus de 2 tasses de café par jour<br>• Boire 2 à 3 litres d’eau par jour<br>• Manger équilibré<br>• Éviter les boissons sucrées<br>• Une activité sportive favorise les résultats</p>'},
+      {t:'🚫 Contre-indications', c:'<p>Contre-indiqué aux :</p><ul style="padding-left:18px;margin:6px 0"><li>Femmes enceintes ou allaitantes</li><li>Personnes diabétiques</li><li>Maladies cardiaques</li><li>Hypertension</li><li>Maladie du foie</li><li>Personnes sous antidépresseurs</li><li>Insuffisance rénale</li><li>Tout traitement médical en cours</li><li>Moins de 18 ans</li><li>Déshydratation</li></ul><p style="background:#FFF8E1;border-radius:8px;padding:10px;margin-top:10px;font-size:12px;color:#7A5A00">⚠️ D’après de rares retours clientes, certains médicaments courants pourraient atténuer l’effet coupe-faim. Tes traitements médicaux restent TOUJOURS prioritaires.</p>'}
+    ]
+  },
+  THE: {
+    titre: '🍵 Thé Diana Detox',
+    sous: '1 boîte = 60 sachets = 1 mois de cure',
+    sections: [
+      {t:'✅ Pourquoi le Thé Diana ?', c:'<p><span class="fiche-check">✓</span>Triple action minceur + énergie</p><p><span class="fiche-check">✓</span>Réduit l’appétit et les fringales</p><p><span class="fiche-check">✓</span>Satiété durable pendant les repas</p><p><span class="fiche-check">✓</span>Goût framboise agréable, sans amertume, pas d’effet laxatif</p><p><span class="fiche-check">✓</span>Résultats visibles dès les premières semaines d’après les retours clientes</p><p style="background:#FFF0F3;border-radius:8px;padding:10px;margin-top:8px;font-size:12px;color:var(--rd)"><strong>Protocole 3 mois :</strong><br>• 1er mois → action sur la rétention d’eau<br>• 2e et 3e mois → brûle-graisse en profondeur</p>'},
+      {t:'🌿 16 ingrédients naturels', c:'<ul style="padding-left:18px;margin:0"><li>Extrait de framboise</li><li>Thé Oolong (brûleur de graisses)</li><li>Fleur de grenade (régule la glycémie)</li><li>Fenouil</li><li>Mélisse officinale</li><li>Poudre de balle de riz</li><li>Romarin</li><li>Extraits de brocoli</li><li>Chitosane (capteur de graisses)</li><li>Baie de Goji (satiété prolongée)</li><li>Myrtille</li><li>Galium verum</li><li>Palmier nain</li><li>Extrait de bouleau</li><li>L-Carnitine</li></ul>'},
+      {t:'📋 Utilisation', c:'<p>• <strong>1 sachet le matin</strong> à jeun, 1h avant le petit-déjeuner</p><p>• <strong>1 sachet le soir</strong>, 1h avant le dîner (pas trop tard)</p><p>Laisser infuser <strong>5 minutes</strong>. Boire lentement.</p><p style="background:#E3F2FD;border-radius:8px;padding:10px;margin-top:8px;font-size:12px;color:#1565C0"><strong>💧 Hydratation = clé du succès !</strong><br>Plus tu bois d’eau, mieux les actifs se diffusent dans ton corps. Vise 2 à 3 litres par jour minimum.</p><p style="background:#E8F5E9;border-radius:8px;padding:10px;margin-top:8px;font-size:12px;color:#2E7D32"><strong>🌿 Astuce 100% efficacité :</strong><br>Utilise les thés Daylia EN MÊME TEMPS que ta cure Diana (tout le mois) pour une efficacité maximale.<br>Puis pendant la pause de 10 jours entre les cures Diana, continue les Daylia : ils maintiennent ton effet coupe-faim, poursuivent ta progression de perte de poids et t’évitent l’effet yo-yo. C’est là que les clientes obtiennent les meilleurs résultats !</p><p style="background:#E8F5E9;border-radius:8px;padding:10px;margin-top:10px;font-size:12px;color:#2E7D32"><strong>Recommandations pour de meilleurs résultats :</strong><br>• Éviter de boire plus de 2 tasses de café par jour<br>• Boire 2 à 3 litres d’eau par jour<br>• Manger équilibré<br>• Éviter les boissons sucrées<br>• Une activité sportive favorise les résultats</p>'},
+      {t:'🚫 Contre-indications', c:'<p>Contre-indiqué aux :</p><ul style="padding-left:18px;margin:6px 0"><li>Femmes enceintes ou allaitantes</li><li>Personnes diabétiques</li><li>Maladies cardiaques</li><li>Hypertension</li><li>Maladie du foie</li><li>Personnes sous antidépresseurs</li><li>Insuffisance rénale</li><li>Tout traitement médical en cours</li><li>Moins de 18 ans</li><li>Déshydratation</li></ul><p style="background:#FFF8E1;border-radius:8px;padding:10px;margin-top:10px;font-size:12px;color:#7A5A00">⚠️ D’après de rares retours clientes, certains médicaments courants pourraient atténuer l’effet coupe-faim. Tes traitements médicaux restent TOUJOURS prioritaires.</p>'}
+    ]
+  },
+  CAF: {
+    titre: '☕ Café Diana Detox',
+    sous: 'Café minceur — à l’essence de Nescafé Gold',
+    sections: [
+      {t:'✅ Pourquoi le Café Diana ?', c:'<p><span class="fiche-check">✓</span>Tu n’aimes pas le thé ? Le café Diana est fait pour toi !</p><p><span class="fiche-check">✓</span>Même efficacité que le thé ou la gélule, dans un délicieux café</p><p><span class="fiche-check">✓</span>Brûleur de graisses puissant + énergie durable</p><p><span class="fiche-check">✓</span>100% naturel et sans sucres ajoutés</p><p><span class="fiche-check">✓</span>Résultats visibles dès les premières semaines d’après les retours clientes</p><p style="background:#FFF0F3;border-radius:8px;padding:10px;margin-top:8px;font-size:12px;color:var(--rd)"><strong>Protocole 3 mois :</strong><br>• 1er mois → action sur la rétention d’eau<br>• 2e et 3e mois → brûle-graisse en profondeur</p>'},
+      {t:'🌿 7 ingrédients actifs', c:'<ul style="padding-left:18px;margin:0"><li>Café instantané biologique</li><li>Bromélaïne</li><li>Berbérine</li><li>Chicorée</li><li>Gingembre</li><li>Cumin noir</li><li>L-carnitine</li></ul>'},
+      {t:'📋 Utilisation', c:'<p>• <strong>1 sachet le matin</strong> à jeun, 1h avant le petit-déjeuner</p><p>• Verse 200ml d’eau chaude ou froide, ajoute du lait si tu veux. Sans sucre ajouté.</p><p>⚠️ Éviter de boire plus de 2 tasses de café par jour au total.</p><p style="background:#E3F2FD;border-radius:8px;padding:10px;margin-top:8px;font-size:12px;color:#1565C0"><strong>💧 Hydratation = clé du succès !</strong><br>Plus tu bois d’eau, mieux les actifs se diffusent dans ton corps. Vise 2 à 3 litres par jour minimum.</p><p style="background:#E8F5E9;border-radius:8px;padding:10px;margin-top:8px;font-size:12px;color:#2E7D32"><strong>🌿 Astuce 100% efficacité :</strong><br>Utilise les thés Daylia EN MÊME TEMPS que ta cure Diana (tout le mois) pour une efficacité maximale.<br>Puis pendant la pause de 10 jours entre les cures Diana, continue les Daylia : ils maintiennent ton effet coupe-faim, poursuivent ta progression de perte de poids et t’évitent l’effet yo-yo. C’est là que les clientes obtiennent les meilleurs résultats !</p><p style="background:#E8F5E9;border-radius:8px;padding:10px;margin-top:10px;font-size:12px;color:#2E7D32"><strong>Recommandations pour de meilleurs résultats :</strong><br>• Éviter de boire plus de 2 tasses de café par jour<br>• Boire 2 à 3 litres d’eau par jour<br>• Manger équilibré<br>• Éviter les boissons sucrées<br>• Une activité sportive favorise les résultats</p>'},
+      {t:'🚫 Contre-indications', c:'<p>Contre-indiqué aux :</p><ul style="padding-left:18px;margin:6px 0"><li>Femmes enceintes ou allaitantes</li><li>Personnes diabétiques</li><li>Maladies cardiaques</li><li>Hypertension</li><li>Maladie du foie</li><li>Personnes sous antidépresseurs</li><li>Insuffisance rénale</li><li>Tout traitement médical en cours</li><li>Moins de 18 ans</li><li>Déshydratation</li></ul><p style="background:#FFF8E1;border-radius:8px;padding:10px;margin-top:10px;font-size:12px;color:#7A5A00">⚠️ D’après de rares retours clientes, certains médicaments courants pourraient atténuer l’effet coupe-faim. Tes traitements médicaux restent TOUJOURS prioritaires.</p>'}
+    ]
+  },
+  DAY: {
+    titre: '🌿 Thés Daylia',
+    sous: '5 thés bio — plantes récoltées et séchées',
+    sections: [
+      {t:'💡 Comment choisir ton thé Daylia ?', c:'<p style="font-size:13px">Les 5 thés Daylia sont tous conçus pour la perte de poids. Chacun a des propriétés uniques et agit différemment sur ton corps. Tu peux en prendre <strong>1, 2 ou les 3 en même temps</strong> selon tes besoins. Plus tu en combines, plus les effets sont puissants.</p><div style="display:flex;flex-direction:column;gap:10px;margin-top:12px"><div style="background:#E8F5E9;border-radius:12px;padding:12px 14px"><div style="font-weight:800;color:#2E7D32;font-size:13px">🌅 Slim Tea — Matin</div><div style="font-size:12px;color:#555;margin-top:5px;line-height:1.6">Le grand classique de la perte de poids. Il active ton métabolisme dès le réveil, brûle les graisses tout au long de la journée et coupe les envies de grignoter. Un alié idéal pour tenir le cap sans frustration.</div></div><div style="background:#E8F5E9;border-radius:12px;padding:12px 14px"><div style="font-weight:800;color:#2E7D32;font-size:13px">✨ Super Detox — Matin ou après-midi</div><div style="font-size:12px;color:#555;margin-top:5px;line-height:1.6">Double action puissante : coupe-faim + brûle-graisse. Comme le Slim Tea, il coupe la faim efficacement, tout en brûlant les graisses. Idéal si tu veux un effet fort sur la perte de poids.</div></div><div style="background:#E8F5E9;border-radius:12px;padding:12px 14px"><div style="font-weight:800;color:#2E7D32;font-size:13px">🌙 Douce Nuit — Soir</div><div style="font-size:12px;color:#555;margin-top:5px;line-height:1.6">Le secret des nuits qui font maigrir. Quand on est stressée, le corps sécrète du cortisol — l’hormone du stress — qui fait stocker de la graisse pendant la nuit. Douce Nuit réduit ce cortisol, favorise un sommeil profond et transforme tes nuits en moments de détox silencieuse.</div></div><div style="background:#E8F5E9;border-radius:12px;padding:12px 14px"><div style="font-weight:800;color:#2E7D32;font-size:13px">💧 Purify Me — Matin ou après-midi</div><div style="font-size:12px;color:#555;margin-top:5px;line-height:1.6">Il agit de l’intérieur pour purifier ton organisme en profondeur. Il élimine les excès, draine le corps et agit sur la perte de poids et les envies de sucre. Il détoxifie et nettoie ton organisme pour t’aider à mieux perdre du poids.</div></div><div style="background:#E8F5E9;border-radius:12px;padding:12px 14px"><div style="font-weight:800;color:#2E7D32;font-size:13px">🌟 Skin Glow — Matin ou après-midi</div><div style="font-size:12px;color:#555;margin-top:5px;line-height:1.6">Le spécialiste de la rétention d’eau. Si tu te sens gonflée, que tes jambes sont lourdes ou que tu as du mal à perdre du poids malgré tes efforts, c’est lui qu’il te faut. Il purifie, draine et améliore la digestion en profondeur.</div></div></div>'},
+      {t:'🍵 Préparation — c’est simple !', c:'<p style="font-size:13px;background:#FFF8E1;border-radius:8px;padding:10px;color:#7A5A00">🎁 Filtre INOX (offert à la 1ère commande)</p><div style="display:flex;flex-direction:column;gap:10px;margin-top:12px"><div style="display:flex;gap:12px;align-items:flex-start"><div style="background:var(--rd);color:#fff;border-radius:50%;min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800">1</div><div style="font-size:13px">Mets <strong>1 cuillère à café</strong> de thé dans le filtre INOX.<br><em>(Douce Nuit : <strong>2 cuillères</strong>.)</em></div></div><div style="display:flex;gap:12px;align-items:flex-start"><div style="background:var(--rd);color:#fff;border-radius:50%;min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800">2</div><div style="font-size:13px">Pose le filtre dans ta tasse.</div></div><div style="display:flex;gap:12px;align-items:flex-start"><div style="background:var(--rd);color:#fff;border-radius:50%;min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800">3</div><div style="font-size:13px">Verse de l’eau très chaude dans la tasse. L’eau ne doit pas être bouillante — laisse-la reposer 1 minute après ébullition pour préserver les bienfaits des plantes.</div></div><div style="display:flex;gap:12px;align-items:flex-start"><div style="background:var(--rd);color:#fff;border-radius:50%;min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800">4</div><div style="font-size:13px">Laisse infuser <strong>5 à 8 minutes</strong>. Toutes les 2 minutes, soulève le filtre hors de la tasse, laisse les gouttes tomber, puis repose-le. Cela libère mieux les arômes.</div></div><div style="display:flex;gap:12px;align-items:flex-start"><div style="background:var(--rd);color:#fff;border-radius:50%;min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800">5</div><div style="font-size:13px">Retire le filtre, jette les feuilles et rince-le à l’eau. C’est tout !</div></div></div>'},
+      {t:'🎯 Protocole Daylia + Diana', c:'<p style="font-size:13px">🟢 <strong>Pendant tout ton mois de cure Diana</strong> (peu importe le produit choisi) :<br>Utilise les thés Daylia en même temps. Choisis librement parmi les 5 selon tes besoins. Plus tu en combines, plus les résultats sont optimaux.</p><p style="margin-top:10px;font-size:13px">🟡 <strong>Après 30 jours — la pause de 10 jours :</strong><br>Tu arrêtes ton produit Diana, mais tu continues les Daylia. Ils maintiennent ton effet coupe-faim, continuent ta progression de perte de poids et t’évitent l’effet yo-yo pendant ta pause.</p><p style="background:#FFF0F3;border-radius:8px;padding:12px;margin-top:10px;font-size:13px;font-weight:800;color:var(--rd);text-align:center">🎯 Daylia toute la cure + les 10 jours de pause<br>= 100% d’efficacité optimale ✨</p>'}
+    ]
+  }};
+
+function openFiche(prod){
+  var f=FICHES[prod];
+  if(!f)return;
+  var t=document.getElementById('prodInfoTitle');if(t)t.textContent=f.titre;
+  var s=document.getElementById('prodInfoSubtitle');if(s)s.textContent=f.sous;
+  var body='';
+  f.sections.forEach(function(sec){
+    body+='<div style="border-bottom:1px solid #f0e0e5;padding:14px 18px">'
+      +'<div style="font-size:14px;font-weight:800;color:var(--rd);margin-bottom:8px">'+sec.t+'</div>'
+      +'<div style="font-size:13px;color:#555;line-height:1.7">'+sec.c+'</div>'
+      +'</div>';
+  });
+  var pb=document.getElementById('prodInfoBody');if(pb)pb.innerHTML=body;
+  document.getElementById('ficheOverlay').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+
+function closeFiche(){
+  document.getElementById('ficheOverlay').style.display='none';
+  document.body.style.overflow='';
+}
+</script>
+
+<!-- FICHE PRODUIT MODAL -->
+<div id="ficheOverlay" onclick="if(event.target===this)closeFiche()">
+  <div id="ficheModal">
+    <div id="prodInfoHeader">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:#fff" id="prodInfoTitle"></div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px" id="prodInfoSubtitle"></div>
+        </div>
+        <button onclick="closeFiche()" style="background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.4);border-radius:50%;width:32px;height:32px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>
+    </div>
+    <div id="prodInfoBody"></div>
+  </div>
+</div>
+
+</body>
+</html>
