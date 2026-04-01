@@ -1717,8 +1717,9 @@ async function handleSubmit(){
     ? (modeRelais==='domicile' ? addr : (relaisAddr?'📍 Email Mondial Relay : '+relaisAddr:''))
     : '• Adresse : '+addr+(cp?', '+cp:'')+(ville?' '+ville:'')+(compl?' ('+compl+')':'');
 
+  var shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅';
   lastMsg=''
-    +'👉 Confirmer : https://wa.me/'+tel.replace(/\s/g,'').replace(/^0/,'33')+'\n\n'
+    +'👉 Confirmer : https://wa.me/'+tel.replace(/\s/g,'').replace(/^0/,'33')+'?text='+encodeURIComponent(shortConfirm)+'\n\n'
     +'📦 *COMMANDE #'+num+'*\n'
     +(vendeur?'🏪 '+vendeur.nom+'\n':'')
     +'\n👤 '+nom+'\n'
