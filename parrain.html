@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Mon Parrainage Diana Detox</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--rd:#C2185B;--gd:#E8C870;--bg:#FFF9F5;--ink:#1A1A1A;--k2:#666;--k3:#999;--lt:#F5F5F5;--rs:rgba(194,24,91,0.08);}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+.hero{background:linear-gradient(135deg,#C2185B,#880E4F);padding:32px 20px 28px;text-align:center;color:#fff}
+.hero h1{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:28px;font-weight:700;margin-bottom:4px}
+.hero p{font-size:12px;opacity:.8}
+.container{max-width:420px;margin:0 auto;padding:16px}
+
+/* LOGIN */
+.login-card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.06);text-align:center;margin-top:-20px}
+.login-card .ico{font-size:48px;margin-bottom:12px}
+.login-card h2{font-size:16px;font-weight:800;margin-bottom:4px}
+.login-card p{font-size:12px;color:var(--k2);margin-bottom:16px}
+.login-card input{width:100%;border:1.5px solid #ddd;border-radius:10px;padding:14px;font-size:16px;font-family:inherit;text-align:center;letter-spacing:2px;outline:none;transition:border .2s}
+.login-card input:focus{border-color:var(--rd)}
+.login-card button{width:100%;margin-top:12px;padding:14px;background:linear-gradient(135deg,var(--rd),#880E4F);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit}
+
+/* DASHBOARD */
+#vDash{display:none}
+.name-card{background:linear-gradient(135deg,var(--rd),#880E4F);border-radius:16px;padding:20px;color:#fff;text-align:center;margin-bottom:16px}
+.name-card .prenom{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:26px}
+.name-card .badge{display:inline-block;background:rgba(255,255,255,0.2);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:800;margin-top:6px}
+
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat-box{background:#fff;border-radius:14px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.stat-box .val{font-size:28px;font-weight:900;color:var(--rd)}
+.stat-box .lbl{font-size:11px;color:var(--k2);font-weight:700;margin-top:2px}
+
+.progress-card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.04);margin-bottom:12px}
+.progress-card h3{font-size:14px;font-weight:800;margin-bottom:12px}
+.prog-bar-wrap{background:var(--lt);border-radius:10px;height:14px;overflow:hidden;margin-bottom:6px}
+.prog-bar{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--rd),var(--gd));transition:width .8s ease}
+.prog-info{font-size:11px;color:var(--k2);font-weight:600;text-align:right}
+
+.milestone{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;margin-bottom:8px;transition:background .2s}
+.milestone.done{background:#E8F5E9}
+.milestone.current{background:#FFF8E1;border:1.5px solid #F9A825}
+.milestone.locked{background:var(--lt);opacity:.5}
+.milestone .ico{font-size:24px;flex-shrink:0}
+.milestone .info{flex:1}
+.milestone .info .title{font-size:13px;font-weight:800}
+.milestone .info .desc{font-size:11px;color:var(--k2)}
+.milestone .check{font-size:18px}
+
+.box-card{background:linear-gradient(135deg,#FFF8E1,#FFFDE7);border:2px solid var(--gd);border-radius:16px;padding:20px;text-align:center;margin-bottom:16px}
+.box-card .ico{font-size:42px;margin-bottom:8px}
+.box-card h3{font-size:15px;font-weight:900;color:#7A5A00}
+.box-card p{font-size:12px;color:#7A5A00;margin-top:4px}
+.box-card .prog-txt{font-size:20px;font-weight:900;color:var(--rd);margin-top:8px}
+
+.filleules-card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);margin-bottom:16px}
+.filleules-card h3{font-size:14px;font-weight:800;margin-bottom:10px}
+.filleule{display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--lt)}
+.filleule:last-child{border:none}
+.filleule .num{width:24px;height:24px;background:var(--rs);color:var(--rd);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.filleule .name{font-size:13px;font-weight:700;flex:1}
+.filleule .date{font-size:11px;color:var(--k3)}
+.filleule .amount{font-size:12px;font-weight:800;color:#2E7D32}
+
+.footer{text-align:center;padding:20px;font-size:11px;color:var(--k3)}
+.err{color:#EF4444;font-size:12px;font-weight:700;margin-top:8px;display:none}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🎁 Mon Parrainage</h1>
+  <p>Diana Detox — Suivi en temps réel</p>
+</div>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="vLogin">
+  <div class="login-card">
+    <div class="ico">👑</div>
+    <h2>Accède à ton espace parrainage</h2>
+    <p>Entre ton numéro de téléphone pour voir tes crédits et ta progression</p>
+    <input id="telInput" type="tel" inputmode="numeric" placeholder="06 12 34 56 78" maxlength="14">
+    <div class="err" id="errMsg">❌ Aucun parrainage trouvé pour ce numéro</div>
+    <button onclick="lookup()">Voir mes crédits 🚀</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="vDash">
+  <div class="name-card">
+    <div class="prenom" id="dNom"></div>
+    <div class="badge" id="dBadge">🌟 Marraine Diana</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="val" id="dFilleules">0</div>
+      <div class="lbl">Filleules validées</div>
+    </div>
+    <div class="stat-box">
+      <div class="val" id="dCredits">0€</div>
+      <div class="lbl">Crédits cumulés</div>
+    </div>
+  </div>
+  <div style="text-align:center;font-size:11px;color:#888;margin:-8px 0 14px;line-height:1.4">💡 Tes crédits sont utilisables sur tous les produits du bon de commande.<br>Si tu en as déjà utilisé, ton solde disponible est réduit.</div>
+  <div id="enAttenteInfo" style="display:none;background:#FFF3CD;border:1.5px solid #F9A825;border-radius:10px;padding:10px;text-align:center;margin-bottom:14px;font-size:12px;font-weight:700;color:#7A5A00"></div>
+
+  <!-- MOTIVATION -->
+  <div id="motivCard" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border:2px solid #66BB6A;border-radius:14px;padding:16px;margin-bottom:16px;text-align:center">
+    <div id="motivMsg" style="font-size:14px;font-weight:800;color:#2E7D32;line-height:1.6"></div>
+  </div>
+
+  <!-- BOX OBJECTIF -->
+  <div class="box-card">
+    <img src="data:image/jpeg;base64,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" style="width:140px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.15);margin-bottom:10px" alt="Box Prestige VIP">
+    <h3 id="boxObjectifTitle">Objectif : Smartbox Bien-être</h3>
+    <p>1 séance bien-être jusqu'à 2h · +7500 soins en France</p>
+    <div class="prog-txt" id="dBoxProg">0 / 20</div>
+    <div class="prog-bar-wrap" style="margin-top:8px">
+      <div class="prog-bar" id="dBoxBar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- PALIERS -->
+  <div class="progress-card">
+    <h3>🏆 Tes paliers</h3>
+    <div id="milestoneList"></div>
+  </div>
+
+  <!-- LISTE FILLEULES -->
+  <div class="filleules-card">
+    <h3>👥 Tes filleules</h3>
+    <div id="filleuleList"></div>
+  </div>
+
+  <div class="footer">
+    Diana Detox · Les crédits sont validés après paiement de la commande<br>
+    <a href="#" onclick="document.getElementById('vDash').style.display='none';document.getElementById('vLogin').style.display='block'" style="color:var(--rd);font-weight:700;text-decoration:none;margin-top:6px;display:inline-block">← Changer de numéro</a>
+  </div>
+</div>
+
+</div>
+
+<script>
+var MILESTONES=[
+  {n:5,  ico:'🍃', title:'25€ cumulés',                 desc:'De quoi t\'offrir un Daylia !'},
+  {n:11, ico:'✨', title:'55€ cumulés',                  desc:'De quoi t\'offrir un Diana !'},
+  {n:22, ico:'✨✨', title:'110€ cumulés',                desc:'De quoi t\'offrir 2 Diana !'},
+  {n:20, ico:'🎁', title:'Gold + Smartbox Bien-être', desc:'Smartbox Bien-être offerte en bonus !'},
+  {n:30, ico:'💎', title:'Box Prestige VIP', desc:'Coffret luxe surprise offert en bonus !'},
+];
+
+async function lookup(){
+  var tel=document.getElementById('telInput').value.trim().replace(/\s/g,'');
+  if(!tel||tel.length<8){document.getElementById('errMsg').style.display='block';document.getElementById('errMsg').textContent='⚠️ Entre ton numéro de téléphone';return;}
+  var telClean=tel.replace(/^0/,'33');
+  
+  document.getElementById('errMsg').style.display='none';
+  
+  try{
+    var jkey='$2a$10$QwR3ZKDScPi7VtndpScSr.04zeMC.AgOXJcajfyUEXdD7ScoUWHp6';
+    var r=await fetch('https://api.jsonbin.io/v3/b/69c514b9aa77b81da91fbcc7/latest',{headers:{'X-Master-Key':jkey}});
+    if(!r.ok) throw new Error('API error');
+    var d=await r.json();
+    var orders=d.record.orders||[];
+    
+    // Trouver les commandes parrainées par ce numéro
+    var filleules=[];
+    orders.forEach(function(o){
+      if(!o.parrain) return;
+      var pTel=(o.parrain||'').replace(/\s/g,'').replace(/^0/,'33');
+      // Aussi chercher dans parrainFull
+      var pFull=(o.parrainFull||o.parrain||'').replace(/\s/g,'');
+      if(pTel===telClean || pFull.indexOf(telClean)!==-1 || pFull.indexOf(tel)!==-1){
+        filleules.push(o);
+      }
+    });
+    
+    if(!filleules.length){
+      document.getElementById('errMsg').style.display='block';
+      document.getElementById('errMsg').textContent='❌ Aucun parrainage trouvé pour ce numéro';
+      return;
+    }
+    
+    // Trouver le nom/snap du parrain depuis les ordres
+    var parrainNom='';
+    var parrainSnap='';
+    orders.forEach(function(o){
+      var oTel=(o.tel||'').replace(/\s/g,'').replace(/^0/,'33');
+      if(oTel===telClean){
+        parrainNom=o.nom||parrainNom;
+        parrainSnap=o.snap||parrainSnap;
+      }
+    });
+    // Si pas trouvé comme client, utiliser le snap du parrainage
+    if(!parrainNom){
+      var pf=filleules[0].parrainFull||'';
+      var parts=pf.split('/');
+      if(parts.length>1) parrainSnap=parts[1].trim();
+      parrainNom=parrainSnap||'Parrain(e)';
+    }
+    
+    var nbF=filleules.filter(function(o){return o.payee;}).length;
+    var nbEnAttente=filleules.length-nbF;
+    var credits=nbF*5;
+    
+    // Afficher
+    document.getElementById('vLogin').style.display='none';
+    document.getElementById('vDash').style.display='block';
+    
+    document.getElementById('dNom').textContent=parrainNom.split(' ')[0];
+    
+    // Badge
+    var badge='🌟 Marraine Diana';
+    if(nbF>=30) badge='💎 Prestige VIP';
+    else if(nbF>=20) badge='🥇 Gold';
+    document.getElementById('dBadge').textContent=badge;
+    
+    document.getElementById('dFilleules').textContent=nbF;
+    document.getElementById('dCredits').textContent=credits+'€';
+    if(nbEnAttente>0){
+      document.getElementById('enAttenteInfo').style.display='block';
+      document.getElementById('enAttenteInfo').textContent='⏳ '+nbEnAttente+' filleule'+(nbEnAttente>1?'s':'')+' en attente de paiement (+'+nbEnAttente*5+'€ à venir)';
+    }
+    
+    // Message de motivation
+    var motiv='';
+    var restSmart=20-nbF;
+    var restBox=30-nbF;
+    var nextCredits=(nbF+1)*5;
+    if(nbF>=30){
+      motiv='🎉 BRAVO ! Tu as débloqué ta Smartbox ET ta Box Prestige VIP ! Contacte-nous pour les recevoir 💎';
+      document.getElementById('motivCard').style.background='linear-gradient(135deg,#FFF8E1,#FFFDE7)';
+      document.getElementById('motivCard').style.borderColor='#F9A825';
+      document.getElementById('motivMsg').style.color='#7A5A00';
+    } else if(nbF>=20){
+      motiv='🎁 Smartbox débloquée ! Contacte-nous pour la recevoir !\n\n💎 Encore '+restBox+' filleule'+(restBox>1?'s':'')+' pour ta Box Prestige VIP !';
+      document.getElementById('motivCard').style.background='linear-gradient(135deg,#FFF8E1,#FFFDE7)';
+      document.getElementById('motivCard').style.borderColor='#F9A825';
+      document.getElementById('motivMsg').style.color='#7A5A00';
+    } else if(nbF>=15){
+      motiv='🔥 Tu es en feu ! Encore '+restSmart+' filleule'+(restSmart>1?'s':'')+' et tu décroches ta Smartbox Bien-être ! Tu y es presque 🎁';
+    } else if(nbF>=10){
+      motiv='💪 Super progression ! Encore '+restSmart+' filleules pour ta Smartbox !\n\n👉 1 filleule de plus = '+nextCredits+'€ de crédits cumulés !';
+    } else if(nbF>=5){
+      motiv='🚀 Bien joué ! '+nbF+' filleules = '+credits+'€ de crédits !\n\n👉 Encore '+restSmart+' filleules pour décrocher ta Smartbox Bien-être 🎁';
+    } else if(nbF>=1){
+      var rest5=5-nbF;
+      motiv='👏 C\'est parti ! '+nbF+' filleule'+(nbF>1?'s':'')+' = '+credits+'€ de crédits !\n\n👉 Encore '+(rest5)+' filleule'+(rest5>1?'s':'')+' pour atteindre 25€ de crédits 🍃\n👉 Encore '+restSmart+' pour ta Smartbox 🎁';
+    } else {
+      motiv='🌟 Parraine ta 1ère filleule et gagne 5€ de crédits !\n\nÀ 20 filleules tu reçois une Smartbox Bien-être 🎁';
+    }
+    document.getElementById('motivMsg').innerHTML=motiv.replace(/\n/g,'<br>');
+    
+    // Box progression
+    var boxTarget=nbF>=20?30:20;
+    var boxLabel=nbF>=20?'Box Prestige VIP':'Smartbox';
+    var boxPct=Math.min(100,Math.round(nbF/boxTarget*100));
+    document.getElementById('boxObjectifTitle').textContent='Objectif : '+boxLabel;
+    document.getElementById('dBoxProg').textContent=nbF>=boxTarget?'🎉 DÉBLOQUÉ !':('Plus que '+(boxTarget-nbF)+' filleule'+((boxTarget-nbF)>1?'s':'')+ ' !');
+    document.getElementById('dBoxBar').style.width=boxPct+'%';
+    if(nbF>=boxTarget){document.getElementById('dBoxBar').style.background='linear-gradient(90deg,#66BB6A,#2E7D32)';}
+    
+    // Milestones
+    var mhtml='';
+    MILESTONES.forEach(function(m){
+      var state=nbF>=m.n?'done':nbF>=m.n-5?'current':'locked';
+      mhtml+='<div class="milestone '+state+'">'
+        +'<div class="ico">'+m.ico+'</div>'
+        +'<div class="info"><div class="title">'+m.n+' filleules — '+m.title+'</div><div class="desc">'+m.desc+'</div></div>'
+        +'<div class="check">'+(nbF>=m.n?'✅':'🔒')+'</div>'
+        +'</div>';
+    });
+    document.getElementById('milestoneList').innerHTML=mhtml;
+    
+    // Liste filleules
+    var fhtml='';
+    if(!filleules.length) fhtml='<div style="text-align:center;padding:16px;color:var(--k3)">Aucune filleule pour l\'instant</div>';
+    filleules.forEach(function(o,i){
+      var dateStr='';
+      if(o.num){
+        var parts=o.num.split('-');
+        if(parts[0]&&parts[0].length===6){
+          var y='20'+parts[0].substring(0,2);
+          var m=parts[0].substring(2,4);
+          var day=parts[0].substring(4,6);
+          dateStr=day+'/'+m+'/'+y;
+        }
+      }
+      var paid=!!o.payee;
+      fhtml+='<div class="filleule" style="'+(paid?'':'opacity:.6')+'">'
+        +'<div class="num" style="'+(paid?'':'background:#FFF3CD;color:#7A5A00')+'">'+(i+1)+'</div>'
+        +'<div class="name">Filleule n°'+(i+1)+'</div>'
+        +'<div class="date">'+dateStr+'</div>'
+        +'<div class="amount" style="'+(paid?'':'color:#7A5A00')+'">'+(paid?'✅ +5€':'⏳')+'</div>'
+        +'</div>';
+    });
+    document.getElementById('filleuleList').innerHTML=fhtml;
+    
+  }catch(e){
+    document.getElementById('errMsg').style.display='block';
+    document.getElementById('errMsg').textContent='❌ Erreur de connexion — réessaie';
+  }
+}
+
+// Enter key
+document.getElementById('telInput').addEventListener('keydown',function(e){if(e.key==='Enter')lookup();});
+</script>
+</body>
+</html>
