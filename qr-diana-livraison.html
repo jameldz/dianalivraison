@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code - Diana Detox Livraison</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{background:linear-gradient(135deg,#FFE5EC,#FFF5F7);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:24px;padding:36px 28px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(212,96,122,0.25);text-align:center}
+h1{font-family:Georgia,serif;font-size:28px;color:#D4607A;margin-bottom:4px}
+h1 span{color:#C8A450;font-style:italic}
+.sub{font-size:12px;color:#999;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:24px}
+.qr-wrap{background:#fff;border:3px solid #D4607A;border-radius:16px;padding:16px;display:inline-block;margin-bottom:20px}
+.qr-wrap img{display:block;width:260px;height:260px}
+.url-box{background:#FFF5F7;border:1.5px solid #FFE5EC;border-radius:12px;padding:14px;margin-bottom:16px;word-break:break-all;font-size:13px;color:#666;font-family:monospace}
+.url-box strong{color:#D4607A;font-family:monospace}
+.actions{display:flex;gap:8px;margin-bottom:20px}
+.btn{flex:1;padding:12px;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn-primary{background:linear-gradient(135deg,#D4607A,#B84560);color:#fff}
+.btn-secondary{background:#FFF5F7;color:#D4607A;border:1.5px solid #D4607A}
+.instructions{background:#FFF8E1;border:1.5px solid #F59E0B;border-radius:12px;padding:14px;font-size:12px;color:#78350F;line-height:1.6;text-align:left}
+.instructions strong{color:#92400E;display:block;margin-bottom:6px}
+.print-only{display:none}
+@media print{
+  body{background:#fff}
+  .card{box-shadow:none}
+  .actions,.instructions{display:none}
+  .print-only{display:block;font-size:11px;color:#999;margin-top:10px}
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Diana <span>Detox</span></h1>
+  <div class="sub">Formulaire de commande</div>
+
+  <div class="qr-wrap">
+    <div id="qrcode"></div>
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://dianalivraison.vercel.app/livraison-diana-fixed.html" alt="QR Code Diana Detox" width="260" height="260" id="qrimg" onerror="this.style.display='none'">
+  </div>
+
+  <div class="url-box">
+    <strong>https://dianalivraison.vercel.app/livraison-diana-fixed.html</strong>
+  </div>
+
+  <div class="actions">
+    <a href="https://dianalivraison.vercel.app/livraison-diana-fixed.html" target="_blank" class="btn btn-primary">🔗 Ouvrir</a>
+    <button onclick="copyUrl()" class="btn btn-secondary">📋 Copier</button>
+    <button onclick="window.print()" class="btn btn-secondary">🖨 Imprimer</button>
+  </div>
+
+  <div class="instructions">
+    <strong>💡 Comment enregistrer dans 1Password :</strong>
+    1. Clique sur "📋 Copier" pour avoir le lien<br>
+    2. Ouvre 1Password → Nouvel élément → "Lien sécurisé"<br>
+    3. Titre : <em>Diana Detox - Formulaire</em><br>
+    4. Colle le lien dans le champ URL<br>
+    5. Tu peux aussi faire un screenshot du QR code et l'ajouter en pièce jointe
+  </div>
+
+  <div class="print-only">Diana Detox · dianalivraison.vercel.app</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// Générer le QR code localement (plus fiable que l'API externe)
+try {
+  new QRCode(document.getElementById("qrcode"), {
+    text: "https://dianalivraison.vercel.app/livraison-diana-fixed.html",
+    width: 260,
+    height: 260,
+    colorDark: "#D4607A",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+  });
+  // Si le QR local marche, cacher l'image fallback
+  document.getElementById('qrimg').style.display='none';
+} catch(e){
+  // Si qrcode.js ne charge pas, l'image de l'API reste visible
+  console.log('QR local failed, using API fallback');
+}
+
+function copyUrl(){
+  var url='https://dianalivraison.vercel.app/livraison-diana-fixed.html';
+  navigator.clipboard.writeText(url).then(function(){
+    alert('✅ Lien copié !');
+  }).catch(function(){
+    prompt('Copie ce lien :', url);
+  });
+}
+</script>
+</body>
+</html>
