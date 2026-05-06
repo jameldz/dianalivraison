@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fix Sync</title></head><body style="font-family:-apple-system,sans-serif;padding:20px;text-align:center">
+<h1>Fix Sync Diana</h1><div id="s">En cours...</div>
+<script>
+var K='$2a$10$QwR3ZKDScPi7VtndpScSr.04zeMC.AgOXJcajfyUEXdD7ScoUWHp6';
+var B='69c514b9aa77b81da91fbcc7';
+async function f(){var s=document.getElementById('s');localStorage.setItem('diana_bin_id',B);s.innerHTML='Coffre OK<br>';try{var r=await fetch('https://api.jsonbin.io/v3/b/'+B+'/latest?t='+Date.now(),{headers:{'X-Master-Key':K}});if(!r.ok){s.innerHTML+='Erreur '+r.status;return;}var d=await r.json();if(!d||!d.record||!Array.isArray(d.record.orders)){s.innerHTML+='Pas de donnees';return;}var o=d.record.orders;localStorage.setItem('diana_orders',JSON.stringify(o));if(d.record.clients)localStorage.setItem('diana_clients',JSON.stringify(d.record.clients));if(d.record.joursFermes)localStorage.setItem('diana_joursfermes',JSON.stringify(d.record.joursFermes));s.innerHTML+=o.length+' commandes chargees<br><br><a href="https://dianalivraison.vercel.app/" style="font-size:20px;font-weight:900;color:green">Ouvrir le dashboard</a>';}catch(e){s.innerHTML+='Erreur: '+e.message;}}f();
+</script></body></html>
