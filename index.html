@@ -674,9 +674,9 @@ window.fetch = function(url, opts){
   }
   if(isJsonbin){
     p.then(function(r){
-      if(r&&r.ok){window.lastSyncOk=Date.now();localStorage.setItem('diana_lastSyncOk',window.lastSyncOk);window.syncFailCount=0;updateSyncBanner();}
-      else if(r&&!r.ok&&isPut){window.syncFailCount++;updateSyncBanner();}
-    }).catch(function(){if(isPut){window.syncFailCount++;updateSyncBanner();}});
+      if(r&&r.ok){clearTimeout(window._failTimer); window.lastSyncOk=Date.now();localStorage.setItem('diana_lastSyncOk',window.lastSyncOk);window.syncFailCount=0;updateSyncBanner();}
+      else if(r&&!r.ok&&isPut){clearTimeout(window._failTimer); window._failTimer=setTimeout(function(){if(Date.now()-window.lastSyncOk>7000){window.syncFailCount++;updateSyncBanner();}}, 7000);}
+    }).catch(function(){if(isPut){clearTimeout(window._failTimer); window._failTimer=setTimeout(function(){if(Date.now()-window.lastSyncOk>7000){window.syncFailCount++;updateSyncBanner();}}, 7000);}});
   }
   return p;
 };
