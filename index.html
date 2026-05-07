@@ -165,6 +165,9 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 .parr-cagnotte{font-weight:900;color:var(--gd);font-size:16px;}
 .parr-box-alert{background:#FFF8E1;border:1.5px solid #F0C060;border-radius:8px;padding:8px;margin-top:8px;font-size:12px;color:#7A5A00;font-weight:800;text-align:center;}
 .parr-notify{background:linear-gradient(135deg,#25D366,#1DA851);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;width:100%;margin-top:8px;font-family:inherit;}
+.sync-banner{position:sticky;top:0;z-index:9999;padding:10px 12px;text-align:center;font-weight:900;font-size:13px;color:#fff;letter-spacing:.3px;transition:background .3s;cursor:pointer;}
+.sync-banner.fail{animation:shakeBanner .5s ease-in-out infinite;}
+@keyframes shakeBanner{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
 </style>
 </head>
 <body>
@@ -201,6 +204,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 <div id="vLoad" style="display:none"><div style="font-size:48px;margin-bottom:12px">🛵</div><p style="font-size:14px;color:var(--k2)">Chargement…</p></div>
 
 <div id="vMain" style="display:none">
+<div id="syncBanner" class="sync-banner" style="background:#9CA3AF" onclick="manualSyncCheck()">⏳ En attente du premier sync...</div>
 <div class="page">
 
 <div class="header">
@@ -648,6 +652,35 @@ var orders  = [];
 var clients = {};
 var joursFermes = {semaine:[], dates:[]};
 var curFilt = 'pending';
+
+// === PROTECTION SYNC ===
+window.lastSyncOk = parseInt(localStorage.getItem('diana_lastSyncOk')||'0');
+window.syncFailCount = 0;
+window.actionCount = parseInt(localStorage.getItem('diana_actionCount')||'0');
+function updateSyncBanner(){var bn=document.getElementById('syncBanner');if(!bn)return;if(window.syncFailCount>0){bn.style.background='#DC2626';bn.classList.add('fail');bn.textContent='\u274C SYNC \u00C9CHOU\u00C9E ('+window.syncFailCount+') \u2014 clique \uD83D\uDDC4\uFE0F Backup pour EXPORTER MAINTENANT !';return;}bn.classList.remove('fail');if(!window.lastSyncOk){bn.style.background='#9CA3AF';bn.textContent='\u23F3 En attente du premier sync...';return;}var ago=Math.floor((Date.now()-window.lastSyncOk)/1000);if(ago<30){bn.style.background='#22C55E';bn.textContent='\u2705 Sync OK \u00B7 '+ago+'s';}else if(ago<300){bn.style.background='#F59E0B';bn.textContent='\uD83D\uDFE1 Dernier sync il y a '+Math.floor(ago/60)+' min \u2014 clique pour v\u00E9rifier';}else{bn.style.background='#DC2626';bn.classList.add('fail');bn.textContent='\uD83D\uDD34 Aucun sync depuis '+Math.floor(ago/60)+' min \u2014 STOP, EXPORTE !';}}
+setInterval(updateSyncBanner,5000);
+function manualSyncCheck(){if(typeof forceSyncFromCloud==='function')forceSyncFromCloud();}
+function autoDownloadBackup(){try{var data={orders:orders,clients:clients,joursFermes:joursFermes,exportedAt:new Date().toISOString(),reason:'auto-every-10-actions'};var blob=new Blob([JSON.stringify(data)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='diana-auto-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Date.now()+'.json';document.body.appendChild(a);a.click();setTimeout(function(){try{document.body.removeChild(a);URL.revokeObjectURL(url);}catch(e){}},200);if(typeof toast==='function')toast('\uD83D\uDCBE Sauvegarde auto t\u00E9l\u00E9charg\u00E9e');}catch(e){console.warn('Auto-download failed:',e);}}
+// Intercept fetch to track JSONbin sync status
+var _origFetch = window.fetch;
+window.fetch = function(url, opts){
+  var p = _origFetch.apply(this, arguments);
+  var isJsonbin = (typeof url==='string') && url.indexOf('jsonbin.io')>0;
+  var isPut = opts && opts.method==='PUT';
+  if(isJsonbin && isPut){
+    window.actionCount=(window.actionCount||0)+1;
+    localStorage.setItem('diana_actionCount', window.actionCount);
+    if(window.actionCount>0 && window.actionCount%10===0){setTimeout(autoDownloadBackup, 100);}
+  }
+  if(isJsonbin){
+    p.then(function(r){
+      if(r&&r.ok){window.lastSyncOk=Date.now();localStorage.setItem('diana_lastSyncOk',window.lastSyncOk);window.syncFailCount=0;updateSyncBanner();}
+      else if(r&&!r.ok&&isPut){window.syncFailCount++;updateSyncBanner();}
+    }).catch(function(){if(isPut){window.syncFailCount++;updateSyncBanner();}});
+  }
+  return p;
+};
+setTimeout(updateSyncBanner, 1000);
 
 // ── STOCKAGE CROSS-DEVICE (JSONbin) ─────────────────────
 var JKEY = '$2a$10$QwR3ZKDScPi7VtndpScSr.04zeMC.AgOXJcajfyUEXdD7ScoUWHp6';
