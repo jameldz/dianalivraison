@@ -654,7 +654,7 @@ var joursFermes = {semaine:[], dates:[]};
 var curFilt = 'pending';
 
 // === PROTECTION SYNC ===
-window.lastSyncOk = parseInt(localStorage.getItem('diana_lastSyncOk')||'0');
+window.lastSyncOk = 0; // toujours 0 au démarrage, mis à jour seulement après un vrai sync
 window.syncFailCount = 0;
 window.actionCount = parseInt(localStorage.getItem('diana_actionCount')||'0');
 function updateSyncBanner(){var bn=document.getElementById('syncBanner');if(!bn)return;if(window.syncFailCount>0){bn.style.background='#DC2626';bn.classList.add('fail');bn.textContent='\u274C SYNC \u00C9CHOU\u00C9E ('+window.syncFailCount+') \u2014 clique \uD83D\uDDC4\uFE0F Backup pour EXPORTER MAINTENANT !';return;}bn.classList.remove('fail');if(!window.lastSyncOk){bn.style.background='#9CA3AF';bn.textContent='\u23F3 En attente du premier sync...';return;}var ago=Math.floor((Date.now()-window.lastSyncOk)/1000);if(ago<30){bn.style.background='#22C55E';bn.textContent='\u2705 Sync OK \u00B7 '+ago+'s';}else if(ago<300){bn.style.background='#F59E0B';bn.textContent='\uD83D\uDFE1 Dernier sync il y a '+Math.floor(ago/60)+' min \u2014 clique pour v\u00E9rifier';}else{bn.style.background='#DC2626';bn.classList.add('fail');bn.textContent='\uD83D\uDD34 Aucun sync depuis '+Math.floor(ago/60)+' min \u2014 STOP, EXPORTE !';}}
