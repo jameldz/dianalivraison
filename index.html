@@ -667,6 +667,9 @@ var JBIN = CORRECT_BIN;
 
 var lastSaveTime=0;
 var savePending=false;
+// ═══ PROTECTION ANTI-WIPE AU BOOT ═══
+// Empêche saveStorage d'écrire localStorage vide tant que loadStorage n'a pas terminé
+window._dataLoaded = false;
 
 async function loadStorage() {
   // 1. localStorage INSTANTANÉ
@@ -710,6 +713,8 @@ async function loadStorage() {
     // localStorage a des données → sync en arrière-plan
     syncFromJsonbin();
   }
+  // MARQUEUR : données chargées, saveStorage peut maintenant écrire
+  window._dataLoaded = true;
 }
 
 function migrateOrders(){
@@ -819,6 +824,22 @@ function syncFromJsonbin(){
 var _savePushTimer = null;
 var _saveLastPushedSnap = null;
 async function saveStorage() {
+  // ═══ PROTECTION ANTI-WIPE ═══
+  // Bloque tout save tant que les données n'ont pas été chargées (évite d'écrire orders=[] au boot)
+  if(!window._dataLoaded){
+    console.warn('[saveStorage] BLOQUÉ — _dataLoaded=false (boot en cours)');
+    return;
+  }
+  // Si orders est vide MAIS le localStorage en a → c'est anormal, on bloque
+  if(orders.length===0){
+    try {
+      var existing = JSON.parse(localStorage.getItem('diana_orders')||'[]');
+      if(existing.length > 0){
+        console.error('[saveStorage] BLOQUÉ — tentative d\'écraser '+existing.length+' commandes par 0');
+        return;
+      }
+    } catch(e){}
+  }
   savePending=true;
   // 1. Écriture locale immédiate
   try { localStorage.setItem('diana_orders', JSON.stringify(orders)); } catch(e){}
@@ -850,7 +871,13 @@ function _doPushCloud(){
   var pctDrop = lastKnownCount>0 ? diff/lastKnownCount : 0;
   if(lastKnownCount>=10 && (diff>=5 || pctDrop>0.1) && orders.length<lastKnownCount){
     console.error('[SafetyGuard] PUSH BLOQUÉ : orders='+orders.length+' mais dernière version='+lastKnownCount);
-    try { showDataLossAlert(orders.length, lastKnownCount); } catch(e){}
+    // Anti-faux-positif boot : si orders=0 ou pinlock visible → bloquer silencieusement sans alerte
+    var isBoot = orders.length===0 || (document.getElementById('pinlock') && document.getElementById('pinlock').style.display!=='none') || !window._appReady;
+    if(!isBoot){
+      try { showDataLossAlert(orders.length, lastKnownCount); } catch(e){}
+    } else {
+      console.log('[SafetyGuard] Push bloqué silencieusement (boot/pinlock en cours)');
+    }
     return false;
   }
   // Mise à jour du compteur safe
@@ -1138,6 +1165,11 @@ async function init() {
   document.getElementById('vLoad').style.display = 'none';
   document.getElementById('vMain').style.display  = 'block';
   render();
+  // Marquer l'app comme prête (active les alertes data-loss qui étaient muettes pendant le boot)
+  window._appReady = true;
+  // Supprimer toute alerte data-loss potentielle déclenchée pendant le boot
+  var stale = document.getElementById('dataLossAlert');
+  if(stale) stale.remove();
   // Vérifier si rappel de backup nécessaire (après 3 secondes pour ne pas bombarder à l'ouverture)
   setTimeout(checkBackupReminder, 3000);
   // Créer le coffre automatiquement si données existent mais pas encore de bin
