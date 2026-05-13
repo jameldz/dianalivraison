@@ -714,6 +714,17 @@ async function loadStorage() {
 
 function migrateOrders(){
   var migrated=false;
+  // Coercion défensive : transforme les strings "true"/"false" en vrais booléens
+  // pour éviter le bug fantome (où "false" string est truthy en JS)
+  var BOOL_FIELDS=['fantome','confirme','clientConfirme','livree','payee','filtre','filtreInox','cadeau','livGratuite','creditApplied','modeRelais'];
+  orders.forEach(function(o){
+    BOOL_FIELDS.forEach(function(f){
+      if(typeof o[f]==='string'){
+        if(o[f]==='true'){ o[f]=true; migrated=true; }
+        else if(o[f]==='false'){ o[f]=false; migrated=true; }
+      }
+    });
+  });
   orders.forEach(function(o){
     var ts=o.createdAt;
     var valid=ts && typeof ts==='number' && ts>1700000000000 && ts<2100000000000 && !isNaN(new Date(ts).getTime());
@@ -3571,7 +3582,7 @@ async function confirmDel(){
 var editingOrderId=null;
 var editFieldsData={};
 var EDIT_LABELS={nom:'👤 Nom',tel:'📞 Téléphone',snap:'👻 Snap',email:'📧 Email',addr:'📍 Adresse',prods:'🛍️ Produits',total:'💰 Total',slot:'📅 Créneaux',modeLiv:'🚚 Mode livraison',modePay:'💳 Paiement',vendeur:'🏪 Vendeur',note:'📝 Note',parrain:'🎁 Parrain',parrainTel:'📞 Tél parrain',parrainSnap:'👻 Snap parrain',parrainEmail:'📧 Email parrain'};
-var EDIT_HIDDEN=['id','num','livree','payee','confirme','clientConfirme','createdAt','parrStatus','balance','cadeau','filtre','genre','parrGenre','nbCmd','livGratuite','reduc','filtreInox','pickedSlot','lastModified','creditApplied','modeRelais'];
+var EDIT_HIDDEN=['id','num','livree','payee','confirme','clientConfirme','createdAt','parrStatus','balance','cadeau','filtre','genre','parrGenre','nbCmd','livGratuite','reduc','filtreInox','pickedSlot','lastModified','creditApplied','modeRelais','fantome','fantomeAt','confirmeAt','completedAt','tel2','tel2Nom'];
 
 function calcProdsTotal(prodsStr){
   var parts=(prodsStr||'').split(',').map(function(p){return p.trim();}).filter(Boolean);
