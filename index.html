@@ -830,6 +830,19 @@ async function saveStorage() {
 }
 // Push effectif vers le cloud avec ack en localStorage
 function _doPushCloud(){
+  // ═══ GARDE-FOU ANTI-ÉCRASEMENT ═══
+  // Si on essaie de push beaucoup moins de commandes que la dernière version connue → BLOQUER
+  // (évite qu'un onglet vide écrase le cloud plein)
+  var lastKnownCount = parseInt(localStorage.getItem('diana_last_safe_count')||'0',10);
+  if(lastKnownCount>=10 && orders.length<Math.max(10, lastKnownCount*0.5)){
+    console.error('[SafetyGuard] PUSH BLOQUÉ : orders='+orders.length+' mais dernière version='+lastKnownCount);
+    try { toast('⚠️ Push bloqué (sécurité) — '+orders.length+' vs '+lastKnownCount+' attendues'); } catch(e){}
+    return false;
+  }
+  // Mise à jour du compteur safe
+  if(orders.length>lastKnownCount) {
+    try { localStorage.setItem('diana_last_safe_count', String(orders.length)); } catch(e){}
+  }
   var body=JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{},lastSync:Date.now()});
   if(body===_saveLastPushedSnap) {
     // Identique au dernier push → considère comme ack
