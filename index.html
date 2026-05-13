@@ -3575,8 +3575,15 @@ var EDIT_HIDDEN=['id','num','livree','payee','confirme','clientConfirme','create
 
 function calcProdsTotal(prodsStr){
   var parts=(prodsStr||'').split(',').map(function(p){return p.trim();}).filter(Boolean);
-  var dianaCount=0, dayliaCount=0;
+  var dianaCount=0, dayliaCount=0, miniCount=0;
   parts.forEach(function(p){
+    var pl=p.toLowerCase();
+    // ═══ Mini-Cure 7j : à détecter AVANT Diana (sinon "Mini-Cure Gélules" matcherait Diana) ═══
+    if(/mini[\s-]*cure/i.test(pl)){
+      var qtyM = pl.match(/(\d+)\s*[×x]/);
+      miniCount += qtyM ? parseInt(qtyM[1]) : 1;
+      return;
+    }
     // ═══ Cas Daylia combiné : "Thé Daylia — 2× Slim Tea + Super Detox" ═══
     var dayliaMatch=p.match(/^Thé Daylia\s*[—–-]\s*(.+)$/i);
     if(dayliaMatch){
@@ -3587,7 +3594,6 @@ function calcProdsTotal(prodsStr){
       });
       return;
     }
-    var pl=p.toLowerCase();
     // Ancien format Daylia "Thé Daylia x3"
     if(pl.indexOf('daylia')!==-1){
       var qtyMatchD=pl.match(/[x×]\s*(\d+)/);
@@ -3601,6 +3607,7 @@ function calcProdsTotal(prodsStr){
     }
   });
   var dianaTotal = dianaCount * 55;
+  var miniTotal = miniCount * 15;
   var dayliaTotal = 0;
   if(dianaCount > 0){
     dayliaTotal = dayliaCount * 20;
@@ -3610,7 +3617,7 @@ function calcProdsTotal(prodsStr){
     else if(dayliaCount===3) dayliaTotal=60;
     else if(dayliaCount>=4) dayliaTotal=dayliaCount*20;
   }
-  return dianaTotal + dayliaTotal;
+  return dianaTotal + dayliaTotal + miniTotal;
 }
 
 function recalcEditTotal(){
@@ -3716,10 +3723,17 @@ function rebuildProdsString(){
     {key:'qty-day-pm',name:'💧 Purify Me'},
     {key:'qty-day-gu',name:'🌟 Skin Glow'}
   ];
+  // Mini-Cures
+  var qMiniGel=parseInt((document.getElementById('qty-mini-gel')||{}).value)||0;
+  var qMiniThe=parseInt((document.getElementById('qty-mini-the')||{}).value)||0;
+  var qMiniCaf=parseInt((document.getElementById('qty-mini-caf')||{}).value)||0;
   var parts=[];
   if(qCafe>0) parts.push('Café Diana'+(qCafe>1?' x'+qCafe:''));
   if(qThe>0) parts.push('Thé Diana'+(qThe>1?' x'+qThe:''));
   if(qGel>0) parts.push('Gélules Diana'+(qGel>1?' x'+qGel:''));
+  if(qMiniGel>0) parts.push((qMiniGel>1?qMiniGel+'× ':'1× ')+'Mini-Cure Gélules 7j');
+  if(qMiniThe>0) parts.push((qMiniThe>1?qMiniThe+'× ':'1× ')+'Mini-Cure Thé 7j');
+  if(qMiniCaf>0) parts.push((qMiniCaf>1?qMiniCaf+'× ':'1× ')+'Mini-Cure Café 7j');
   // Assembler les variantes Daylia en une seule entrée "Thé Daylia — variants"
   var dayliaNames=[];
   dayliaVariants.forEach(function(v){
@@ -3791,9 +3805,33 @@ function editFieldRow(key,val){
       if(lower.indexOf(searchName)!==-1) return 1;
       return 0;
     }
-    var qtyCafe=getQtyDiana('café diana');
-    var qtyThe=getQtyDiana('thé diana');
-    var qtyGel=getQtyDiana('gélules diana');
+    // Mini-Cures 7j : détection par regex SPÉCIFIQUE avant la détection Diana classique
+    function getQtyMini(productKey){
+      // Cherche "1× Mini-Cure Gélules 7j" ou "Mini-Cure Café 7j"
+      var re = new RegExp('(\\d+)\\s*[×x]\\s*mini[\\s-]*cure[^,+]*?'+productKey, 'gi');
+      var qty = 0, m;
+      while((m=re.exec(lower))!==null) qty += parseInt(m[1]);
+      if(qty===0){
+        var re2 = new RegExp('mini[\\s-]*cure[^,+]*?'+productKey, 'gi');
+        var matches = lower.match(re2);
+        if(matches) qty = matches.length;
+      }
+      return qty;
+    }
+    var qtyMiniGel = getQtyMini('g[eé]lules?');
+    var qtyMiniThe = getQtyMini('th[eé]');
+    var qtyMiniCaf = getQtyMini('caf[eé]');
+    // Retire les Mini-Cures du texte avant détection Diana pour éviter double comptage
+    var lowerSansMini = lower.replace(/(\d+\s*[×x]\s*)?mini[\s-]*cure[^,+]*/gi, '');
+    function getQtyDianaSansMini(productKey){
+      var pattern = new RegExp(productKey+'[^,]*?[x×](\\d+)','i');
+      var qm = lowerSansMini.match(pattern);
+      if(qm) return parseInt(qm[1]);
+      return lowerSansMini.indexOf(productKey)!==-1 ? 1 : 0;
+    }
+    var qtyCafe=getQtyDianaSansMini('café diana');
+    var qtyThe=getQtyDianaSansMini('thé diana');
+    var qtyGel=getQtyDianaSansMini('gélules diana');
     // Quantités pour chaque variante Daylia
     var qtyDayliaVariants={};
     DAYLIA_VARIANTS_EDIT.forEach(function(v){
@@ -3811,6 +3849,23 @@ function editFieldRow(key,val){
     prodsDiana.forEach(function(p){
       var bgCol=p.qty>0?'#E8F5E9':'#f5f5f5';
       var borderCol=p.qty>0?'#66BB6A':'#ddd';
+      prodsHtml+='<div style="display:flex;align-items:center;gap:8px;background:'+bgCol+';border:1.5px solid '+borderCol+';border-radius:10px;padding:8px 10px">'
+        +'<div style="flex:1;font-size:13px;font-weight:800;color:#333">'+p.name+'</div>'
+        +'<button type="button" onclick="changeProdQty(\''+p.key+'\',-1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid #ddd;background:#fff;font-size:18px;font-weight:900;cursor:pointer;color:#B91C1C">−</button>'
+        +'<input type="text" id="qty-'+p.key+'" value="'+p.qty+'" readonly style="width:44px;height:32px;text-align:center;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-weight:900;font-family:inherit;background:#fff;color:#333">'
+        +'<button type="button" onclick="changeProdQty(\''+p.key+'\',1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid #ddd;background:#fff;font-size:18px;font-weight:900;cursor:pointer;color:#15803D">+</button>'
+        +'</div>';
+    });
+    // Séparateur Mini-Cures 7j (Découverte)
+    prodsHtml+='<div style="margin-top:6px;font-size:11px;font-weight:800;color:#E65100;padding:4px 2px">🌟 Mini-Cures Découverte 7j · 15€ pièce</div>';
+    var prodsMini=[
+      {key:'mini-gel',name:'🌟 Mini-Cure Gélules 7j',qty:qtyMiniGel},
+      {key:'mini-the',name:'🌟 Mini-Cure Thé 7j',qty:qtyMiniThe},
+      {key:'mini-caf',name:'🌟 Mini-Cure Café 7j',qty:qtyMiniCaf}
+    ];
+    prodsMini.forEach(function(p){
+      var bgCol=p.qty>0?'#FFF3E0':'#f5f5f5';
+      var borderCol=p.qty>0?'#F59E0B':'#ddd';
       prodsHtml+='<div style="display:flex;align-items:center;gap:8px;background:'+bgCol+';border:1.5px solid '+borderCol+';border-radius:10px;padding:8px 10px">'
         +'<div style="flex:1;font-size:13px;font-weight:800;color:#333">'+p.name+'</div>'
         +'<button type="button" onclick="changeProdQty(\''+p.key+'\',-1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid #ddd;background:#fff;font-size:18px;font-weight:900;cursor:pointer;color:#B91C1C">−</button>'
