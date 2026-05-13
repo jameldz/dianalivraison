@@ -845,9 +845,12 @@ function _doPushCloud(){
   // Si on essaie de push beaucoup moins de commandes que la dernière version connue → BLOQUER
   // (évite qu'un onglet vide écrase le cloud plein)
   var lastKnownCount = parseInt(localStorage.getItem('diana_last_safe_count')||'0',10);
-  if(lastKnownCount>=10 && orders.length<Math.max(10, lastKnownCount*0.5)){
+  // Alerte si baisse > 5 commandes OU > 10%
+  var diff = lastKnownCount - orders.length;
+  var pctDrop = lastKnownCount>0 ? diff/lastKnownCount : 0;
+  if(lastKnownCount>=10 && (diff>=5 || pctDrop>0.1) && orders.length<lastKnownCount){
     console.error('[SafetyGuard] PUSH BLOQUÉ : orders='+orders.length+' mais dernière version='+lastKnownCount);
-    try { toast('⚠️ Push bloqué (sécurité) — '+orders.length+' vs '+lastKnownCount+' attendues'); } catch(e){}
+    try { showDataLossAlert(orders.length, lastKnownCount); } catch(e){}
     return false;
   }
   // Mise à jour du compteur safe
@@ -908,6 +911,32 @@ function hasPendingSync(){
   try { return !!localStorage.getItem('diana_pending_sync'); } catch(e){ return false; }
 }
 window.hasPendingSync = hasPendingSync;
+
+// ═══ ALERTE DATA-LOSS — bannière rouge persistante ═══
+function showDataLossAlert(currentCount, expectedCount){
+  // Évite les doublons
+  if(document.getElementById('dataLossAlert')) return;
+  var diff = expectedCount - currentCount;
+  var div = document.createElement('div');
+  div.id = 'dataLossAlert';
+  div.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#dc2626;color:#fff;padding:14px 18px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.3);font-size:14px;line-height:1.5;';
+  div.innerHTML = '🚨 <b>ALERTE — Perte de commandes détectée</b><br>'+
+    '<span style="font-weight:400;font-size:13px;">'+
+    'Actuel: <b>'+currentCount+'</b> commandes — Attendu: <b>'+expectedCount+'</b> ('+diff+' manquantes). '+
+    'Le push vers le cloud a été <b>bloqué</b> pour protéger tes données.<br>'+
+    '👉 Ne fais aucune modification. Restaure une sauvegarde via Réglages → Sauvegardes auto.'+
+    '</span> '+
+    '<button onclick="document.getElementById(\'dataLossAlert\').remove();" style="margin-left:12px;background:#fff;color:#dc2626;border:none;padding:6px 12px;border-radius:6px;font-weight:600;cursor:pointer;">Fermer</button>';
+  document.body.appendChild(div);
+  // Log l'incident pour debug
+  try {
+    var incidents = JSON.parse(localStorage.getItem('diana_dataloss_log')||'[]');
+    incidents.unshift({date:Date.now(), current:currentCount, expected:expectedCount, ua:navigator.userAgent});
+    if(incidents.length>20) incidents = incidents.slice(0,20);
+    localStorage.setItem('diana_dataloss_log', JSON.stringify(incidents));
+  } catch(e){}
+}
+window.showDataLossAlert = showDataLossAlert;
 // 3. Listeners de flush forcé (iOS Safari : visibilitychange + pagehide + beforeunload)
 if(!window._flushListenersAdded){
   window._flushListenersAdded = true;
@@ -939,18 +968,24 @@ if(!window._initBootstrapDone){
 }
 
 // ── SAUVEGARDE AUTOMATIQUE LOCALE ──
-// Garde les 10 dernières sauvegardes automatiques dans localStorage
-// Crée une nouvelle sauvegarde maximum toutes les 6h pour éviter de saturer
+// Garde les 30 dernières sauvegardes (1 par jour minimum) dans localStorage
+// Backup auto si > 4h depuis le dernier, ou si jour calendaire différent
 function autoBackupIfNeeded(){
   try{
-    var SIX_HOURS=6*60*60*1000;
-    var MAX_BACKUPS=10;
+    var FOUR_HOURS=4*60*60*1000;
+    var MAX_BACKUPS=30;
     var backups=JSON.parse(localStorage.getItem('diana_auto_backups')||'[]');
     var now=Date.now();
-    // Vérifier la dernière sauvegarde
     var lastBackup=backups.length>0?backups[0].date:0;
-    if(now-lastBackup<SIX_HOURS) return; // Trop tôt
-    // Créer une nouvelle sauvegarde
+    var sameDay=(new Date(lastBackup)).toDateString()===(new Date(now)).toDateString();
+    // Skip si même jour ET moins de 4h écoulées
+    if(sameDay && (now-lastBackup<FOUR_HOURS)) return;
+    // SAFETY : ne pas créer un backup avec MOINS de commandes que le précédent
+    // (évite de stocker des snapshots corrompus)
+    if(backups.length>0 && orders.length < backups[0].ordersCount * 0.9){
+      console.warn('[autoBackup] Skip — orders='+orders.length+' < dernier backup='+backups[0].ordersCount);
+      return;
+    }
     var snapshot={
       date:now,
       ordersCount:orders.length,
@@ -958,9 +993,15 @@ function autoBackupIfNeeded(){
       data:{orders:orders,clients:clients,joursFermes:joursFermes}
     };
     backups.unshift(snapshot);
-    // Garder seulement les 10 dernières
+    // Garder 30 max — mais essayer d'étaler sur 30 jours différents
     if(backups.length>MAX_BACKUPS) backups=backups.slice(0,MAX_BACKUPS);
-    localStorage.setItem('diana_auto_backups',JSON.stringify(backups));
+    try {
+      localStorage.setItem('diana_auto_backups',JSON.stringify(backups));
+    } catch(quotaErr){
+      // QuotaExceeded : on réduit à 15 et on réessaie
+      backups = backups.slice(0,15);
+      try { localStorage.setItem('diana_auto_backups',JSON.stringify(backups)); } catch(e2){}
+    }
   }catch(e){
     console.warn('Auto-backup failed:',e);
   }
@@ -2025,10 +2066,62 @@ function showClienteChoice(id, prenom){
     +'<button onclick="document.getElementById(\'clienteChoiceOverlay\').style.display=\'none\';sendConfClient(\''+id+'\')" style="width:100%;padding:14px;background:linear-gradient(135deg,#22C55E,#15803D);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px">✅ Renvoyer la confirmation</button>'
     +'<button onclick="document.getElementById(\'clienteChoiceOverlay\').style.display=\'none\';sendTutoPaypal(\''+id+'\',\'wa\')" style="width:100%;padding:14px;background:linear-gradient(135deg,#003087,#0070BA);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px">💳 Tuto PayPal — WhatsApp</button>'
     +'<button onclick="document.getElementById(\'clienteChoiceOverlay\').style.display=\'none\';sendTutoPaypal(\''+id+'\',\'sms\')" style="width:100%;padding:14px;background:linear-gradient(135deg,#3B82F6,#1D4ED8);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px">💳 Tuto PayPal — SMS</button>'
+    +'<button onclick="document.getElementById(\'clienteChoiceOverlay\').style.display=\'none\';showHistoriqueCliente(\''+id+'\')" style="width:100%;padding:14px;background:linear-gradient(135deg,#7C3AED,#5B21B6);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px">📜 Historique des commandes</button>'
     +'<button onclick="document.getElementById(\'clienteChoiceOverlay\').style.display=\'none\'" style="width:100%;padding:12px;background:var(--lt);color:var(--k2);border:1.5px solid var(--bdr);border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Annuler</button>'
     +'</div>';
   ov.style.display='flex';
 }
+
+// ═══ HISTORIQUE COMMANDES D'UNE CLIENTE ═══
+function showHistoriqueCliente(orderId){
+  var ref = orders.find(function(x){return x.id===orderId;});
+  if(!ref){ toast('Commande introuvable'); return; }
+  var refTel = (ref.tel||'').replace(/\s/g,'');
+  var refNom = (ref.nom||'').toLowerCase().trim();
+  // Trouve toutes les commandes (par tel OU par nom normalisé)
+  var hist = orders.filter(function(o){
+    var t = (o.tel||'').replace(/\s/g,'');
+    var n = (o.nom||'').toLowerCase().trim();
+    return (refTel && t===refTel) || (refNom && n===refNom);
+  });
+  hist.sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+  var ov = document.getElementById('histClienteOverlay');
+  if(!ov){
+    ov = document.createElement('div');
+    ov.id = 'histClienteOverlay';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px;';
+    ov.onclick = function(e){if(e.target===ov) ov.style.display='none';};
+    document.body.appendChild(ov);
+  }
+  var totalEur = hist.reduce(function(s,o){return s+(parseFloat(o.total)||0);},0);
+  var html = '<div style="background:#fff;border-radius:16px;padding:18px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
+    +'<div><div style="font-size:16px;font-weight:900;color:var(--rd)">📜 '+(ref.nom||'')+'</div>'
+    +'<div style="font-size:12px;color:#666">'+hist.length+' commande'+(hist.length>1?'s':'')+' · Total : '+totalEur.toFixed(2)+'€</div></div>'
+    +'<button onclick="document.getElementById(\'histClienteOverlay\').style.display=\'none\'" style="background:var(--lt);border:1px solid var(--bdr);border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer;font-family:inherit">✕</button>'
+    +'</div>';
+  if(hist.length===0){
+    html += '<div style="text-align:center;color:#999;padding:30px">Aucune autre commande</div>';
+  } else {
+    hist.forEach(function(o){
+      var d = o.createdAt ? new Date(o.createdAt) : null;
+      var dateStr = d ? d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '?';
+      var statut = o.livree ? '✅ Livrée' : o.confirme ? '📨 Notifiée' : '⏳ En cours';
+      var payee = o.payee ? ' · 💰 Payée' : ' · 💸 Non payée';
+      var bgCol = o.livree ? '#F0FDF4' : o.confirme ? '#FEF3C7' : '#FEE2E2';
+      var borderCol = o.livree ? '#22C55E' : o.confirme ? '#F59E0B' : '#DC2626';
+      html += '<div style="background:'+bgCol+';border-left:4px solid '+borderCol+';border-radius:8px;padding:10px 12px;margin-bottom:8px">'
+        +'<div style="font-size:11px;color:#666;font-weight:700">#'+(o.num||o.id)+' · '+dateStr+'</div>'
+        +'<div style="font-size:13px;font-weight:700;margin:4px 0">'+(o.prods||'')+'</div>'
+        +'<div style="font-size:12px;color:#444">'+(parseFloat(o.total)||0).toFixed(2)+'€ · '+(o.vendeur||'?')+' · '+statut+payee+'</div>'
+        +'</div>';
+    });
+  }
+  html += '</div>';
+  ov.innerHTML = html;
+  ov.style.display = 'flex';
+}
+window.showHistoriqueCliente = showHistoriqueCliente;
 
 async function sendConfClient(id){
   var o=orders.find(function(x){return x.id===id;});
