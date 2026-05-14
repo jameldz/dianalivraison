@@ -216,6 +216,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
     <button class="add-btn" onclick="openStock()"><span class="btn-ico">📦</span><span class="btn-lbl">Stock</span></button>
     <button class="add-btn" onclick="toggleClientes()"><span class="btn-ico">👥</span><span class="btn-lbl">Clientes</span></button>
     <button class="add-btn" onclick="forceSyncFromCloud()" oncontextmenu="event.preventDefault();openSyncSettings()"><span class="btn-ico">🔄</span><span class="btn-lbl">Sync</span></button>
+    <button class="add-btn" onclick="diagSync()" style="background:rgba(255,193,7,0.2);border-color:rgba(255,193,7,0.6)"><span class="btn-ico">🔧</span><span class="btn-lbl">Diag</span></button>
     <button class="add-btn" onclick="openSyncSettings()"><span class="btn-ico">⚙️</span><span class="btn-lbl">Coffre</span></button>
     <button class="add-btn" onclick="exportData()"><span class="btn-ico">📊</span><span class="btn-lbl">CSV</span></button>
     <button class="add-btn" onclick="openBackupModal()"><span class="btn-ico">🗄️</span><span class="btn-lbl">Backup</span></button>
@@ -855,6 +856,38 @@ async function saveStorage() {
     _doPushCloud();
   }, 300);
 }
+// ═══ DIAGNOSTIC SYNC : force un push et affiche le résultat dans une alert ═══
+async function diagSync(){
+  var msg = '🔧 DIAGNOSTIC SYNC\n\n';
+  try {
+    msg += '📱 UA: '+(navigator.userAgent.indexOf('iPhone')>=0?'iPhone':'Mac/Autre')+'\n';
+    msg += '📦 Local: '+orders.length+' commandes\n';
+    msg += '🔑 Bin: '+(JBIN||'aucun')+'\n';
+    msg += '⏳ Push en cours...\n\n';
+    var body = JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{},lastSync:Date.now()});
+    var r = await fetch('https://api.jsonbin.io/v3/b/'+JBIN, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JKEY},
+      body: body
+    });
+    var rj = await r.json();
+    msg += '📡 Status HTTP: '+r.status+'\n';
+    msg += '✅ Push: '+(r.ok?'OK':'ÉCHEC')+'\n';
+    if(rj.metadata) msg += '🆔 Cloud version: '+(rj.metadata.id||'?')+'\n';
+    if(!r.ok) msg += '❌ Erreur: '+JSON.stringify(rj).substring(0,200);
+    // Pull pour vérifier
+    var r2 = await fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest?t='+Date.now(), {headers:{'X-Master-Key':JKEY}});
+    var d2 = await r2.json();
+    msg += '\n☁️ Cloud actuel: '+((d2.record&&d2.record.orders||[]).length)+' commandes';
+    try { localStorage.setItem('diana_last_safe_count', String(orders.length)); } catch(e){}
+    try { localStorage.removeItem('diana_pending_sync'); } catch(e){}
+  } catch(e){
+    msg += '\n❌ EXCEPTION: '+e.message;
+  }
+  alert(msg);
+}
+window.diagSync = diagSync;
+
 // Push effectif vers le cloud avec ack en localStorage
 function _doPushCloud(){
   // ═══ GARDE-FOU ULTIME : Si orders est vide → vérifier le cloud AVANT de push ═══
