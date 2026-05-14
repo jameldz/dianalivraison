@@ -944,11 +944,12 @@ function _doPushCloud(){
   }
   var retries=0;
   function trySave(){
+    // ⚠️ PAS keepalive:true ici car Safari iOS bloque les payloads >64KB en keepalive
+    // (on a souvent >100KB avec 400+ commandes). keepalive uniquement pour _flushCloudBeacon (pagehide).
     fetch('https://api.jsonbin.io/v3/b/'+JBIN,{
       method:'PUT',
       headers:{'Content-Type':'application/json','X-Master-Key':JKEY},
-      body:body,
-      keepalive:true
+      body:body
     }).then(function(r){
       if(r.ok){
         _saveLastPushedSnap = body;
