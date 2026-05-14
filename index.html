@@ -857,6 +857,30 @@ async function saveStorage() {
 }
 // Push effectif vers le cloud avec ack en localStorage
 function _doPushCloud(){
+  // ═══ GARDE-FOU ULTIME : Si orders est vide → vérifier le cloud AVANT de push ═══
+  // (protection contre le scénario "Safari iOS effacé → localStorage vide → push 0 qui écrase tout")
+  if(orders.length === 0){
+    return fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest?t='+Date.now(),{headers:{'X-Master-Key':JKEY}})
+      .then(function(r){return r.ok?r.json():null;})
+      .then(function(d){
+        if(d && d.record && Array.isArray(d.record.orders) && d.record.orders.length >= 10){
+          console.error('[GUARD ULTIME] Push 0 refusé — cloud a '+d.record.orders.length+' commandes. Pull au lieu de push.');
+          orders = d.record.orders;
+          if(d.record.clients) clients = d.record.clients;
+          if(d.record.joursFermes) joursFermes = d.record.joursFermes;
+          try { localStorage.setItem('diana_orders', JSON.stringify(orders)); } catch(e){}
+          try { localStorage.setItem('diana_clients', JSON.stringify(clients)); } catch(e){}
+          try { localStorage.setItem('diana_last_safe_count', String(orders.length)); } catch(e){}
+          try { localStorage.removeItem('diana_pending_sync'); } catch(e){}
+          try { showDataLossAlert(0, orders.length); } catch(e){}
+          try { if(typeof render==='function') render(); } catch(e){}
+          return false;
+        }
+        // Cloud est vide aussi, OK pour push 0
+        return true;
+      })
+      .catch(function(){ return false; });
+  }
   // ═══ GARDE-FOU ANTI-ÉCRASEMENT ═══
   // Si on essaie de push beaucoup moins de commandes que la dernière version connue → BLOQUER
   // (évite qu'un onglet vide écrase le cloud plein)
