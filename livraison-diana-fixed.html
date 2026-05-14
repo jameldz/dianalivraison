@@ -840,6 +840,30 @@ var vendeur = VENDEURS[vendeurKey] || VENDEURS['sabra'];
     });
   }
 })();
+// ═══ RÉORGANISATION : Produits en premier, avant les renseignements client ═══
+document.addEventListener('DOMContentLoaded', function(){
+  try {
+    var cardProd = document.getElementById('cardProd');
+    if(!cardProd) return;
+    // Trouve la première carte (mode livraison) pour placer cardProd avant
+    var allCards = document.querySelectorAll('.card');
+    var firstCard = null;
+    for(var i=0; i<allCards.length; i++){
+      if(allCards[i] !== cardProd){ firstCard = allCards[i]; break; }
+    }
+    if(firstCard && cardProd.parentNode === firstCard.parentNode){
+      cardProd.parentNode.insertBefore(cardProd, firstCard);
+      // Renumérote les steps visibles (la nouvelle première carte = 1)
+      var steps = document.querySelectorAll('.card .step');
+      steps.forEach(function(s, idx){
+        // Garde seulement les nombres (pas les emojis)
+        var t = (s.textContent||'').trim();
+        if(/^\d+$/.test(t)) s.textContent = String(idx+1);
+      });
+    }
+  } catch(e){ console.warn('Réorganisation formulaire échouée:', e); }
+});
+
 var VENDEUSE = '33651511861';
 var CONTACT = '33651511861'; // numéro de contact caché
 var DASHBOARD_URL = 'https://dianalivraison.vercel.app/';
@@ -922,6 +946,18 @@ function calcPoids(){
 function calcFraisEnvoi(){
   if(modeLiv==='place') return 0;
   if(modeLiv!=='envoi') return 5;
+  // ═══ DOM-TOM : tarif fixe Colissimo + 2€ Jamel ═══
+  if(typeof isDomTom !== 'undefined' && isDomTom){
+    var nbProds = 0;
+    try {
+      if(typeof prods !== 'undefined' && Array.isArray(prods)) nbProds = prods.length;
+    } catch(e){}
+    var tarifDom = nbProds <= 4 ? 13 : 16;
+    // Mettre à jour le bandeau si le nombre de produits change
+    var tarifSpan = document.getElementById('domTomTarif');
+    if(tarifSpan) tarifSpan.textContent = 'Frais : '+tarifDom+'€';
+    return tarifDom;
+  }
   var g=calcPoids();
   var pays=(document.getElementById('paysEnvoi')||{}).value||'FR';
   var dom=modeRelais==='domicile';
@@ -2063,7 +2099,63 @@ function fetchAddrSug(q,isEdit){
       sug.style.display='block';
     }).catch(function(){});
 }
+var isDomTom = false;
+function isDomTomCp(cp){
+  return /^(97|98)\d{3}$/.test(String(cp||'').trim());
+}
+function applyDomTom(active){
+  if(isDomTom===active) return;
+  isDomTom = active;
+  var banner = document.getElementById('domTomBanner');
+  if(!banner){
+    banner = document.createElement('div');
+    banner.id = 'domTomBanner';
+    banner.style.cssText = 'background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:12px;padding:12px 14px;margin:10px 0;font-size:12px;color:#78350F;line-height:1.5';
+    var card = document.getElementById('cardProd') || document.querySelector('.card');
+    if(card && card.parentNode) card.parentNode.insertBefore(banner, card);
+  }
+  if(active){
+    banner.style.display = 'block';
+    banner.innerHTML = '🏝️ <b>Livraison Outre-mer détectée</b><br>'+
+      'Tu seras livrée via <b>Colissimo</b> directement à ton domicile.<br>'+
+      '<span id="domTomTarif" style="font-weight:700">Frais : 13€</span> (jusqu\'à 4 produits) ou <b>16€</b> (5 produits et +).<br>'+
+      '<span style="font-size:11px">Mondial Relay ne livre pas en Outre-mer.</span>';
+    // Forcer envoi + domicile, masquer les options Mondial Relay
+    if(typeof setModeLiv==='function') setModeLiv('envoi');
+    if(typeof setRelais==='function') setRelais('domicile');
+    var mondialOpts = document.getElementById('mondialOptions');
+    if(mondialOpts){
+      // Masque les boutons Point Relais/Locker/Domicile, garde juste le bloc domicile
+      var grids = mondialOpts.querySelectorAll('div[style*="grid-template-columns:1fr 1fr 1fr"]');
+      grids.forEach(function(g){g.style.display='none';});
+      var emailBlock = document.getElementById('relaisEmailBlock');
+      if(emailBlock) emailBlock.style.display='none';
+    }
+    var mPlace = document.getElementById('mPlace');
+    var mLiv = document.getElementById('mLiv');
+    if(mPlace) mPlace.style.opacity='0.4', mPlace.style.pointerEvents='none';
+    if(mLiv) mLiv.style.opacity='0.4', mLiv.style.pointerEvents='none';
+  } else {
+    banner.style.display = 'none';
+    var mondialOpts2 = document.getElementById('mondialOptions');
+    if(mondialOpts2){
+      var grids2 = mondialOpts2.querySelectorAll('div[style*="grid-template-columns:1fr 1fr 1fr"]');
+      grids2.forEach(function(g){g.style.display='';});
+      var emailBlock2 = document.getElementById('relaisEmailBlock');
+      if(emailBlock2) emailBlock2.style.display='';
+    }
+    var mPlace2 = document.getElementById('mPlace');
+    var mLiv2 = document.getElementById('mLiv');
+    if(mPlace2) mPlace2.style.opacity='', mPlace2.style.pointerEvents='';
+    if(mLiv2) mLiv2.style.opacity='', mLiv2.style.pointerEvents='';
+  }
+  // Recalculer le récap si fonction dispo
+  if(typeof updateRecap==='function') updateRecap();
+  if(typeof renderRecap==='function') renderRecap();
+}
+
 function onCp(val){
+  applyDomTom(isDomTomCp(val));
   if(val.length===5){fetch('https://api-adresse.data.gouv.fr/search/?q='+val+'&type=municipality&limit=1').then(function(r){return r.json();}).then(function(d){}).catch(function(){});}
 }
 document.addEventListener('click',function(e){if(!e.target.closest('.awrap')){document.getElementById('aSug').style.display='none';document.getElementById('eSug').style.display='none';}});
