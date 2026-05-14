@@ -824,13 +824,8 @@ function syncFromJsonbin(){
 var _savePushTimer = null;
 var _saveLastPushedSnap = null;
 async function saveStorage() {
-  // ═══ PROTECTION ANTI-WIPE ═══
-  // Bloque tout save tant que les données n'ont pas été chargées (évite d'écrire orders=[] au boot)
-  if(!window._dataLoaded){
-    console.warn('[saveStorage] BLOQUÉ — _dataLoaded=false (boot en cours)');
-    return;
-  }
-  // Si orders est vide MAIS le localStorage en a → c'est anormal, on bloque
+  // ═══ PROTECTION ANTI-WIPE (uniquement le vrai cas dangereux) ═══
+  // Si orders est vide MAIS le localStorage en a → on bloque (évite d'écraser des commandes par 0)
   if(orders.length===0){
     try {
       var existing = JSON.parse(localStorage.getItem('diana_orders')||'[]');
