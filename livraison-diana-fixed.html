@@ -708,8 +708,70 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
   </div>
 </div>
 
+<!-- DÉCHARGE / CONTRE-INDICATIONS -->
+<div id="dechargeBox" style="background:#FFF7ED;border:2px solid #F97316;border-radius:12px;padding:14px;margin:14px 0">
+  <div style="font-size:13px;font-weight:900;color:#9A3412;margin-bottom:10px;display:flex;align-items:center;gap:6px">⚠️ Important — À lire avant de commander</div>
+  <div style="font-size:12px;color:#7C2D12;line-height:1.6;margin-bottom:12px">
+    Nos produits sont des compléments alimentaires à base de plantes. Ils <strong>ne se substituent pas à un avis médical</strong>.<br><br>
+    Ils sont <strong>déconseillés</strong> aux femmes enceintes ou allaitantes, aux mineurs, aux personnes sous traitement médical, souffrant de pathologies chroniques (foie, reins, cœur, diabète, hypertension…) ou ayant des allergies aux composants.<br><br>
+    <button type="button" onclick="openContreIndications()" style="background:#fff;border:1.5px solid #F97316;color:#9A3412;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">📋 Voir la liste complète des contre-indications</button>
+  </div>
+  <div style="background:#fff;border:1.5px solid #F97316;border-radius:10px;padding:12px;font-size:12px;color:#7C2D12;line-height:1.6;font-weight:600;margin-bottom:8px">
+    <div style="font-weight:800;color:#9A3412;margin-bottom:8px">En cochant la case, je certifie sur l'honneur :</div>
+    <ul style="margin:0 0 10px 18px;padding:0">
+      <li>Être <b>majeure</b> (18 ans ou plus) et commander pour <b>mon usage personnel</b></li>
+      <li>N'avoir <b>aucune contre-indication</b> à la prise de ces produits et avoir lu les précautions d'usage</li>
+      <li>Ne prendre actuellement ni dans les 30 derniers jours <b>d'autres compléments alimentaires</b> (cures détox, brûle-graisses, coupe-faim, laxatifs, diurétiques…) ni <b>aucun médicament à visée amaigrissante ou anti-obésité</b>, sous quelque forme que ce soit (injectable, oral, sur ordonnance ou non)</li>
+    </ul>
+    <div style="font-style:italic;color:#7C2D12">Je commande en pleine conscience et dégage <b>Diana Detox de toute responsabilité</b> en cas de non-respect de ces engagements ou de non-divulgation d'une contre-indication.</div>
+  </div>
+  <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;background:#fff;border:2px solid #F97316;border-radius:10px;padding:12px;font-size:13px;color:#7C2D12;line-height:1.5;font-weight:800" id="dechargeLabel">
+    <input type="checkbox" id="dechargeCheck" style="margin-top:2px;flex-shrink:0;width:20px;height:20px;accent-color:#F97316" onchange="onDechargeChange()">
+    <span>J'ai lu et j'accepte les engagements ci-dessus</span>
+  </label>
+  <div id="dechargeErr" style="display:none;color:#DC2626;font-size:11px;font-weight:800;margin-top:6px">⚠️ Tu dois accepter cette confirmation pour pouvoir commander</div>
+</div>
+
 <button class="wa-btn" onclick="handleSubmit()">Vérifier ma commande →</button>
 <div class="legal" id="legalLine">Livraison 5 € · Paiement espèces à la livraison</div>
+
+<!-- MODAL CONTRE-INDICATIONS -->
+<div id="ciOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:16px;overflow-y:auto" onclick="if(event.target===this)closeContreIndications()">
+  <div style="background:#fff;border-radius:16px;padding:20px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:16px;font-weight:900;color:#9A3412">⚠️ Contre-indications & Précautions</div>
+      <button onclick="closeContreIndications()" style="background:#F3F4F6;border:none;border-radius:8px;padding:6px 12px;font-weight:800;cursor:pointer;font-family:inherit">✕</button>
+    </div>
+    <div style="font-size:13px;color:#374151;line-height:1.7">
+      <div style="font-weight:800;color:#9A3412;margin-bottom:6px">🚫 Produits déconseillés à :</div>
+      <ul style="margin:0 0 14px 18px;padding:0">
+        <li>Femmes <b>enceintes</b> ou <b>allaitantes</b></li>
+        <li><b>Mineurs</b> (moins de 18 ans)</li>
+        <li>Personnes sous <b>traitement médical</b> (consultez votre médecin avant)</li>
+        <li>Personnes prenant des <b>anticoagulants</b></li>
+        <li>Personnes atteintes de <b>pathologies hépatiques</b> (foie) ou <b>rénales</b></li>
+        <li>Personnes atteintes de <b>troubles cardiaques</b>, <b>hypertension</b>, <b>diabète</b> non contrôlé</li>
+        <li>Personnes en <b>traitement contre le cancer</b> ou en convalescence post-chirurgicale</li>
+        <li>Personnes <b>allergiques</b> ou intolérantes à l'un des composants (plantes, café, théine…)</li>
+        <li>Personnes souffrant de <b>troubles thyroïdiens</b></li>
+        <li>Personnes ayant des <b>antécédents de troubles du comportement alimentaire</b></li>
+      </ul>
+      <div style="font-weight:800;color:#9A3412;margin-bottom:6px">⚠️ Précautions d'usage :</div>
+      <ul style="margin:0 0 14px 18px;padding:0">
+        <li>Respecter les <b>doses recommandées</b> indiquées sur les produits</li>
+        <li>Boire suffisamment <b>d'eau</b> pendant la cure</li>
+        <li>Maintenir une <b>alimentation équilibrée</b> en parallèle</li>
+        <li>En cas d'<b>effet indésirable</b>, cesser immédiatement et consulter un médecin</li>
+        <li>Ces produits ne <b>remplacent pas un traitement médical</b></li>
+      </ul>
+      <div style="background:#FEF3C7;border-left:3px solid #F59E0B;padding:10px;border-radius:6px;color:#78350F;font-size:12px">
+        <b>En cas de doute</b>, demandez conseil à votre médecin ou pharmacien <b>avant</b> de commencer la cure.<br><br>
+        Diana Detox ne pourra être tenue responsable des conséquences d'une utilisation non conforme à ces recommandations ou en cas de non-divulgation d'une contre-indication.
+      </div>
+    </div>
+    <button onclick="closeContreIndications()" style="width:100%;margin-top:14px;background:linear-gradient(135deg,#F97316,#EA580C);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit">J'ai bien lu, je ferme</button>
+  </div>
+</div>
 </div>
 </div>
 
@@ -844,23 +906,32 @@ var vendeur = VENDEURS[vendeurKey] || VENDEURS['sabra'];
 document.addEventListener('DOMContentLoaded', function(){
   try {
     var cardProd = document.getElementById('cardProd');
-    if(!cardProd) return;
-    // Trouve la première carte (mode livraison) pour placer cardProd avant
-    var allCards = document.querySelectorAll('.card');
-    var firstCard = null;
-    for(var i=0; i<allCards.length; i++){
-      if(allCards[i] !== cardProd){ firstCard = allCards[i]; break; }
+    if(cardProd){
+      // Trouve la première carte (mode livraison) pour placer cardProd avant
+      var allCards = document.querySelectorAll('.card');
+      var firstCard = null;
+      for(var i=0; i<allCards.length; i++){
+        if(allCards[i] !== cardProd){ firstCard = allCards[i]; break; }
+      }
+      if(firstCard && cardProd.parentNode === firstCard.parentNode){
+        cardProd.parentNode.insertBefore(cardProd, firstCard);
+        // Renumérote les steps visibles (la nouvelle première carte = 1)
+        var steps = document.querySelectorAll('.card .step');
+        steps.forEach(function(s, idx){
+          var t = (s.textContent||'').trim();
+          if(/^\d+$/.test(t)) s.textContent = String(idx+1);
+        });
+      }
     }
-    if(firstCard && cardProd.parentNode === firstCard.parentNode){
-      cardProd.parentNode.insertBefore(cardProd, firstCard);
-      // Renumérote les steps visibles (la nouvelle première carte = 1)
-      var steps = document.querySelectorAll('.card .step');
-      steps.forEach(function(s, idx){
-        // Garde seulement les nombres (pas les emojis)
-        var t = (s.textContent||'').trim();
-        if(/^\d+$/.test(t)) s.textContent = String(idx+1);
-      });
-    }
+    // ═══ Initialisation DOM-TOM : vérifier le CP au chargement (si profil pré-rempli) ═══
+    setTimeout(function(){
+      try {
+        var fCp = document.getElementById('fCp');
+        if(fCp && fCp.value && typeof isDomTomCp==='function' && isDomTomCp(fCp.value)){
+          applyDomTom(true);
+        }
+      } catch(e){ console.warn('Init DOM-TOM échouée:', e); }
+    }, 500);
   } catch(e){ console.warn('Réorganisation formulaire échouée:', e); }
 });
 
@@ -928,6 +999,7 @@ var modeRelais = 'point';
 
 // Poids en grammes par produit
 var POIDS = {CAF:280, THE:500, GEL:50};
+var POIDS_MINI = {MCA:70, MTH:125, MGE:12}; // Mini-Cures 7j = 1/4 de la cure complète
 var POIDS_DAYLIA = 100; // par unité (~100g)
 
 function calcPoids(){
@@ -939,6 +1011,15 @@ function calcPoids(){
       total += (POIDS[id]||0)*qty;
     }
   });
+  // Mini-Cures 7j
+  Object.keys(POIDS_MINI).forEach(function(id){
+    var el=document.getElementById('p'+id);
+    if(el&&el.classList.contains('on')){
+      var qInput = document.getElementById('q'+id);
+      var qty = qInput ? (parseInt(qInput.value)||1) : 1;
+      total += POIDS_MINI[id]*qty;
+    }
+  });
   total += dTotal() * POIDS_DAYLIA;
   return total;
 }
@@ -946,23 +1027,25 @@ function calcPoids(){
 function calcFraisEnvoi(){
   if(modeLiv==='place') return 0;
   if(modeLiv!=='envoi') return 5;
-  // ═══ DOM-TOM : tarif fixe Colissimo + 2€ Jamel ═══
-  if(typeof isDomTom !== 'undefined' && isDomTom){
-    var nbProds = 0;
-    try {
-      if(typeof prods !== 'undefined' && Array.isArray(prods)) nbProds = prods.length;
-    } catch(e){}
-    var tarifDom = nbProds <= 4 ? 13 : 16;
-    // Mettre à jour le bandeau si le nombre de produits change
-    var tarifSpan = document.getElementById('domTomTarif');
-    if(tarifSpan) tarifSpan.textContent = 'Frais : '+tarifDom+'€';
-    return tarifDom;
-  }
   var g=calcPoids();
   var pays=(document.getElementById('paysEnvoi')||{}).value||'FR';
   var dom=modeRelais==='domicile';
   var base=0;
   var MARGE=1.90;
+
+  // ═══ DOM-TOM : Colissimo Outre-mer (grille tarifaire officielle, basée sur le poids) ═══
+  if(typeof isDomTom !== 'undefined' && isDomTom){
+    if(g<=250) base=10.30;
+    else if(g<=500) base=11.50;
+    else if(g<=750) base=12.80;
+    else if(g<=1000) base=14.20;
+    else if(g<=2000) base=18.10;
+    else if(g<=5000) base=26.60;
+    else if(g<=10000) base=32.50;
+    else base=47.50;
+    base += MARGE;
+    return Math.round(base*100)/100;
+  }
 
   if(pays==='FR'){
     if(!dom){
@@ -1265,22 +1348,23 @@ function setModeLiv(m){
   var prods=getProds();var subCheck=prods.reduce(function(s,p){return s+p.total;},0);
   var hasReduc=false;
   var hasLivGratuite=(m==='livraison'&&subCheck>=150);
+  var envoiLabel = (typeof isDomTom!=='undefined' && isDomTom) ? 'Colissimo Outre-mer' : 'Envoi Mondial Relay';
   if(badge){
     if(m==='livraison') badge.textContent=hasLivGratuite?'🚚 Livraison OFFERTE 🎉':'🚀 Livraison 5 €';
     else if(m==='place') badge.textContent='🏠 Récupération gratuite';
-    else badge.textContent='📦 Envoi Mondial Relay';
+    else badge.textContent='📦 '+envoiLabel;
   }
   // Ligne livraison dans le total bar
   var livLine=document.getElementById('livLine');
   if(livLine){
     if(m==='place') livLine.style.display='none';
-    else if(m==='envoi'){livLine.style.display='';livLine.querySelector('span:first-child').textContent='Envoi Mondial Relay';var ef=calcFraisEnvoi();livLine.querySelector('span:last-child').textContent=ef?ef.toFixed(2)+' €':'—';livLine.querySelector('span:last-child').style.color='';}
+    else if(m==='envoi'){livLine.style.display='';livLine.querySelector('span:first-child').textContent=envoiLabel;var ef=calcFraisEnvoi();livLine.querySelector('span:last-child').textContent=ef?ef.toFixed(2)+' €':'—';livLine.querySelector('span:last-child').style.color='';}
     else if(m==='livraison'){livLine.style.display='';livLine.querySelector('span:first-child').textContent='Livraison';livLine.querySelector('span:last-child').textContent=hasLivGratuite?'OFFERTE 🎉':'5,00 €';livLine.querySelector('span:last-child').style.color=hasLivGratuite?'#22C55E':'';}
   }
   // Sous-titre hero
   var heroSub=document.getElementById('heroSub');
   if(heroSub){
-    if(m==='envoi') heroSub.textContent='France & Europe · Envoi Mondial Relay';
+    if(m==='envoi') heroSub.textContent = (typeof isDomTom!=='undefined' && isDomTom) ? 'Outre-mer · Colissimo' : 'France & Europe · Envoi Mondial Relay';
     else heroSub.textContent='Paiement à la livraison';
   }
   // Ligne légale sous le bouton
@@ -1288,10 +1372,17 @@ function setModeLiv(m){
   if(legal){
     if(m==='livraison') legal.textContent='Livraison 5 € · Paiement espèces à la livraison';
     else if(m==='place') legal.textContent='Récupération gratuite · Paiement espèces sur place';
-    else legal.textContent='Envoi Mondial Relay · Paiement en ligne';
+    else legal.textContent = envoiLabel + ' · Paiement en ligne';
   }
-  // Transporteur Mondial Relay
-  document.getElementById('livreurExtra').style.display=m==='envoi'?'block':'none';
+  // Transporteur — masquer si DOM-TOM (Colissimo direct, pas de Mondial Relay)
+  var lExtra = document.getElementById('livreurExtra');
+  if(lExtra){
+    if(typeof isDomTom!=='undefined' && isDomTom){
+      lExtra.style.display = 'none';
+    } else {
+      lExtra.style.display = m==='envoi' ? 'block' : 'none';
+    }
+  }
   document.getElementById('horsFrameInfo').style.display=m==='envoi'?'block':'none';
   // Adresse selon mode + type relais
   updateAdresseDisplay();
@@ -1582,8 +1673,9 @@ function updateTotal(){
     if(modeLiv==='place'){livLine.style.display='none';}
     else if(modeLiv==='envoi'){
       var envFrais=calcFraisEnvoi();
-      if(livGratuite){livLine.style.display='';livLine.querySelector('span:first-child').textContent='Envoi Mondial Relay';livLine.querySelector('span:last-child').textContent='OFFERT 🎉';livLine.querySelector('span:last-child').style.color='#22C55E';}
-      else{livLine.style.display='';livLine.querySelector('span:first-child').textContent='Envoi Mondial Relay';livLine.querySelector('span:last-child').textContent=envFrais.toFixed(2)+' €';livLine.querySelector('span:last-child').style.color='';}
+      var envLabel = (typeof isDomTom!=='undefined' && isDomTom) ? 'Colissimo Outre-mer' : 'Envoi Mondial Relay';
+      if(livGratuite){livLine.style.display='';livLine.querySelector('span:first-child').textContent=envLabel;livLine.querySelector('span:last-child').textContent='OFFERT 🎉';livLine.querySelector('span:last-child').style.color='#22C55E';}
+      else{livLine.style.display='';livLine.querySelector('span:first-child').textContent=envLabel;livLine.querySelector('span:last-child').textContent=envFrais.toFixed(2)+' €';livLine.querySelector('span:last-child').style.color='';}
     }
     else{livLine.style.display='';livLine.querySelector('span:first-child').textContent='Livraison';livLine.querySelector('span:last-child').textContent=livGratuite?'OFFERTE 🎉':'5,00 €';livLine.querySelector('span:last-child').style.color=livGratuite?'#22C55E':'';}
   }
@@ -2116,38 +2208,24 @@ function applyDomTom(active){
   }
   if(active){
     banner.style.display = 'block';
-    banner.innerHTML = '🏝️ <b>Livraison Outre-mer détectée</b><br>'+
-      'Tu seras livrée via <b>Colissimo</b> directement à ton domicile.<br>'+
-      '<span id="domTomTarif" style="font-weight:700">Frais : 13€</span> (jusqu\'à 4 produits) ou <b>16€</b> (5 produits et +).<br>'+
-      '<span style="font-size:11px">Mondial Relay ne livre pas en Outre-mer.</span>';
-    // Forcer envoi + domicile, masquer les options Mondial Relay
+    banner.innerHTML = '🏝️ <b>Livraison Outre-mer</b> via <b>Colissimo</b> directement à ton domicile.';
+    // Forcer envoi + domicile, masquer COMPLÈTEMENT le bloc Mondial Relay
     if(typeof setModeLiv==='function') setModeLiv('envoi');
     if(typeof setRelais==='function') setRelais('domicile');
-    var mondialOpts = document.getElementById('mondialOptions');
-    if(mondialOpts){
-      // Masque les boutons Point Relais/Locker/Domicile, garde juste le bloc domicile
-      var grids = mondialOpts.querySelectorAll('div[style*="grid-template-columns:1fr 1fr 1fr"]');
-      grids.forEach(function(g){g.style.display='none';});
-      var emailBlock = document.getElementById('relaisEmailBlock');
-      if(emailBlock) emailBlock.style.display='none';
-    }
+    var livreurExtra = document.getElementById('livreurExtra');
+    if(livreurExtra) livreurExtra.style.display = 'none';
     var mPlace = document.getElementById('mPlace');
     var mLiv = document.getElementById('mLiv');
-    if(mPlace) mPlace.style.opacity='0.4', mPlace.style.pointerEvents='none';
-    if(mLiv) mLiv.style.opacity='0.4', mLiv.style.pointerEvents='none';
+    if(mPlace){ mPlace.style.opacity='0.4'; mPlace.style.pointerEvents='none'; }
+    if(mLiv){ mLiv.style.opacity='0.4'; mLiv.style.pointerEvents='none'; }
   } else {
     banner.style.display = 'none';
-    var mondialOpts2 = document.getElementById('mondialOptions');
-    if(mondialOpts2){
-      var grids2 = mondialOpts2.querySelectorAll('div[style*="grid-template-columns:1fr 1fr 1fr"]');
-      grids2.forEach(function(g){g.style.display='';});
-      var emailBlock2 = document.getElementById('relaisEmailBlock');
-      if(emailBlock2) emailBlock2.style.display='';
-    }
+    var livreurExtra2 = document.getElementById('livreurExtra');
+    if(livreurExtra2) livreurExtra2.style.display = '';
     var mPlace2 = document.getElementById('mPlace');
     var mLiv2 = document.getElementById('mLiv');
-    if(mPlace2) mPlace2.style.opacity='', mPlace2.style.pointerEvents='';
-    if(mLiv2) mLiv2.style.opacity='', mLiv2.style.pointerEvents='';
+    if(mPlace2){ mPlace2.style.opacity=''; mPlace2.style.pointerEvents=''; }
+    if(mLiv2){ mLiv2.style.opacity=''; mLiv2.style.pointerEvents=''; }
   }
   // Recalculer le récap si fonction dispo
   if(typeof updateRecap==='function') updateRecap();
@@ -2293,7 +2371,38 @@ function playOrderSound(){
   }catch(e){}
 }
 
+// ═══ DÉCHARGE / CONTRE-INDICATIONS ═══
+function openContreIndications(){
+  var ov = document.getElementById('ciOverlay');
+  if(ov){ ov.style.display = 'flex'; document.body.style.overflow='hidden'; }
+}
+function closeContreIndications(){
+  var ov = document.getElementById('ciOverlay');
+  if(ov){ ov.style.display = 'none'; document.body.style.overflow=''; }
+}
+function onDechargeChange(){
+  var cb = document.getElementById('dechargeCheck');
+  var err = document.getElementById('dechargeErr');
+  if(cb && cb.checked && err) err.style.display = 'none';
+}
+window.openContreIndications = openContreIndications;
+window.closeContreIndications = closeContreIndications;
+window.onDechargeChange = onDechargeChange;
+
 function handleSubmit(){
+  // 0. Décharge / contre-indications obligatoire
+  var dechargeCb = document.getElementById('dechargeCheck');
+  if(dechargeCb && !dechargeCb.checked){
+    var dechErr = document.getElementById('dechargeErr');
+    if(dechErr){ dechErr.style.display='block'; }
+    var dechBox = document.getElementById('dechargeBox');
+    if(dechBox){ dechBox.scrollIntoView({behavior:'smooth',block:'center'}); dechBox.style.boxShadow = '0 0 0 3px rgba(220,38,38,.3)'; setTimeout(function(){dechBox.style.boxShadow='';}, 1500); }
+    toast('⚠️ Confirme avoir lu les engagements pour valider');
+    return;
+  }
+  // Mémorise le timestamp d'acceptation pour preuve juridique
+  window._dechargeAcceptedAt = Date.now();
+
   // 1. Produits
   var prods=getProds();
   if(!prods.length){document.getElementById('sProd').closest('.card').scrollIntoView({behavior:'smooth',block:'center'});toast('⚠️ Choisis au moins un produit');return;}
@@ -2322,9 +2431,12 @@ function handleSubmit(){
     if(modeLiv==='place'){
       addr=ADRESSE_PLACE;
     } else if(modeLiv==='envoi'){
-      // Email obligatoire pour envoi (MR lien + communication)
+      // Email obligatoire pour envoi (MR lien ou Colissimo Outre-mer + communication)
       if(!email){
-        toast('⚠️ Email obligatoire pour les envois Mondial Relay');
+        var msgEmail = (typeof isDomTom!=='undefined' && isDomTom)
+          ? '⚠️ Email obligatoire pour les envois Outre-mer (Colissimo)'
+          : '⚠️ Email obligatoire pour les envois Mondial Relay';
+        toast(msgEmail);
         // Ouvrir le champ email s'il est caché ou scroller
         var fe=document.getElementById('fEmail');
         if(fe){showErr('fEmail');fe.focus();fe.scrollIntoView({behavior:'smooth',block:'center'});}
@@ -2575,7 +2687,12 @@ function handleSubmit(){
   var prodsLines=prods.map(function(p){return p.name+(p.qty>1?' x'+p.qty:'')+' — '+p.total+'€';}).join('\n');
   var relaisLabels={point:'Point Relais',locker:'Locker',domicile:'Domicile'};
   var relaisAddr=document.getElementById('fRelaisEmail')?document.getElementById('fRelaisEmail').value.trim():'';
-  var transportStr='Mondial Relay — '+(relaisLabels[modeRelais]||'Point Relais')+(relaisAddr?' → '+relaisAddr:'');
+  var transportStr;
+  if(typeof isDomTom !== 'undefined' && isDomTom){
+    transportStr='Colissimo Outre-mer — Domicile';
+  } else {
+    transportStr='Mondial Relay — '+(relaisLabels[modeRelais]||'Point Relais')+(relaisAddr?' → '+relaisAddr:'');
+  }
   var livLabels={livraison:'🛵 Remise en main propre',place:'🏠 Récupération sur place',envoi:'📦 Envoi — '+transportStr};
   var especesLabel=modeLiv==='place'?'Espèces sur place':'Espèces à la livraison';
   var payLabels={especes:especesLabel,paypal:'PayPal',lydia:'Lydia'};
@@ -2695,7 +2812,7 @@ function handleSubmit(){
     modePay='paypal';
     setModePay('paypal');
   }
-  var oData={id:Date.now().toString(),num,nom,snap,tel,email,addr:oAddr,prods:prods.map(function(p){return p.name;}).join(', '),slot:dispoStr,total,filtre:filtre,modeLiv:modeLiv,modeRelais:modeRelais,modePay:modePay,vendeur:vendeur?vendeur.nom:'',parrain:parrain,parrainTel:parrainTel,parrainSnap:parrainSnap,parrainEmail:parrainEmail,genre:genre,parrGenre:parrGenre,nbCmd:nbCmdClient,livGratuite:remiseFidel||(modeLiv==='livraison'&&sub>=150),reduc:reduc,filtreInox:filtreInox};
+  var oData={id:Date.now().toString(),num,nom,snap,tel,email,addr:oAddr,prods:prods.map(function(p){return p.name;}).join(', '),slot:dispoStr,total,filtre:filtre,modeLiv:modeLiv,modeRelais:modeRelais,modePay:modePay,vendeur:vendeur?vendeur.nom:'',parrain:parrain,parrainTel:parrainTel,parrainSnap:parrainSnap,parrainEmail:parrainEmail,genre:genre,parrGenre:parrGenre,nbCmd:nbCmdClient,livGratuite:remiseFidel||(modeLiv==='livraison'&&sub>=150),reduc:reduc,filtreInox:filtreInox,dechargeAccepted:true,dechargeAcceptedAt:(window._dechargeAcceptedAt||Date.now()),dechargeNoCompl:true,dechargeNoAmaigr:true,dechargeMajeur:true,domTom:(typeof isDomTom!=='undefined'&&isDomTom)||false};
   var magic=DASHBOARD_URL+'#add='+btoa(unescape(encodeURIComponent(JSON.stringify(oData))));
   lastMagic=magic;
   lastConfirmMsg=confirmMsg;
