@@ -974,6 +974,17 @@ function _doPushCloud(){
 // Flush keepalive (iOS Safari fige les timers — keepalive garde la requête vivante)
 function _flushCloudBeacon(){
   try {
+    // ═══ GARDE-FOU : ne JAMAIS push si orders est vide (évite le wipe à la fermeture Safari iOS) ═══
+    if(!orders || orders.length === 0){
+      console.warn('[FlushBeacon] BLOQUÉ — orders vide, refuse de push 0');
+      return;
+    }
+    // Garde supplémentaire : si last_safe_count est élevé et qu'on essaie de push beaucoup moins, on bloque
+    var lastKnownCount = parseInt(localStorage.getItem('diana_last_safe_count')||'0',10);
+    if(lastKnownCount >= 10 && orders.length < lastKnownCount * 0.5){
+      console.warn('[FlushBeacon] BLOQUÉ — orders='+orders.length+' vs safe='+lastKnownCount);
+      return;
+    }
     var body=JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{},lastSync:Date.now()});
     if(body===_saveLastPushedSnap) return;
     fetch('https://api.jsonbin.io/v3/b/'+JBIN,{
