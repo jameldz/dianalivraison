@@ -1323,13 +1323,14 @@ function render() {
   }
   alertsEl.innerHTML=globalAlerts.join('');
 
-  var filtered = orders.slice();
+  // Par défaut : exclure les fantôme (soft-deleted). Vue "vendeur" les inclut intentionnellement.
+  var filtered = orders.filter(function(o){return !o.fantome;});
   if (curFilt==='pending')   filtered = orders.filter(function(o){return !(o.livree && o.payee) && !o.confirme && !o.fantome;});
-  if (curFilt==='terminee')  filtered = orders.filter(function(o){return o.livree && o.payee && !o.confirme;}).sort(function(a,b){return (b.completedAt||b.createdAt||parseInt(b.id)||0)-(a.completedAt||a.createdAt||parseInt(a.id)||0);});
+  if (curFilt==='terminee')  filtered = orders.filter(function(o){return o.livree && o.payee && !o.confirme && !o.fantome;}).sort(function(a,b){return (b.completedAt||b.createdAt||parseInt(b.id)||0)-(a.completedAt||a.createdAt||parseInt(a.id)||0);});
   if (curFilt==='vendeur')   filtered = orders.filter(function(o){return o.confirme || o.fantome;}).sort(function(a,b){return (b.fantomeAt||b.confirmeAt||b.createdAt||parseInt(b.id)||0)-(a.fantomeAt||a.confirmeAt||a.createdAt||parseInt(a.id)||0);});
-  if (curFilt==='v-sabra')   filtered = orders.filter(function(o){return (o.vendeur||'').toLowerCase()==='sabra' && !(o.livree && o.payee);});
-  if (curFilt==='v-ilyes')   filtered = orders.filter(function(o){return (o.vendeur||'').toLowerCase()==='ilyes' && !(o.livree && o.payee);});
-  if (curFilt==='v-syriane') filtered = orders.filter(function(o){return (o.vendeur||'').toLowerCase()==='syriane' && !(o.livree && o.payee);});
+  if (curFilt==='v-sabra')   filtered = orders.filter(function(o){return (o.vendeur||'').toLowerCase()==='sabra' && !(o.livree && o.payee) && !o.fantome;});
+  if (curFilt==='v-ilyes')   filtered = orders.filter(function(o){return (o.vendeur||'').toLowerCase()==='ilyes' && !(o.livree && o.payee) && !o.fantome;});
+  if (curFilt==='v-syriane') filtered = orders.filter(function(o){return (o.vendeur||'').toLowerCase()==='syriane' && !(o.livree && o.payee) && !o.fantome;});
 
   // Filtre de recherche libre (toutes commandes — n°, nom, tél, email, snap, produit, note, adresse)
   var searchEl=document.getElementById('orderSearch');
