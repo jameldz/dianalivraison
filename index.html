@@ -1260,11 +1260,13 @@ function isRecurrent(o) {
 
 // ── RENDER ──────────────────────────────────────────────
 function render() {
-  var total   = orders.length;
-  var livrees = orders.filter(function(o){return o.livree;}).length;
-  var ca      = orders.filter(function(o){return !o.fantome;}).reduce(function(s,o){return s+(parseFloat(o.total)||0);},0);
+  // Filtrer les commandes fantôme (soft-deleted) des compteurs globaux
+  var ordersVisibles = orders.filter(function(o){return !o.fantome;});
+  var total   = ordersVisibles.length;
+  var livrees = ordersVisibles.filter(function(o){return o.livree;}).length;
+  var ca      = ordersVisibles.reduce(function(s,o){return s+(parseFloat(o.total)||0);},0);
   document.getElementById('sTot').textContent   = total;
-  var enCours = orders.filter(function(o){return !(o.livree && o.payee);}).length;
+  var enCours = ordersVisibles.filter(function(o){return !(o.livree && o.payee);}).length;
   document.getElementById('sReste').textContent = enCours;
   document.getElementById('sLiv').textContent   = livrees;
   document.getElementById('sCa').textContent    = Math.round(ca)+'€';
