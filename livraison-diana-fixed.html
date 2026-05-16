@@ -1763,6 +1763,32 @@ async function checkCagnotteDispo(){
         return _normTel(o.tel)===telNorm;
       }).sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0);});
 
+      // ═══ FIDÉLITÉ VENDEUR : si cliente connue, forcer le vendeur de sa 1ère commande ═══
+      if(mesCommandes.length > 0){
+        var originalVendeur = (mesCommandes[0].vendeur||'').toLowerCase().trim();
+        if(originalVendeur && VENDEURS[originalVendeur] && originalVendeur !== vendeurKey){
+          var ancien = vendeur && vendeur.nom ? vendeur.nom : vendeurKey;
+          vendeurKey = originalVendeur;
+          vendeur = VENDEURS[originalVendeur];
+          // Affiche un bandeau d'info à la cliente
+          var vBanner = document.getElementById('vendeurFidelBanner');
+          if(!vBanner){
+            vBanner = document.createElement('div');
+            vBanner.id = 'vendeurFidelBanner';
+            vBanner.style.cssText = 'margin-top:10px;background:linear-gradient(135deg,#E8F5E9,#A5D6A7);border:2px solid #22C55E;border-radius:12px;padding:10px 14px;font-size:12px;font-weight:700;color:#0D4F1C;line-height:1.5';
+            var fTelEl = document.getElementById('fTel');
+            if(fTelEl && fTelEl.parentElement) fTelEl.parentElement.appendChild(vBanner);
+          }
+          vBanner.innerHTML = '🤝 <b>Cliente fidèle de '+vendeur.nom+'</b> — ta commande sera attribuée à <b>'+vendeur.nom+'</b> (ta vendeuse depuis ta 1ère commande).';
+          vBanner.style.display = 'block';
+          // Mise à jour du Snap/contact si affiché ailleurs
+          if(typeof updateAdresseDisplay==='function') try{updateAdresseDisplay();}catch(e){}
+        } else {
+          var existingBanner = document.getElementById('vendeurFidelBanner');
+          if(existingBanner) existingBanner.style.display='none';
+        }
+      }
+
       // ═══ AUTO-FILL CLIENTE CONNUE : pré-remplir les champs vides ═══
       if(mesCommandes.length>0){
         var derniereCmd = mesCommandes[mesCommandes.length-1];
@@ -2562,39 +2588,8 @@ function handleSubmit(){
     returning=true;
   }
 
-  // Bloquer DOM-TOM (code postal 97xxx ou 98xxx) — pas de Mondial Relay
-  var cpCheck=cp||'';
-  if(/^(97|98)\d/.test(cpCheck)){
-    var vendeurSnapDom=vendeur?vendeur.snap:'diana-detox';
-    var poidsG=calcPoids();
-    // Tarifs Colissimo OM1 2026 (standard) + 2€ marge
-    var colisPrice=0;
-    if(poidsG<=500) colisPrice=14;
-    else if(poidsG<=1000) colisPrice=18.50;
-    else if(poidsG<=2000) colisPrice=24.50;
-    else if(poidsG<=3000) colisPrice=30;
-    else if(poidsG<=5000) colisPrice=38;
-    else colisPrice=50;
-    var domOv=document.createElement('div');
-    domOv.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px;';
-    domOv.onclick=function(e){if(e.target===domOv){var ov=document.getElementById('domtomOverlay');if(ov)ov.parentNode.removeChild(ov);}};
-    domOv.id='domtomOverlay';
-    domOv.innerHTML='<div style="background:#fff;border-radius:20px;padding:24px;max-width:340px;width:100%;text-align:center">'
-      +'<div style="font-size:40px;margin-bottom:10px">🌴</div>'
-      +'<div style="font-size:16px;font-weight:900;color:var(--rd);margin-bottom:12px">Envoi DOM-TOM</div>'
-      +'<div style="font-size:13px;color:var(--k2);line-height:1.6;margin-bottom:12px">Mondial Relay ne livre pas les DOM-TOM.<br>Pour un envoi en <strong>Colissimo</strong>, contacte-nous directement sur Snap !</div>'
-      +'<div style="background:#FEF3C7;border:2px solid #F59E0B;border-radius:12px;padding:12px;margin-bottom:16px">'
-      +'<div style="font-size:11px;font-weight:800;color:#92400E;margin-bottom:4px">📦 Frais d\'envoi Colissimo pour ta commande :</div>'
-      +'<div style="font-size:10px;color:#78350F;margin-bottom:6px">Poids estimé : '+Math.round(poidsG)+'g</div>'
-      +'<div style="font-size:22px;font-weight:900;color:#B45309">'+colisPrice.toFixed(2)+'€</div>'
-      +'<div style="font-size:10px;color:#92400E;margin-top:2px">Livraison sous 6 à 18 jours</div>'
-      +'</div>'
-      +'<a href="https://www.snapchat.com/add/'+vendeurSnapDom+'" target="_blank" style="display:block;background:linear-gradient(135deg,#FFFC00,#FFD700);color:#000;border-radius:12px;padding:14px;font-size:15px;font-weight:900;text-decoration:none;margin-bottom:10px">👻 '+vendeurSnapDom+'</a>'
-      +'<button onclick="var ov=document.getElementById(\'domtomOverlay\');if(ov)ov.parentNode.removeChild(ov);" style="width:100%;padding:12px;background:var(--lt);border:1.5px solid var(--bdr);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--k2)">Fermer</button>'
-      +'</div>';
-    document.body.appendChild(domOv);
-    return;
-  }
+  // DOM-TOM : la livraison Colissimo Outre-mer est gérée automatiquement (voir applyDomTom).
+  // La cliente peut commander directement, le tarif est calculé selon le poids.
 
   // Snap depuis formulaire
   var snapField=document.getElementById('fSnap');
