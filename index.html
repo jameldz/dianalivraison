@@ -3759,7 +3759,14 @@ function cancelDel(){
 }
 async function confirmDel(){
   if(!pendingDelId)return;
-  orders=orders.filter(function(o){return o.id!==pendingDelId;});
+  // SOFT-DELETE : marque la commande comme fantome au lieu de la retirer
+  // → propagation sûre via le merge cloud (les autres devices respecteront la suppression)
+  var o = orders.find(function(x){return x.id===pendingDelId;});
+  if(o){
+    o.fantome = true;
+    o.fantomeAt = Date.now();
+    o.lastModified = Date.now();
+  }
   pendingDelId=null;
   document.getElementById('delOverlay').classList.remove('show');
   await saveStorage();
