@@ -1260,8 +1260,8 @@ function isRecurrent(o) {
 
 // ── RENDER ──────────────────────────────────────────────
 function render() {
-  // Filtrer les commandes fantôme (soft-deleted) des compteurs globaux
-  var ordersVisibles = orders.filter(function(o){return !o.fantome;});
+  // Filtrer les commandes fantôme (soft-deleted) ET supprimées définitivement des compteurs globaux
+  var ordersVisibles = orders.filter(function(o){return !o.fantome && !o.deletedAt;});
   var total   = ordersVisibles.length;
   var livrees = ordersVisibles.filter(function(o){return o.livree;}).length;
   var ca      = ordersVisibles.reduce(function(s,o){return s+(parseFloat(o.total)||0);},0);
@@ -1323,14 +1323,14 @@ function render() {
   }
   alertsEl.innerHTML=globalAlerts.join('');
 
-  // Par défaut : exclure les fantôme (soft-deleted). Vue "vendeur" les inclut intentionnellement.
-  var filtered = orders.filter(function(o){return !o.fantome;});
-  if (curFilt==='pending')   filtered = orders.filter(function(o){return !(o.livree && o.payee) && !o.confirme && !o.fantome;});
-  if (curFilt==='terminee')  filtered = orders.filter(function(o){return o.livree && o.payee && !o.confirme && !o.fantome;}).sort(function(a,b){return (b.completedAt||b.createdAt||parseInt(b.id)||0)-(a.completedAt||a.createdAt||parseInt(a.id)||0);});
-  if (curFilt==='vendeur')   filtered = orders.filter(function(o){return o.confirme || o.fantome;}).sort(function(a,b){return (b.fantomeAt||b.confirmeAt||b.createdAt||parseInt(b.id)||0)-(a.fantomeAt||a.confirmeAt||a.createdAt||parseInt(a.id)||0);});
-  if (curFilt==='v-sabra')   filtered = orders.filter(function(o){return (o.vendeur||'').toLowerCase()==='sabra' && !(o.livree && o.payee) && !o.fantome;});
-  if (curFilt==='v-ilyes')   filtered = orders.filter(function(o){return (o.vendeur||'').toLowerCase()==='ilyes' && !(o.livree && o.payee) && !o.fantome;});
-  if (curFilt==='v-syriane') filtered = orders.filter(function(o){return (o.vendeur||'').toLowerCase()==='syriane' && !(o.livree && o.payee) && !o.fantome;});
+  // Par défaut : exclure fantôme + deletedAt. Vue "vendeur" inclut les fantôme MAIS pas les deletedAt.
+  var filtered = orders.filter(function(o){return !o.fantome && !o.deletedAt;});
+  if (curFilt==='pending')   filtered = orders.filter(function(o){return !(o.livree && o.payee) && !o.confirme && !o.fantome && !o.deletedAt;});
+  if (curFilt==='terminee')  filtered = orders.filter(function(o){return o.livree && o.payee && !o.confirme && !o.fantome && !o.deletedAt;}).sort(function(a,b){return (b.completedAt||b.createdAt||parseInt(b.id)||0)-(a.completedAt||a.createdAt||parseInt(a.id)||0);});
+  if (curFilt==='vendeur')   filtered = orders.filter(function(o){return (o.confirme || o.fantome) && !o.deletedAt;}).sort(function(a,b){return (b.fantomeAt||b.confirmeAt||b.createdAt||parseInt(b.id)||0)-(a.fantomeAt||a.confirmeAt||a.createdAt||parseInt(a.id)||0);});
+  if (curFilt==='v-sabra')   filtered = orders.filter(function(o){return (o.vendeur||'').toLowerCase()==='sabra' && !(o.livree && o.payee) && !o.fantome && !o.deletedAt;});
+  if (curFilt==='v-ilyes')   filtered = orders.filter(function(o){return (o.vendeur||'').toLowerCase()==='ilyes' && !(o.livree && o.payee) && !o.fantome && !o.deletedAt;});
+  if (curFilt==='v-syriane') filtered = orders.filter(function(o){return (o.vendeur||'').toLowerCase()==='syriane' && !(o.livree && o.payee) && !o.fantome && !o.deletedAt;});
 
   // Filtre de recherche libre (toutes commandes — n°, nom, tél, email, snap, produit, note, adresse)
   var searchEl=document.getElementById('orderSearch');
@@ -3762,19 +3762,27 @@ function cancelDel(){
 }
 async function confirmDel(){
   if(!pendingDelId)return;
-  // SOFT-DELETE : marque la commande comme fantome au lieu de la retirer
-  // → propagation sûre via le merge cloud (les autres devices respecteront la suppression)
   var o = orders.find(function(x){return x.id===pendingDelId;});
+  var hard = false;
   if(o){
-    o.fantome = true;
-    o.fantomeAt = Date.now();
-    o.lastModified = Date.now();
+    if(o.fantome){
+      // Déjà fantôme → SUPPRESSION DÉFINITIVE
+      // On ajoute deletedAt qui exclut la commande même de la vue Vendeur
+      o.deletedAt = Date.now();
+      o.lastModified = Date.now();
+      hard = true;
+    } else {
+      // Première suppression → SOFT-DELETE (fantome)
+      o.fantome = true;
+      o.fantomeAt = Date.now();
+      o.lastModified = Date.now();
+    }
   }
   pendingDelId=null;
   document.getElementById('delOverlay').classList.remove('show');
   await saveStorage();
   render();
-  toast('🗑 Supprimée');
+  toast(hard?'🔥 Supprimée définitivement':'🗑 Supprimée');
 }
 
 // ── EDIT ORDER ──────────────────────────────────────────
