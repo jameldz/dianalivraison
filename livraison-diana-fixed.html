@@ -2808,6 +2808,47 @@ function handleSubmit(){
     setModePay('paypal');
   }
   var oData={id:Date.now().toString(),num,nom,snap,tel,email,addr:oAddr,prods:prods.map(function(p){return p.name;}).join(', '),slot:dispoStr,total,filtre:filtre,modeLiv:modeLiv,modeRelais:modeRelais,modePay:modePay,vendeur:vendeur?vendeur.nom:'',parrain:parrain,parrainTel:parrainTel,parrainSnap:parrainSnap,parrainEmail:parrainEmail,genre:genre,parrGenre:parrGenre,nbCmd:nbCmdClient,livGratuite:remiseFidel||(modeLiv==='livraison'&&sub>=150),reduc:reduc,filtreInox:filtreInox,dechargeAccepted:true,dechargeAcceptedAt:(window._dechargeAcceptedAt||Date.now()),dechargeNoCompl:true,dechargeNoAmaigr:true,dechargeMajeur:true,domTom:(typeof isDomTom!=='undefined'&&isDomTom)||false};
+
+  // ═══ PUSH DIRECT AU CLOUD (ne dépend PLUS du clic sur le lien magique) ═══
+  // Évite les commandes perdues quand Jamel ne clique pas sur le lien ou que le clic échoue
+  (function pushDirectToCloud(){
+    try {
+      var DBIN = '69e7f319856a6821895b22f4';
+      var DKEY = '$2a$10$Bl5XcpoCn.nkMDLQ4hV37OE5XSCTH0aEEAmPhQCQC9iw421Z1TPjy';
+      // Pull cloud, ajouter notre commande, push (sans keepalive pour pas être limité à 64KB)
+      fetch('https://api.jsonbin.io/v3/b/'+DBIN+'/latest?t='+Date.now(), {headers:{'X-Master-Key':DKEY}})
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(d){
+          if(!d || !d.record) return;
+          var cloudOrders = d.record.orders || [];
+          // Anti-doublon par num
+          if(cloudOrders.some(function(o){return o.num===oData.num;})) return;
+          // Ajouter notre commande avec les flags par défaut
+          var newOrder = Object.assign({
+            livree: false, payee: false, confirme: false, clientConfirme: false,
+            pickedSlot: '', note: '',
+            createdAt: Date.now(), lastModified: Date.now()
+          }, oData);
+          cloudOrders.unshift(newOrder);
+          return fetch('https://api.jsonbin.io/v3/b/'+DBIN, {
+            method: 'PUT',
+            headers: {'Content-Type':'application/json','X-Master-Key':DKEY},
+            body: JSON.stringify({
+              orders: cloudOrders,
+              clients: d.record.clients || {},
+              joursFermes: d.record.joursFermes || [],
+              stock: d.record.stock || {},
+              lastSync: Date.now()
+            })
+          });
+        })
+        .then(function(r){
+          if(r && r.ok) console.log('[Formulaire] Commande pushée directement au cloud ✓');
+        })
+        .catch(function(e){ console.warn('[Formulaire] Push direct échoué (le lien magique reste un fallback):', e); });
+    } catch(e){}
+  })();
+
   var magic=DASHBOARD_URL+'#add='+btoa(unescape(encodeURIComponent(JSON.stringify(oData))));
   lastMagic=magic;
   lastConfirmMsg=confirmMsg;
