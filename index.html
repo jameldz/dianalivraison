@@ -2137,17 +2137,19 @@ function sendPayInfo(id){
 async function confClient(id){
   var o=orders.find(function(x){return x.id===id;});
   if(!o)return;
-  var isResend=!!o.clientConfirme;
-  var telClient=cleanTel(o.tel);
-  if(!/^\d{8,}$/.test(telClient)){toast('⚠️ Numéro client invalide : '+o.tel);return;}
-
-  // Si déjà confirmé → proposer un choix
-  if(isResend){
-    var prenom=(o.nom||'').split(' ')[0];
-    showClienteChoice(id, prenom);
+  // Si DÉJÀ confirmé → toggle OFF directement (retire le statut)
+  if(o.clientConfirme){
+    o.clientConfirme = false;
+    delete o.confirmeAt;
+    o.lastModified = Date.now();
+    await saveStorage();
+    render();
+    toast('↩️ Statut confirmé retiré');
     return;
   }
-
+  // Sinon → vérifie le tel + envoie la confirmation
+  var telClient=cleanTel(o.tel);
+  if(!/^\d{8,}$/.test(telClient)){toast('⚠️ Numéro client invalide : '+o.tel);return;}
   sendConfClient(id);
 }
 
@@ -2296,8 +2298,16 @@ async function sendConfClient(id){
 async function confVendeur(id) {
   var o = orders.find(function(x){return x.id===id;});
   if (!o) return;
-  // Si déjà confirmé → re-envoyer (relance vendeur)
-  var isResend=!!o.confirme;
+  // Si DÉJÀ confirmé → toggle OFF directement (retire le statut vendeur)
+  if(o.confirme){
+    o.confirme = false;
+    delete o.confirmeAt;
+    o.lastModified = Date.now();
+    await saveStorage();
+    render();
+    toast('↩️ Statut vendeur retiré');
+    return;
+  }
   if (!o.livree) { toast('⚠️ Livre d\'abord la commande !'); return; }
   if (!o.payee)  { toast('⚠️ Commande pas encore payée !'); return; }
   var vNom = o.vendeur||'';
