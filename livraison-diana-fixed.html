@@ -214,7 +214,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
       </div>
       <div class="mode-btn" id="mLiv" onclick="setModeLiv('livraison')">
         <div class="mode-ico">🛵</div>
-        <div class="mode-lbl" style="font-size:11px">Remise en main propre</div>
+        <div class="mode-lbl" style="font-size:11px">Livraison</div>
         <div class="mode-sub" style="color:#B91C1C;font-weight:700">📍 Marseille uniquement</div>
         <div id="livPauseMsg" style="display:none;font-size:9px;color:#fff;background:#B91C1C;border-radius:4px;padding:2px 6px;margin-top:3px;font-weight:800">⏸️ En pause jusqu'au 20 mai</div>
       </div>
@@ -2786,7 +2786,7 @@ function handleSubmit(){
   } else {
     transportStr='Mondial Relay — '+(relaisLabels[modeRelais]||'Point Relais')+(relaisAddr?' → '+relaisAddr:'');
   }
-  var livLabels={livraison:'🛵 Remise en main propre',place:'🏠 Récupération sur place',envoi:'📦 Envoi — '+transportStr};
+  var livLabels={livraison:'🛵 Livraison',place:'🏠 Récupération sur place',envoi:'📦 Envoi — '+transportStr};
   var especesLabel=modeLiv==='place'?'Espèces sur place':'Espèces à la livraison';
   var payLabels={especes:especesLabel,paypal:'PayPal',lydia:'Lydia'};
   var livStr=livLabels[modeLiv]||modeLiv;
@@ -2942,7 +2942,7 @@ function handleSubmit(){
   } else if(modeLiv==='place'){
     livDetail='🏠 *Récupération sur place*';
   } else {
-    livDetail='🛵 *Remise en main propre*';
+    livDetail='🛵 *Livraison*';
   }
   // Adresse nettoyée pour envoi
   var addrLine = modeLiv==='envoi'

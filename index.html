@@ -1854,7 +1854,7 @@ async function tog(id, field) {
   if(field==='livree' && o.livree && o.tel){
     msgQueue=[];
     var prenomL=(o.nom||'').split(' ')[0];
-    var modeStr = o.modeLiv==='envoi'?'expédiée 📦':o.modeLiv==='livraison'?'remise en main propre 🛵':'récupérée 🏠';
+    var modeStr = o.modeLiv==='envoi'?'expédiée 📦':o.modeLiv==='livraison'?'livrée 🛵':'récupérée 🏠';
     var msgLiv='Hello '+prenomL+' ! 🌸\n\nTa commande Diana Detox est '+modeStr+' ✅\n\n💜 *Petit conseil* : commence ta cure dès que tu peux pour profiter au max des effets.\n\n📸 *Ton retour compte énormément* — partage ton avant/après ou tes ressentis sur Snap, ça aide tellement les autres clientes à se lancer 🙏\n\n👻 Snap : '+getVendeurSnap(o.vendeur)+'\n\nMerci pour ta confiance ❤️';
     queueMessage(o.tel, msgLiv, prenomL, '✅ Notif livraison à '+prenomL);
     if(msgQueue.length>0){
