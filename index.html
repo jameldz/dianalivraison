@@ -826,7 +826,6 @@ var _savePushTimer = null;
 var _saveLastPushedSnap = null;
 async function saveStorage() {
   // ═══ PROTECTION ANTI-WIPE (uniquement le vrai cas dangereux) ═══
-  // Si orders est vide MAIS le localStorage en a → on bloque (évite d'écraser des commandes par 0)
   if(orders.length===0){
     try {
       var existing = JSON.parse(localStorage.getItem('diana_orders')||'[]');
@@ -836,6 +835,15 @@ async function saveStorage() {
       }
     } catch(e){}
   }
+  // ═══ VALIDATION RÈGLE MÉTIER : confirme=true uniquement si livree=true ET payee=true ═══
+  orders.forEach(function(o){
+    if(o.confirme === true && (!o.livree || !o.payee)){
+      console.warn('[saveStorage] Forcé confirme=false sur '+(o.num||o.id)+' (livree='+!!o.livree+', payee='+!!o.payee+')');
+      o.confirme = false;
+      delete o.confirmeAt;
+      o.lastModified = Date.now();
+    }
+  });
   savePending=true;
   // 1. Écriture locale immédiate
   try { localStorage.setItem('diana_orders', JSON.stringify(orders)); } catch(e){}
