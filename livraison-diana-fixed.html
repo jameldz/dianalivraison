@@ -468,32 +468,32 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
     </div>
     <!-- MINI-CURES DÉCOUVERTE 7 JOURS -->
     <div style="margin:14px 0 8px;padding:10px 12px;background:linear-gradient(135deg,#FFF3E0,#FFE0B2);border:2px solid #F59E0B;border-radius:12px;text-align:center">
-      <div style="font-size:14px;font-weight:900;color:#E65100;margin-bottom:3px">🌟 Mini-Cure Découverte 7 jours</div>
-      <div style="font-size:11px;color:#7A4A00;font-weight:600">Teste avant de t'engager — 15€/sachet · 1 semaine de cure</div>
+      <div style="font-size:14px;font-weight:900;color:#E65100;margin-bottom:3px">🌟 Mini-Cure Découverte 15 jours</div>
+      <div style="font-size:11px;color:#7A4A00;font-weight:600">Teste avant de t'engager — 30€/sachet · 15 jours de cure</div>
     </div>
     <div class="prod" id="pMGE">
       <div class="prod-top" onclick="togProd('MGE')">
         <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#FCD34D,#F59E0B);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🌟</div>
-        <div style="flex:1;margin-left:10px"><div class="prod-name">Mini-Cure Gélules 7j</div><div class="prod-price">15 € · échantillon</div></div>
+        <div style="flex:1;margin-left:10px"><div class="prod-name">Mini-Cure Gélules 15j</div><div class="prod-price">30 € · échantillon</div></div>
         <div class="chk">✓</div>
       </div>
-      <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('MGE',-1)">−</button><input class="qval" id="qMGE" value="1" readonly><button class="qbtn" onclick="chQ('MGE',1)">+</button></div><span class="qtot" id="tMGE">15€</span></div>
+      <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('MGE',-1)">−</button><input class="qval" id="qMGE" value="1" readonly><button class="qbtn" onclick="chQ('MGE',1)">+</button></div><span class="qtot" id="tMGE">30€</span></div>
     </div>
     <div class="prod" id="pMTH">
       <div class="prod-top" onclick="togProd('MTH')">
         <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#FCD34D,#F59E0B);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🌟</div>
-        <div style="flex:1;margin-left:10px"><div class="prod-name">Mini-Cure Thé 7j</div><div class="prod-price">15 € · échantillon</div></div>
+        <div style="flex:1;margin-left:10px"><div class="prod-name">Mini-Cure Thé 15j</div><div class="prod-price">30 € · échantillon</div></div>
         <div class="chk">✓</div>
       </div>
-      <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('MTH',-1)">−</button><input class="qval" id="qMTH" value="1" readonly><button class="qbtn" onclick="chQ('MTH',1)">+</button></div><span class="qtot" id="tMTH">15€</span></div>
+      <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('MTH',-1)">−</button><input class="qval" id="qMTH" value="1" readonly><button class="qbtn" onclick="chQ('MTH',1)">+</button></div><span class="qtot" id="tMTH">30€</span></div>
     </div>
     <div class="prod" id="pMCA">
       <div class="prod-top" onclick="togProd('MCA')">
         <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#FCD34D,#F59E0B);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🌟</div>
-        <div style="flex:1;margin-left:10px"><div class="prod-name">Mini-Cure Café 7j</div><div class="prod-price">15 € · échantillon</div></div>
+        <div style="flex:1;margin-left:10px"><div class="prod-name">Mini-Cure Café 15j</div><div class="prod-price">30 € · échantillon</div></div>
         <div class="chk">✓</div>
       </div>
-      <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('MCA',-1)">−</button><input class="qval" id="qMCA" value="1" readonly><button class="qbtn" onclick="chQ('MCA',1)">+</button></div><span class="qtot" id="tMCA">15€</span></div>
+      <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('MCA',-1)">−</button><input class="qval" id="qMCA" value="1" readonly><button class="qbtn" onclick="chQ('MCA',1)">+</button></div><span class="qtot" id="tMCA">30€</span></div>
     </div>
     </div>
 
@@ -1077,7 +1077,7 @@ function setParrGenre(g){
 var addrOk = false;
 var editAddrOk = false;
 var PRODS = {CAF:{name:'Café Diana',ico:'☕',price:55},THE:{name:'Thé Diana',ico:'🍵',price:55},GEL:{name:'Gélules Diana',ico:'✨',price:55}};
-var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 7j',ico:'🌟',price:15},MTH:{name:'Mini-Cure Thé 7j',ico:'🌟',price:15},MCA:{name:'Mini-Cure Café 7j',ico:'🌟',price:15}};
+var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 15j',ico:'🌟',price:30},MTH:{name:'Mini-Cure Thé 15j',ico:'🌟',price:30},MCA:{name:'Mini-Cure Café 15j',ico:'🌟',price:30}};
 
 // Stock — mis à jour depuis JSONbin
 var STOCK = {CAF:999,THE:999,GEL:999,DN:999,SD:999,ST:999,PM:999,GU:999};
@@ -1097,7 +1097,7 @@ var modeRelais = 'point';
 
 // Poids en grammes par produit
 var POIDS = {CAF:280, THE:500, GEL:50};
-var POIDS_MINI = {MCA:70, MTH:125, MGE:12}; // Mini-Cures 7j = 1/4 de la cure complète
+var POIDS_MINI = {MCA:140, MTH:250, MGE:25}; // Mini-Cures 15j = 1/2 de la cure complète
 var POIDS_DAYLIA = 100; // par unité (~100g)
 
 function calcPoids(){
@@ -1109,7 +1109,7 @@ function calcPoids(){
       total += (POIDS[id]||0)*qty;
     }
   });
-  // Mini-Cures 7j
+  // Mini-Cures 15j
   Object.keys(POIDS_MINI).forEach(function(id){
     var el=document.getElementById('p'+id);
     if(el&&el.classList.contains('on')){
@@ -1656,7 +1656,7 @@ function togProd(id){
       document.getElementById('t'+k).textContent='55€';
     }
   });
-  // Mini-Cures à prix fixe 15€/unité
+  // Mini-Cures à prix fixe 30€/unité
   Object.keys(MINI_PRODS).forEach(function(k){
     var pEl=document.getElementById('p'+k);
     if(pEl){
@@ -1691,7 +1691,7 @@ function chQ(id,d){
       document.getElementById('t'+k).textContent=(prix*q)+'€';
     }
   });
-  // Mini-Cures à prix fixe 15€/unité, pas concernées par le tarif Diana
+  // Mini-Cures à prix fixe 30€/unité, pas concernées par le tarif Diana
   Object.keys(MINI_PRODS).forEach(function(k){
     var pEl=document.getElementById('p'+k);
     if(pEl && pEl.classList.contains('on')){
@@ -1722,7 +1722,7 @@ function getProds(){
       list.push({name:PRODS[id].name,ico:PRODS[id].ico,price:prixDiana,qty:q,total:prixDiana*q});
     }
   });
-  // Mini-Cures Découverte à 15€/unité (prix fixe, indépendant du volume Diana)
+  // Mini-Cures Découverte à 30€/unité (prix fixe, indépendant du volume Diana)
   Object.keys(MINI_PRODS).forEach(function(id){
     var pEl=document.getElementById('p'+id);
     if(pEl && pEl.classList.contains('on')){

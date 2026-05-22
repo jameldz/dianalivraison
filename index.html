@@ -331,7 +331,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
   <div class="field"><label>Téléphone</label><input id="aTel" type="tel" placeholder="06 xx xx xx xx"></div>
   <div class="field"><label>Email</label><input id="aEmail" type="email" placeholder="email@exemple.com"></div>
   <div class="field"><label>Adresse</label><input id="aAddr" type="text" placeholder="12 rue Paradis, 13001 Marseille (ou Mondial Relay)"></div>
-  <div class="field"><label>Produits</label><input id="aProd" type="text" placeholder="Café Diana, Thé Daylia, Mini-Cure Gélules 7j…"></div>
+  <div class="field"><label>Produits</label><input id="aProd" type="text" placeholder="Café Diana, Thé Daylia, Mini-Cure Gélules 15j…"></div>
   <div class="field"><label>Créneau</label><input id="aSlot" type="text" placeholder="Mar 25 mars · Matin (8h-12h)"></div>
   <div class="row2">
     <div class="field"><label>🚚 Mode livraison</label>
@@ -2841,9 +2841,9 @@ function renderBusinessStats(){
   ].filter(function(p){return p.nb>0;}).sort(function(a,b){return b.nb-a.nb;});
 
   var miniProds=[
-    {name:'🌟 Mini Gélules 7j',nb:miniCount.gelules},
-    {name:'🌟 Mini Thé 7j',nb:miniCount.the},
-    {name:'🌟 Mini Café 7j',nb:miniCount.cafe}
+    {name:'🌟 Mini Gélules 15j',nb:miniCount.gelules},
+    {name:'🌟 Mini Thé 15j',nb:miniCount.the},
+    {name:'🌟 Mini Café 15j',nb:miniCount.cafe}
   ].filter(function(p){return p.nb>0;}).sort(function(a,b){return b.nb-a.nb;});
 
   var dayliaProds=[
@@ -2891,7 +2891,7 @@ function renderBusinessStats(){
     // Section Mini-Cures Découverte
     if(miniProds.length){
       var totalMini=miniProds.reduce(function(s,p){return s+p.nb;},0);
-      html+='<div style="font-size:11px;font-weight:900;color:#92400E;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;display:flex;justify-content:space-between;align-items:center"><span>🌟 Mini-Cures Découverte 7j</span><span style="background:#F59E0B;color:#fff;border-radius:10px;padding:2px 8px;font-size:10px">Total : '+totalMini+'</span></div>';
+      html+='<div style="font-size:11px;font-weight:900;color:#92400E;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;display:flex;justify-content:space-between;align-items:center"><span>🌟 Mini-Cures Découverte 15j</span><span style="background:#F59E0B;color:#fff;border-radius:10px;padding:2px 8px;font-size:10px">Total : '+totalMini+'</span></div>';
       miniProds.forEach(function(p){html+=renderProdRow(p,maxNb,'#F59E0B');});
     }
 
@@ -3874,7 +3874,7 @@ function calcProdsTotal(prodsStr){
     }
   });
   var dianaTotal = dianaCount * 55;
-  var miniTotal = miniCount * 15;
+  var miniTotal = miniCount * 30;
   var dayliaTotal = 0;
   if(dianaCount > 0){
     dayliaTotal = dayliaCount * 20;
@@ -3998,9 +3998,9 @@ function rebuildProdsString(){
   if(qCafe>0) parts.push('Café Diana'+(qCafe>1?' x'+qCafe:''));
   if(qThe>0) parts.push('Thé Diana'+(qThe>1?' x'+qThe:''));
   if(qGel>0) parts.push('Gélules Diana'+(qGel>1?' x'+qGel:''));
-  if(qMiniGel>0) parts.push((qMiniGel>1?qMiniGel+'× ':'1× ')+'Mini-Cure Gélules 7j');
-  if(qMiniThe>0) parts.push((qMiniThe>1?qMiniThe+'× ':'1× ')+'Mini-Cure Thé 7j');
-  if(qMiniCaf>0) parts.push((qMiniCaf>1?qMiniCaf+'× ':'1× ')+'Mini-Cure Café 7j');
+  if(qMiniGel>0) parts.push((qMiniGel>1?qMiniGel+'× ':'1× ')+'Mini-Cure Gélules 15j');
+  if(qMiniThe>0) parts.push((qMiniThe>1?qMiniThe+'× ':'1× ')+'Mini-Cure Thé 15j');
+  if(qMiniCaf>0) parts.push((qMiniCaf>1?qMiniCaf+'× ':'1× ')+'Mini-Cure Café 15j');
   // Assembler les variantes Daylia en une seule entrée "Thé Daylia — variants"
   var dayliaNames=[];
   dayliaVariants.forEach(function(v){
@@ -4074,7 +4074,7 @@ function editFieldRow(key,val){
     }
     // Mini-Cures 7j : détection par regex SPÉCIFIQUE avant la détection Diana classique
     function getQtyMini(productKey){
-      // Cherche "1× Mini-Cure Gélules 7j" ou "Mini-Cure Café 7j"
+      // Cherche "1× Mini-Cure Gélules 15j" ou "Mini-Cure Café 15j"
       var re = new RegExp('(\\d+)\\s*[×x]\\s*mini[\\s-]*cure[^,+]*?'+productKey, 'gi');
       var qty = 0, m;
       while((m=re.exec(lower))!==null) qty += parseInt(m[1]);
@@ -4124,11 +4124,11 @@ function editFieldRow(key,val){
         +'</div>';
     });
     // Séparateur Mini-Cures 7j (Découverte)
-    prodsHtml+='<div style="margin-top:6px;font-size:11px;font-weight:800;color:#E65100;padding:4px 2px">🌟 Mini-Cures Découverte 7j · 15€ pièce</div>';
+    prodsHtml+='<div style="margin-top:6px;font-size:11px;font-weight:800;color:#E65100;padding:4px 2px">🌟 Mini-Cures Découverte 15j · 30€ pièce</div>';
     var prodsMini=[
-      {key:'mini-gel',name:'🌟 Mini-Cure Gélules 7j',qty:qtyMiniGel},
-      {key:'mini-the',name:'🌟 Mini-Cure Thé 7j',qty:qtyMiniThe},
-      {key:'mini-caf',name:'🌟 Mini-Cure Café 7j',qty:qtyMiniCaf}
+      {key:'mini-gel',name:'🌟 Mini-Cure Gélules 15j',qty:qtyMiniGel},
+      {key:'mini-the',name:'🌟 Mini-Cure Thé 15j',qty:qtyMiniThe},
+      {key:'mini-caf',name:'🌟 Mini-Cure Café 15j',qty:qtyMiniCaf}
     ];
     prodsMini.forEach(function(p){
       var bgCol=p.qty>0?'#FFF3E0':'#f5f5f5';
@@ -4426,7 +4426,7 @@ function calcBenef(o) {
   var prods = (o.prods||'').toLowerCase();
   var prodsNorm = prods.replace(/[éèê]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u');
 
-  // ═══ MINI-CURE DÉCOUVERTE 7J : 1/4 d'une cure → coût 3,25€, vendu 15€ → bénéfice 11,75€ ═══
+  // ═══ MINI-CURE DÉCOUVERTE 15J : 1/2 d'une cure → coût 6,50€, vendu 30€ → bénéfice 23,50€ ═══
   // À calculer AVANT Diana pour ne pas double-compter
   var miniCount = 0;
   var miniRe = /(\d+)\s*[×x]\s*mini[\s-]*cure[^,+]*?(g[eé]lules?|th[eé]|caf[eé])/gi;
@@ -4436,7 +4436,7 @@ function calcBenef(o) {
     var miniMatches = prodsNorm.match(/mini[\s-]*cure[^,+]*?(g[eé]lules?|th[eé]|caf[eé])/gi);
     if(miniMatches) miniCount = miniMatches.length;
   }
-  b += miniCount * 11.75;
+  b += miniCount * 23.50;
   // Retire les Mini-Cures du texte avant la détection Diana pour éviter les doubles comptes
   var prodsNormSansMini = prodsNorm.replace(/(\d+\s*[×x]\s*)?mini[\s-]*cure[^,+]*/gi, '');
 
