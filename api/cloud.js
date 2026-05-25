@@ -31,8 +31,12 @@ export default async function handler(req) {
       const url = `https://api.jsonbin.io/v3/b/${JBIN}/latest?t=${Date.now()}`;
       const r = await withTimeout(fetch(url, {
         method: 'GET',
-        headers: { 'X-Master-Key': JKEY }
-      }), 8000);
+        headers: {
+          'X-Master-Key': JKEY,
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+          'Accept': 'application/json'
+        }
+      }), 25000);
       const text = await r.text();
       return new Response(text, {
         status: r.status,
@@ -69,10 +73,12 @@ export default async function handler(req) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Master-Key': JKEY
+          'X-Master-Key': JKEY,
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+          'Accept': 'application/json'
         },
         body: bodyText
-      }), 12000);
+      }), 25000);
       const text = await r.text();
       return new Response(text, {
         status: r.status,
