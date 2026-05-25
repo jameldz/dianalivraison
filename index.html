@@ -211,7 +211,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
     <div class="header-title-block">
       <div class="htitle">Diana <span>Detox</span></div>
       <div class="hdate" id="dateLabel"></div>
-      <div id="syncBadge" style="font-size:10px;color:#888;margin-top:2px;font-family:monospace;letter-spacing:.5px" onclick="diagSync()">v25.05 · <span id="syncBadgeState">⏳</span></div>
+      <div id="syncBadge" style="font-size:10px;color:#888;margin-top:2px;font-family:monospace;letter-spacing:.5px" onclick="diagSync()">v26.05.proxy · <span id="syncBadgeState">⏳</span></div>
     </div>
   </div>
   <div class="header-actions">
@@ -670,6 +670,39 @@ if(storedBin && storedBin!==CORRECT_BIN){
 }
 var JBIN = CORRECT_BIN;
 
+// ═══ WRAPPERS CLOUD : essai direct jsonbin, fallback proxy Vercel /api/cloud ═══
+// Si l'appareil ne peut pas joindre api.jsonbin.io (iPhone bloqué, réseau strict, ITP),
+// on retombe automatiquement sur /api/cloud (serverless function Vercel qui relaie).
+window._cloudUseProxyOnly = false; // flag mémorisant qu'on doit utiliser le proxy (après échec direct)
+async function cloudGET(){
+  var directOK = !window._cloudUseProxyOnly;
+  if(directOK){
+    try {
+      var r = await cloudGET();
+      if(r && r.ok) return r;
+    } catch(e){}
+    // Direct a échoué — on bascule sur proxy pour cette session
+    window._cloudUseProxyOnly = true;
+    try { console.warn('[cloudGET] direct jsonbin KO — fallback proxy /api/cloud'); } catch(e){}
+  }
+  return fetch('/api/cloud?t='+Date.now(),{method:'GET',headers:{'Content-Type':'application/json'}});
+}
+async function cloudPUT(body){
+  var bodyStr = (typeof body === 'string') ? body : JSON.stringify(body);
+  var directOK = !window._cloudUseProxyOnly;
+  if(directOK){
+    try {
+      var r = await fetch('https://api.jsonbin.io/v3/b/'+JBIN,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JKEY},body:bodyStr});
+      if(r && r.ok) return r;
+    } catch(e){}
+    window._cloudUseProxyOnly = true;
+    try { console.warn('[cloudPUT] direct jsonbin KO — fallback proxy /api/cloud'); } catch(e){}
+  }
+  return fetch('/api/cloud',{method:'PUT',headers:{'Content-Type':'application/json'},body:bodyStr});
+}
+window.cloudGET = cloudGET;
+window.cloudPUT = cloudPUT;
+
 var lastSaveTime=0;
 var savePending=false;
 // ═══ PROTECTION ANTI-WIPE AU BOOT ═══
@@ -697,7 +730,7 @@ async function loadStorage() {
   if(orders.length===0){
     toast('⏳ Chargement des données...');
     try{
-      var r=await fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest?t='+Date.now(),{headers:{'X-Master-Key':JKEY}});
+      var r=await cloudGET();
       if(r.ok){
         var d=await r.json();
         if(d&&d.record&&Array.isArray(d.record.orders)){
@@ -783,7 +816,7 @@ function syncFromJsonbin(){
     if(typeof _doPushCloud==='function') _doPushCloud();
     return; // _doPushCloud fait le merge bidirectionnel, pas besoin de pull séparé
   }
-  fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest?t='+Date.now(),{headers:{'X-Master-Key':JKEY}})
+  cloudGET()
     .then(function(r){return r.ok?r.json():null;})
     .then(function(d){
       if(!d||!d.record||!Array.isArray(d.record.orders)) return;
@@ -888,18 +921,15 @@ async function diagSync(){
     msg += '🔑 Bin: '+(JBIN||'aucun')+'\n';
     msg += '⏳ Push en cours...\n\n';
     var body = JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{},lastSync:Date.now()});
-    var r = await fetch('https://api.jsonbin.io/v3/b/'+JBIN, {
-      method:'PUT',
-      headers:{'Content-Type':'application/json','X-Master-Key':JKEY},
-      body: body
-    });
+    var r = await cloudPUT(body);
     var rj = await r.json();
     msg += '📡 Status HTTP: '+r.status+'\n';
     msg += '✅ Push: '+(r.ok?'OK':'ÉCHEC')+'\n';
+    msg += '🔀 Mode: '+(window._cloudUseProxyOnly?'PROXY Vercel':'DIRECT jsonbin')+'\n';
     if(rj.metadata) msg += '🆔 Cloud version: '+(rj.metadata.id||'?')+'\n';
     if(!r.ok) msg += '❌ Erreur: '+JSON.stringify(rj).substring(0,200);
     // Pull pour vérifier
-    var r2 = await fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest?t='+Date.now(), {headers:{'X-Master-Key':JKEY}});
+    var r2 = await cloudGET();
     var d2 = await r2.json();
     msg += '\n☁️ Cloud actuel: '+((d2.record&&d2.record.orders||[]).length)+' commandes';
     try { localStorage.setItem('diana_last_safe_count', String(orders.length)); } catch(e){}
@@ -916,7 +946,7 @@ function _doPushCloud(){
   // ═══ GARDE-FOU ULTIME : Si orders est vide → vérifier le cloud AVANT de push ═══
   // (protection contre le scénario "Safari iOS effacé → localStorage vide → push 0 qui écrase tout")
   if(orders.length === 0){
-    return fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest?t='+Date.now(),{headers:{'X-Master-Key':JKEY}})
+    return cloudGET()
       .then(function(r){return r.ok?r.json():null;})
       .then(function(d){
         if(d && d.record && Array.isArray(d.record.orders) && d.record.orders.length >= 10){
@@ -963,7 +993,7 @@ function _doPushCloud(){
   // Évite la race condition où un appareil local écrase des commandes ajoutées par un autre.
   var retries=0;
   function pullMergePush(){
-    fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest?t='+Date.now(),{headers:{'X-Master-Key':JKEY}})
+    cloudGET()
       .then(function(r){return r.ok?r.json():null;})
       .then(function(d){
         var cloudOrders = (d && d.record && Array.isArray(d.record.orders)) ? d.record.orders : [];
@@ -1046,11 +1076,7 @@ function _doPushCloud(){
           if(typeof render==='function') try{render();}catch(e){}
           return null;
         }
-        return fetch('https://api.jsonbin.io/v3/b/'+JBIN,{
-          method:'PUT',
-          headers:{'Content-Type':'application/json','X-Master-Key':JKEY},
-          body: mergedBody
-        }).then(function(r){
+        return cloudPUT(mergedBody).then(function(r){
           if(r.ok){
             _saveLastPushedSnap = mergedBody;
             lastSaveTime = Date.now();
@@ -1087,12 +1113,22 @@ function _flushCloudBeacon(){
     }
     var body=JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{},lastSync:Date.now()});
     if(body===_saveLastPushedSnap) return;
-    fetch('https://api.jsonbin.io/v3/b/'+JBIN,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json','X-Master-Key':JKEY},
-      body:body,
-      keepalive:true
-    });
+    // Si on est en mode proxy (jsonbin direct injoignable), utiliser /api/cloud
+    if(window._cloudUseProxyOnly){
+      fetch('/api/cloud',{
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:body,
+        keepalive:true
+      });
+    } else {
+      fetch('https://api.jsonbin.io/v3/b/'+JBIN,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json','X-Master-Key':JKEY},
+        body:body,
+        keepalive:true
+      });
+    }
     _saveLastPushedSnap = body;
     // Note : on ne sait pas si la requête a réussi → on laisse pending_sync, qui sera ré-push au réveil
   } catch(e){}
@@ -1225,10 +1261,10 @@ async function restoreAutoBackup(index){
 async function forceSyncFromCloud(){
   try{
     toast('🔄 Synchronisation...');
-    var r=await fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest?'+Date.now(),{headers:{'X-Master-Key':JKEY}});
+    var r=await cloudGET();
     if(!r.ok){
       await new Promise(function(ok){setTimeout(ok,2000);});
-      r=await fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest?'+Date.now(),{headers:{'X-Master-Key':JKEY}});
+      r=await cloudGET();
       if(!r.ok){toast('❌ Erreur synchro — réessaie');return;}
     }
     var d=await r.json();
@@ -5160,7 +5196,7 @@ function showStTab(n){
 
 async function openStock(){
   try{
-    var r=await fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest',{headers:{'X-Master-Key':JKEY}});
+    var r=await cloudGET();
     if(r.ok){var d=await r.json();currentStock=Object.assign({},d.record.stock||{});stockHistorique=d.record.stockHistorique||[];}
   }catch(e){}
   var today=new Date();
@@ -5209,10 +5245,10 @@ async function addReception(){
   currentStock[prodId]=(currentStock[prodId]||0)+qte;
   stockHistorique.push({id:prodId,nom:prod.nom,ico:prod.ico,qte:qte,prix:prix,date:date,ts:Date.now()});
   try{
-    var r=await fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest',{headers:{'X-Master-Key':JKEY}});
+    var r=await cloudGET();
     if(r.ok){
       var d=await r.json();var rec=d.record||{};rec.stock=currentStock;rec.stockHistorique=stockHistorique;
-      await fetch('https://api.jsonbin.io/v3/b/'+JBIN,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JKEY},body:JSON.stringify(rec)});
+      await cloudPUT(JSON.stringify(rec));
       toast('+'+qte+' '+prod.nom+' ! Stock: '+currentStock[prodId]);
       document.getElementById('stQty').value='';document.getElementById('stPrix').value='';
     }
@@ -5223,10 +5259,10 @@ async function saveStock(){
   var stock={};
   STOCK_PRODS.forEach(function(p){var el=document.getElementById('st'+p.id);stock[p.id]=el?Math.max(0,parseInt(el.value)||0):currentStock[p.id]||0;});
   try{
-    var r=await fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest',{headers:{'X-Master-Key':JKEY}});
+    var r=await cloudGET();
     if(r.ok){
       var d=await r.json();var rec=d.record||{};rec.stock=stock;
-      await fetch('https://api.jsonbin.io/v3/b/'+JBIN,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JKEY},body:JSON.stringify(rec)});
+      await cloudPUT(JSON.stringify(rec));
       currentStock=stock;toast('Stock mis a jour !');closeStock();
     }
   }catch(e){toast('Erreur sauvegarde stock');}
