@@ -211,6 +211,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
     <div class="header-title-block">
       <div class="htitle">Diana <span>Detox</span></div>
       <div class="hdate" id="dateLabel"></div>
+      <div id="syncBadge" style="font-size:10px;color:#888;margin-top:2px;font-family:monospace;letter-spacing:.5px" onclick="diagSync()">v25.05 · <span id="syncBadgeState">⏳</span></div>
     </div>
   </div>
   <div class="header-actions">
@@ -1272,6 +1273,41 @@ async function forceSyncFromCloud(){
     }
   }catch(e){toast('❌ Erreur : '+e.message);}
 }
+
+// ═══ BADGE SYNC : affiche l'état de la dernière sync (visible iPhone/Mac) ═══
+function updateSyncBadge(state, info){
+  try {
+    var el = document.getElementById('syncBadgeState');
+    if(!el) return;
+    var pendingTs = parseInt(localStorage.getItem('diana_pending_sync')||'0',10);
+    var pending = pendingTs ? Math.round((Date.now()-pendingTs)/1000)+'s' : '';
+    var lastOk = parseInt(localStorage.getItem('diana_lastSyncOk')||'0',10);
+    var sinceOk = lastOk ? Math.round((Date.now()-lastOk)/1000)+'s' : '∞';
+    if(state==='ok'){
+      el.textContent = '✅ '+orders.length+' cmds · sync il y a '+sinceOk;
+      el.style.color = '#22C55E';
+    } else if(state==='pending'){
+      el.textContent = '🔄 push pending '+pending;
+      el.style.color = '#F97316';
+    } else if(state==='stuck'){
+      el.textContent = '⚠️ STUCK '+pending+' (clic pour diag)';
+      el.style.color = '#dc2626';
+    } else if(state==='error'){
+      el.textContent = '❌ '+(info||'erreur')+' · clic pour diag';
+      el.style.color = '#dc2626';
+    } else {
+      el.textContent = '⏳ '+orders.length+' cmds · '+sinceOk;
+      el.style.color = '#888';
+    }
+  } catch(e){}
+}
+window.updateSyncBadge = updateSyncBadge;
+setInterval(function(){
+  var pendingTs = parseInt(localStorage.getItem('diana_pending_sync')||'0',10);
+  if(!pendingTs) updateSyncBadge('ok');
+  else if(Date.now()-pendingTs > 90000) updateSyncBadge('stuck');
+  else updateSyncBadge('pending');
+}, 3000);
 
 // Auto-sync toutes les 15 secondes
 setInterval(function(){
