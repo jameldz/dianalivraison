@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Dashboard Diana</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,500&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -762,11 +765,22 @@ function migrateOrders(){
 }
 
 function syncFromJsonbin(){
-  // Plan B : si une modif locale n'a pas été ack, on push AVANT de pull
+  // ═══ ANTI-STUCK : si pending_sync est > 90s, on considère bloqué et on force le pull-merge-push ═══
+  try {
+    var pendingTs = parseInt(localStorage.getItem('diana_pending_sync')||'0', 10);
+    if(pendingTs && (Date.now() - pendingTs) > 90000){
+      console.warn('[syncFromJsonbin] pending_sync coincé depuis '+Math.round((Date.now()-pendingTs)/1000)+'s — force pull-merge-push');
+      localStorage.removeItem('diana_pending_sync');
+      if(typeof _doPushCloud==='function') _doPushCloud();
+      // On continue quand même au pull ci-dessous pour rafraîchir l'écran
+    }
+  } catch(e){}
+  // ═══ Si pending récent (< 90s), on lance ET push ET pull en parallèle ═══
+  // _doPushCloud fait déjà pull-merge-push, donc l'iPhone reçoit les modifs du Mac
   if(typeof hasPendingSync==='function' && hasPendingSync()){
-    console.log('[syncFromJsonbin] Pending local — push avant pull');
+    console.log('[syncFromJsonbin] Pending local — pull-merge-push via _doPushCloud');
     if(typeof _doPushCloud==='function') _doPushCloud();
-    return; // skip ce cycle, on retentera plus tard
+    return; // _doPushCloud fait le merge bidirectionnel, pas besoin de pull séparé
   }
   fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest?t='+Date.now(),{headers:{'X-Master-Key':JKEY}})
     .then(function(r){return r.ok?r.json():null;})
@@ -978,8 +992,54 @@ function _doPushCloud(){
         orders = mergedOrders;
         try { localStorage.setItem('diana_orders', JSON.stringify(orders)); } catch(e){}
         try { localStorage.setItem('diana_last_safe_count', String(orders.length)); } catch(e){}
+        // ═══ MERGE des autres collections (clients, joursFermes, stock, marraines) ═══
+        // Sans ça, iPhone reste avec des clients/jours/stock stales pendant que Mac avance.
+        if(d && d.record){
+          // CLIENTS : merge objet (cloud wins pour les keys existant des deux côtés si plus récent)
+          if(d.record.clients && typeof d.record.clients === 'object'){
+            var mergedClients = {};
+            // Commence par local
+            Object.keys(clients||{}).forEach(function(k){ mergedClients[k] = clients[k]; });
+            // Ajoute/remplace par cloud (le cloud est généralement plus à jour si push récent)
+            Object.keys(d.record.clients).forEach(function(k){
+              var lc = mergedClients[k];
+              var cc = d.record.clients[k];
+              if(!lc){ mergedClients[k] = cc; }
+              else {
+                // Garde celui avec lastModified le plus récent, sinon fusion shallow
+                var lLm2 = (lc && lc.lastModified) || 0;
+                var cLm2 = (cc && cc.lastModified) || 0;
+                if(cLm2 > lLm2) mergedClients[k] = cc;
+              }
+            });
+            clients = mergedClients;
+            try { localStorage.setItem('diana_clients', JSON.stringify(clients)); } catch(e){}
+          }
+          // JOURSFERMES : cloud wins si défini (rarement modifié, choix simple)
+          if(d.record.joursFermes){
+            joursFermes = d.record.joursFermes;
+            try { localStorage.setItem('diana_joursfermes', JSON.stringify(joursFermes)); } catch(e){}
+          }
+          // STOCK : cloud wins (modifié rarement, dernière version gagne)
+          if(d.record.stock){ currentStock = d.record.stock; }
+          // MARRAINES : merge (additif, on ne perd jamais une notif/marraine connue)
+          if(d.record.marraineNotifs){
+            window.marraineNotifs = window.marraineNotifs || {};
+            Object.keys(d.record.marraineNotifs).forEach(function(k){
+              if(!window.marraineNotifs[k]) window.marraineNotifs[k] = d.record.marraineNotifs[k];
+            });
+            try { localStorage.setItem('marraineNotifs', JSON.stringify(window.marraineNotifs)); } catch(e){}
+          }
+          if(d.record.knownMarraines){
+            window.knownMarraines = window.knownMarraines || {};
+            Object.keys(d.record.knownMarraines).forEach(function(k){
+              if(!window.knownMarraines[k]) window.knownMarraines[k] = d.record.knownMarraines[k];
+            });
+            try { localStorage.setItem('knownMarraines', JSON.stringify(window.knownMarraines)); } catch(e){}
+          }
+        }
         // Maintenant push le merged au cloud
-        var mergedBody = JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{},lastSync:Date.now()});
+        var mergedBody = JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{},marraineNotifs:window.marraineNotifs||{},knownMarraines:window.knownMarraines||{},lastSync:Date.now()});
         if(mergedBody === _saveLastPushedSnap){
           try { localStorage.removeItem('diana_pending_sync'); } catch(e){}
           if(typeof render==='function') try{render();}catch(e){}
@@ -1225,7 +1285,8 @@ setInterval(function(){
 document.addEventListener('visibilitychange',function(){
   if(document.visibilityState==='visible'){
     if(savePending) return;
-    if(Date.now()-lastSaveTime<3000) return; // anti race-condition court
+    // PAS de throttle ici : iPhone Safari peut avoir été dormant des heures,
+    // il faut absolument rafraîchir l'écran avec les données cloud à la reprise.
     syncFromJsonbin();
   }
 });
@@ -1234,6 +1295,15 @@ document.addEventListener('visibilitychange',function(){
 window.addEventListener('focus',function(){
   if(savePending) return;
   if(Date.now()-lastSaveTime<3000) return;
+  syncFromJsonbin();
+});
+
+// ═══ iOS Safari : pageshow déclenche aussi à la reprise depuis bfcache (back/forward cache) ═══
+// Sans ce listener, ouvrir le dashboard depuis l'écran d'accueil iOS peut afficher la version cache.
+window.addEventListener('pageshow', function(e){
+  if(savePending) return;
+  // persisted = true → page restaurée depuis bfcache, donc localStorage potentiellement stale
+  console.log('[pageshow] persisted='+e.persisted+' — force pull cloud');
   syncFromJsonbin();
 });
 
