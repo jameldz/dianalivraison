@@ -1780,6 +1780,7 @@ function render() {
       if(tel){
         orders.forEach(function(x){
           if(x.id===o.id) return;
+          if(x.deletedAt) return; // exclut les commandes supprimées définitivement
           if(x.fantome && (x.tel||'').replace(/\s/g,'')===tel){
             fantomeCount++;
             fantomeOrders.push('#'+x.num);
@@ -5300,6 +5301,7 @@ function parseWa() {
   var nomParsed=(document.getElementById('aNom').value||'').toLowerCase().trim();
   if(telParsed||nomParsed){
     var prevCmds=orders.filter(function(x){
+      if(x.deletedAt) return false;
       return (telParsed&&(x.tel||'').replace(/\s/g,'')===telParsed)||
              (nomParsed&&(x.nom||'').toLowerCase().trim()===nomParsed);
     });
@@ -5627,7 +5629,7 @@ function openFiche(orderId){
   var key = clientKey(o);
   currentFicheKey = key;
   var c = clients[key] || {};
-  var prevCmds = orders.filter(function(x){return clientKey(x)===key;}).sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+  var prevCmds = orders.filter(function(x){return !x.deletedAt && clientKey(x)===key;}).sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
   var balance = prevCmds.reduce(function(s,x){return s+(x.balance||0);},0);
 
   document.getElementById('ficheTitle').textContent='👤 '+cleanName(c.nom||o.nom);
@@ -5863,6 +5865,7 @@ function setClientSort(s){
 function renderClientes(){
   var map = {};
   orders.forEach(function(o){
+    if(o.deletedAt) return; // exclut les commandes supprimées définitivement
     var key = (o.tel||'').replace(/\s/g,'') || (o.nom||'').toLowerCase().trim();
     if(!key) return;
     if(!map[key]) map[key] = {nom:o.nom, tel:o.tel, snap:'', email:'', addr:'', cmds:0, benef:0, ca:0, vendeurs:{}, lastDate:0, lastProds:'', modeLiv:'', lastOrderId:'', allProds:[], allNotes:[], hasFantome:false, fantomeCount:0, pendingCount:0, paidCount:0, cagnotte:0, cagnotteUsed:0, cagnotteSrc:{filleulesParrainees:0, foisFilleule:0}};
