@@ -2089,7 +2089,12 @@ async function tog(id, field) {
     }
     // 3. Message Mondial Relay si envoi
     if(o.modeLiv==='envoi'){
-      var emailMR=o.email||(o.addr||'').replace('Mondial Relay - ','');
+      // Extraire l'email : d'abord o.email, sinon regex sur o.addr (gère "Mondial Relay — email", "Mondial Relay - email", etc.)
+      var emailMR=o.email||'';
+      if(!emailMR && o.addr){
+        var em = o.addr.match(/[\w.+\-]+@[\w-]+\.[\w.\-]+/);
+        if(em) emailMR = em[0];
+      }
       var msgMR='Bonjour '+prenom+' ! Ton paiement a bien été reçu ✅ Merci !\n\n📧 Je t\'envoie le lien Mondial Relay à ton adresse mail ('+(emailMR||'vérifie ton mail')+').\n\n👉 Clique sur le lien dans le mail pour choisir ton point relais.\n👉 Une fois fait, renvoie-moi un message ici pour me confirmer 🙏\n\nMerci ! ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
       queueMessage(o.tel, msgMR, prenom, 'Lien Mondial Relay à '+prenom);
     }
