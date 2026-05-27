@@ -2004,6 +2004,7 @@ function render() {
         +'<button class="abtn" onclick="callClient(\''+o.tel+'\')"><span class="i">📞</span>Appeler</button>'
         +'<button class="abtn" onclick="navTo(\''+o.addr+'\')"><span class="i">🗺️</span>Maps</button>'
         +'<button class="abtn" onclick="openCadeau(\''+o.id+'\')"><span class="i">🎁</span>'+(o.cadeau?'Cadeau ✓':'Cadeau')+'</button>'
+        +(o.modePay==='paypal'?'<button class="abtn" style="background:#FEF3C7;color:#92400E;border-color:#F59E0B" onclick="openPayManque(\''+o.id+'\')"><span class="i">💸</span>Manque</button>':'')
         +'<button class="abtn" onclick="editOrder(\''+o.id+'\')"><span class="i">✏️</span>Modifier</button>'
         +(function(){
           // Bouton Fantôme : toujours visible si pas payée (décision manuelle)
@@ -2414,6 +2415,62 @@ async function toggleFantome(id){
   }
 }
 
+function openPayManque(id){
+  var o = orders.find(function(x){return x.id===id;});
+  if(!o) return;
+  var ov = document.getElementById('payManqueOverlay');
+  if(!ov) return;
+  ov.dataset.orderId = id;
+  // Calcule frais PayPal estimés : 2,9% + 0,35€ (estimation)
+  var total = parseFloat(o.total||0);
+  var fraisEstimes = total > 0 ? Math.round((total * 0.029 + 0.35) * 100) / 100 : 0;
+  document.getElementById('payManqueSubtitle').innerHTML = '<b>'+(o.nom||'')+'</b> · '+(o.num||'')+' · Total commande : '+total+'€';
+  document.getElementById('payManqueInput').value = fraisEstimes.toFixed(2);
+  setTimeout(function(){ document.getElementById('payManqueInput').focus(); document.getElementById('payManqueInput').select(); },100);
+  ov.style.display='flex';
+}
+function cancelPayManque(){ document.getElementById('payManqueOverlay').style.display='none'; }
+function confirmPayManque(){
+  var ov = document.getElementById('payManqueOverlay');
+  var id = ov.dataset.orderId;
+  var o = orders.find(function(x){return x.id===id;});
+  if(!o){ ov.style.display='none'; return; }
+  var montant = parseFloat(document.getElementById('payManqueInput').value||'0');
+  if(montant<=0){ toast('⚠️ Saisis un montant > 0'); return; }
+  var prenom = (o.nom||'').split(' ')[0];
+  // Extraire email pour MR si modeLiv=envoi
+  var emailMR='';
+  if(o.modeLiv==='envoi'){
+    emailMR = o.email||'';
+    if(!emailMR && o.addr){
+      var em = o.addr.match(/[\w.+\-]+@[\w-]+\.[\w.\-]+/);
+      if(em) emailMR = em[0];
+    }
+  }
+  var msg = 'Hello '+prenom+' ! 🌸\n\n';
+  msg += 'J\'ai bien reçu ton paiement PayPal ✅\n';
+  msg += 'Mais il manque *'+montant.toFixed(2)+'€* car le virement n\'a pas été fait en *"Entre proches"* comme indiqué dans le message précédent (PayPal prend des frais sinon).\n\n';
+  msg += '🙏 Peux-tu compléter avec un virement de *'+montant.toFixed(2)+'€ en Entre proches* stp ?\n\n';
+  if(o.modeLiv==='envoi'){
+    msg += '📧 Je t\'envoie également le lien Mondial Relay à ton adresse mail ('+(emailMR||'vérifie ton mail')+') pour que tu puisses choisir ton point relais.\n👉 Clique sur le lien dans le mail pour choisir ton point relais.\n\n';
+  }
+  msg += 'Merci ! ❤️\n\n';
+  msg += '👻 Snap : '+getVendeurSnap(o.vendeur);
+  // Note interne sur la commande
+  o.note = (o.note?o.note+'\n':'')+'⚠️ Paiement PayPal incomplet : manque '+montant.toFixed(2)+'€ (frais PP)';
+  o.lastModified = Date.now();
+  saveStorage();
+  ov.style.display='none';
+  // Ouvre WhatsApp
+  var tel = (o.tel||'').replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
+  if(tel){
+    window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msg),'_blank');
+    toast('💸 Message envoyé à '+prenom+' — '+montant.toFixed(2)+'€ manquant noté');
+  } else {
+    toast('⚠️ Pas de téléphone pour cette commande');
+  }
+  render();
+}
 function cancelFantomeOn(){ document.getElementById('fantomeOnOverlay').style.display='none'; }
 async function confirmFantomeOn(){
   var ov = document.getElementById('fantomeOnOverlay');
@@ -6254,6 +6311,21 @@ function pinDel(){
 }
 // init() appelé uniquement après PIN correct
 </script>
+
+<!-- PAYPAL MANQUE OVERLAY -->
+<div id="payManqueOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:20px;width:100%;max-width:440px">
+    <div style="font-weight:900;font-size:15px;color:#92400E;margin-bottom:6px">💸 Paiement PayPal incomplet</div>
+    <div id="payManqueSubtitle" style="font-size:13px;color:#666;margin-bottom:14px"></div>
+    <div style="font-size:11px;color:#666;margin-bottom:6px">Montant manquant (€) — frais PayPal non couverts :</div>
+    <input id="payManqueInput" type="number" step="0.01" min="0" placeholder="2.10" style="width:100%;box-sizing:border-box;border:1.5px solid #F59E0B;border-radius:10px;padding:11px 14px;font-size:18px;font-weight:900;font-family:inherit;outline:none;margin-bottom:12px;text-align:center">
+    <div style="font-size:11px;color:#666;margin-bottom:14px;line-height:1.5">📤 Va envoyer un message WhatsApp à la cliente expliquant qu'il manque ce montant car PayPal a pris des frais (pas viré en "Entre proches"). Le mail Mondial Relay sera aussi rappelé si envoi MR.</div>
+    <div style="display:flex;gap:10px">
+      <button type="button" onclick="cancelPayManque()" style="flex:1;padding:14px;background:#fff;border:1.5px solid #DC2626;border-radius:10px;font-size:14px;font-weight:800;color:#DC2626;cursor:pointer;font-family:inherit">Annuler</button>
+      <button type="button" onclick="confirmPayManque()" style="flex:2;padding:14px;background:linear-gradient(135deg,#F59E0B,#D97706);border:none;border-radius:10px;font-size:14px;font-weight:900;color:#fff;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(245,158,11,0.35)">📤 Envoyer le message</button>
+    </div>
+  </div>
+</div>
 
 <!-- FANTOME ON OVERLAY (raison de marquage fantôme) -->
 <div id="fantomeOnOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
