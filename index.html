@@ -1796,6 +1796,7 @@ function render() {
         orders.forEach(function(x){
           if(x.id===o.id) return;
           if(x.fantome) return;
+          if(x.deletedAt) return; // exclut les commandes supprimées définitivement
           if(x.livree && x.payee) return;
           var xTel=(x.tel||'').replace(/\s/g,'');
           if(xTel===tel){
@@ -2371,21 +2372,78 @@ async function toggleFantome(id){
   var o=orders.find(function(x){return x.id===id;});
   if(!o)return;
   if(o.fantome){
+    // OFF: utilise le modal de confirmation (déjà custom — pas de prompt natif)
+    var ov = document.getElementById('fantomeOffOverlay');
+    if(ov){
+      ov.dataset.orderId = id;
+      var sub = document.getElementById('fantomeOffSubtitle');
+      if(sub) sub.innerHTML = '<b>'+(o.nom||'')+'</b> · '+(o.num||'');
+      ov.style.display='flex';
+      return;
+    }
+    // Fallback
     if(!confirm('Retirer le statut Fantôme de cette commande ?')) return;
     o.fantome=false;
-    o.fantomeAt=Date.now(); // garde timestamp même en off pour anti-régression merge
+    o.fantomeAt=Date.now();
+    o.lastModified=Date.now();
+    await saveStorage();
+    render();
     toast('✅ Statut Fantôme retiré');
   } else {
-    var reason=prompt('Raison (optionnel) :\nex: "3 relances sans réponse", "Ne paye plus", etc.','Ne répond plus après relance');
+    // ON: ouvre modal custom pour saisir la raison (au lieu de prompt natif)
+    var ov2 = document.getElementById('fantomeOnOverlay');
+    if(ov2){
+      ov2.dataset.orderId = id;
+      var sub2 = document.getElementById('fantomeOnSubtitle');
+      if(sub2) sub2.innerHTML = '<b>'+(o.nom||'')+'</b> · '+(o.num||'');
+      var inp = document.getElementById('fantomeOnInput');
+      if(inp){ inp.value = 'Ne répond plus après relance'; setTimeout(function(){inp.focus();inp.select();},100); }
+      ov2.style.display='flex';
+      return;
+    }
+    // Fallback
+    var reason=prompt('Raison :','Ne répond plus après relance');
     if(reason===null) return;
     o.fantome=true;
     o.fantomeAt=Date.now();
     o.fantomeReason=reason||'Non précisé';
-    toast('🚫 '+o.nom+' marquée fantôme — visible dans l\'onglet Notifié 📲');
+    o.lastModified=Date.now();
+    await saveStorage();
+    render();
+    toast('🚫 '+o.nom+' marquée fantôme');
   }
+}
+
+function cancelFantomeOn(){ document.getElementById('fantomeOnOverlay').style.display='none'; }
+async function confirmFantomeOn(){
+  var ov = document.getElementById('fantomeOnOverlay');
+  var id = ov.dataset.orderId;
+  var reason = (document.getElementById('fantomeOnInput').value||'').trim() || 'Non précisé';
+  var o = orders.find(function(x){return x.id===id;});
+  if(!o){ ov.style.display='none'; return; }
+  o.fantome=true;
+  o.fantomeAt=Date.now();
+  o.fantomeReason=reason;
   o.lastModified=Date.now();
+  ov.style.display='none';
   await saveStorage();
   render();
+  toast('🚫 '+o.nom+' marquée fantôme');
+}
+
+function cancelFantomeOff(){ document.getElementById('fantomeOffOverlay').style.display='none'; }
+async function confirmFantomeOff(){
+  var ov = document.getElementById('fantomeOffOverlay');
+  var id = ov.dataset.orderId;
+  var o = orders.find(function(x){return x.id===id;});
+  if(!o){ ov.style.display='none'; return; }
+  o.fantome=false;
+  o.fantomeAt=Date.now();
+  o.lastModified=Date.now();
+  ov.style.display='none';
+  await saveStorage();
+  render();
+  toast('✅ Statut Fantôme retiré');
 }
 
 function sendPayInfo(id){
@@ -6196,6 +6254,33 @@ function pinDel(){
 }
 // init() appelé uniquement après PIN correct
 </script>
+
+<!-- FANTOME ON OVERLAY (raison de marquage fantôme) -->
+<div id="fantomeOnOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:20px;width:100%;max-width:440px">
+    <div style="font-weight:900;font-size:15px;color:#7C3AED;margin-bottom:6px">🚫 Marquer fantôme</div>
+    <div id="fantomeOnSubtitle" style="font-size:13px;color:#666;margin-bottom:12px"></div>
+    <div style="font-size:11px;color:#666;margin-bottom:6px">Raison (optionnel) :</div>
+    <input id="fantomeOnInput" type="text" placeholder='ex: "3 relances sans réponse", "Ne paye plus"' style="width:100%;box-sizing:border-box;border:1.5px solid var(--bdr);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px">
+    <div style="display:flex;gap:10px">
+      <button type="button" onclick="cancelFantomeOn()" style="flex:1;padding:14px;background:#fff;border:1.5px solid #DC2626;border-radius:10px;font-size:14px;font-weight:800;color:#DC2626;cursor:pointer;font-family:inherit">Annuler</button>
+      <button type="button" onclick="confirmFantomeOn()" style="flex:2;padding:14px;background:linear-gradient(135deg,#7C3AED,#6D28D9);border:none;border-radius:10px;font-size:14px;font-weight:900;color:#fff;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(124,58,237,0.3)">🚫 Marquer fantôme</button>
+    </div>
+  </div>
+</div>
+
+<!-- FANTOME OFF OVERLAY (retirer fantôme) -->
+<div id="fantomeOffOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:20px;width:100%;max-width:420px;text-align:center">
+    <div style="font-size:36px;margin-bottom:10px">✅</div>
+    <div style="font-weight:900;font-size:15px;margin-bottom:6px">Retirer le statut Fantôme ?</div>
+    <div id="fantomeOffSubtitle" style="font-size:13px;color:#666;margin-bottom:18px"></div>
+    <div style="display:flex;gap:10px">
+      <button type="button" onclick="cancelFantomeOff()" style="flex:1;padding:14px;background:#fff;border:1.5px solid #DC2626;border-radius:10px;font-size:14px;font-weight:800;color:#DC2626;cursor:pointer;font-family:inherit">Annuler</button>
+      <button type="button" onclick="confirmFantomeOff()" style="flex:2;padding:14px;background:linear-gradient(135deg,#16A34A,#15803D);border:none;border-radius:10px;font-size:14px;font-weight:900;color:#fff;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(22,163,74,0.35)">✅ Confirmer</button>
+    </div>
+  </div>
+</div>
 
 <!-- EDIT ADDRESS OVERLAY -->
 <div id="editAddrOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
