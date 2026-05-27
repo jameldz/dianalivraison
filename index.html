@@ -2128,7 +2128,7 @@ function editSlot(id) {
   ov.dataset.orderId = id;
   var inp = document.getElementById('editSlotInput');
   if(inp) inp.value = current;
-  editSlotState = {day:'', hour:''};
+  editSlotState = {day:'', hour:'', hours:[]};
   // Reset buttons highlight
   document.querySelectorAll('#editSlotDays .esd, #editSlotHours .esh').forEach(function(b){
     b.style.background='#fff'; b.style.color=''; b.style.borderColor='var(--bdr)';
@@ -2169,11 +2169,21 @@ function pickEditSlotDay(btn){
   rebuildEditSlotInput();
 }
 function pickEditSlotHour(btn){
-  editSlotState.hour=btn.dataset.v;
+  // Multi-sélection : toggle la valeur
+  if(!Array.isArray(editSlotState.hours)) editSlotState.hours = [];
+  var v = btn.dataset.v;
+  var idx = editSlotState.hours.indexOf(v);
+  if(idx >= 0) editSlotState.hours.splice(idx, 1);
+  else editSlotState.hours.push(v);
+  // Garde l'ordre des boutons (Matin → Midi → Après-midi → Soir → Soirée)
+  var allHours = Array.from(document.querySelectorAll('#editSlotHours .esh')).map(function(b){return b.dataset.v;});
+  editSlotState.hours.sort(function(a,b){return allHours.indexOf(a) - allHours.indexOf(b);});
+  // Highlight tous les boutons sélectionnés
   document.querySelectorAll('#editSlotHours .esh').forEach(function(b){
-    b.style.background=b===btn?'linear-gradient(135deg,var(--rd),var(--brd))':'#fff';
-    b.style.color=b===btn?'#fff':'';
-    b.style.borderColor=b===btn?'var(--rd)':'var(--bdr)';
+    var on = editSlotState.hours.indexOf(b.dataset.v) >= 0;
+    b.style.background = on ? 'linear-gradient(135deg,var(--rd),var(--brd))' : '#fff';
+    b.style.color = on ? '#fff' : '';
+    b.style.borderColor = on ? 'var(--rd)' : 'var(--bdr)';
   });
   rebuildEditSlotInput();
 }
@@ -2182,8 +2192,13 @@ function rebuildEditSlotInput(){
   if(!inp) return;
   var parts=[];
   if(editSlotState.day) parts.push(editSlotState.day);
-  if(editSlotState.hour) parts.push(editSlotState.hour);
-  if(parts.length) inp.value=parts.join(' - ');
+  // Concat tous les créneaux sélectionnés, séparés par ", "
+  if(Array.isArray(editSlotState.hours) && editSlotState.hours.length){
+    parts.push(editSlotState.hours.join(', '));
+  } else if(editSlotState.hour){
+    parts.push(editSlotState.hour); // backward compat
+  }
+  if(parts.length) inp.value=parts.join(' : ');
 }
 
 function confirmEditSlot() {
