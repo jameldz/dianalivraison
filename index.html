@@ -2111,16 +2111,49 @@ function editSlot(id) {
   var o = orders.find(function(x){return x.id===id;});
   if (!o) return;
   var current = o.pickedSlot || o.slot || '';
-  var nouveau = prompt('Modifier le créneau de '+(o.nom||'')+'\n\nExemples :\n• Lundi 7 avril 15h\n• Demain matin\n• Mardi 18h-20h\n\n💡 Laisse vide et clique OK pour effacer le créneau', current);
-  if(nouveau===null) return; // annulé avec bouton Annuler
-  nouveau = nouveau.trim();
-  // Si vide → effacer le créneau
-  o.pickedSlot = nouveau;
-  o.slot = nouveau;
-  o.lastModified=Date.now();
-  saveStorage();
-  render();
-  toast(nouveau?'📅 Créneau mis à jour':'🗑 Créneau effacé');
+  var ov = document.getElementById('editSlotOverlay');
+  if(!ov){
+    // Fallback prompt natif si modal absent
+    var nouveau = prompt('Modifier le créneau de '+(o.nom||''), current);
+    if(nouveau===null) return;
+    o.pickedSlot = nouveau.trim();
+    o.slot = nouveau.trim();
+    o.lastModified=Date.now();
+    saveStorage();
+    render();
+    toast('📅 Créneau mis à jour');
+    return;
+  }
+  // Open custom modal
+  ov.dataset.orderId = id;
+  var inp = document.getElementById('editSlotInput');
+  if(inp) inp.value = current;
+  editSlotState = {day:'', hour:''};
+  // Reset buttons highlight
+  document.querySelectorAll('#editSlotDays .esd, #editSlotHours .esh').forEach(function(b){
+    b.style.background='#fff'; b.style.color=''; b.style.borderColor='var(--bdr)';
+  });
+  // Build day buttons dynamically (Aujourd'hui, Demain, J+2..J+6)
+  var daysWrap = document.getElementById('editSlotDays');
+  if(daysWrap){
+    var jours=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+    var labels=['Aujourd\'hui','Demain'];
+    var dArr=[];
+    for(var i=0;i<7;i++){
+      var dt = new Date(Date.now()+i*86400000);
+      var lbl = (i<2 ? labels[i] : jours[dt.getDay()].charAt(0).toUpperCase()+jours[dt.getDay()].slice(1)+' '+dt.getDate());
+      dArr.push(lbl);
+    }
+    daysWrap.innerHTML = dArr.map(function(d){
+      return '<button type="button" class="esd" data-v="'+d+'" onclick="pickEditSlotDay(this)" style="padding:8px 12px;background:#fff;border:1.5px solid var(--bdr);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">'+d+'</button>';
+    }).join('');
+  }
+  // Hook hour buttons
+  document.querySelectorAll('#editSlotHours .esh').forEach(function(b){
+    b.onclick = function(){ pickEditSlotHour(b); };
+    b.style.cssText = 'padding:8px 12px;background:#fff;border:1.5px solid var(--bdr);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit';
+  });
+  ov.style.display = 'flex';
 }
 
 function pickEditSlotDay(btn){
@@ -2155,16 +2188,15 @@ function confirmEditSlot() {
   var inp = document.getElementById('editSlotInput');
   var id = ov.dataset.orderId;
   var val = inp.value.trim();
-  if(!val){toast('Saisis un créneau');return;}
   var o = orders.find(function(x){return x.id===id;});
-  if(!o) return;
+  if(!o){ ov.style.display='none'; return; }
   o.pickedSlot = val;
   o.slot = val;
   o.lastModified=Date.now();
   saveStorage();
   render();
   ov.style.display='none';
-  toast('📅 Créneau mis à jour : ' + val);
+  toast(val?'📅 Créneau mis à jour : ' + val : '🗑 Créneau effacé');
 }
 
 function cancelEditSlot() {
