@@ -2905,7 +2905,7 @@ function handleSubmit(){
     modePay='paypal';
     setModePay('paypal');
   }
-  var oData={id:Date.now().toString(),num,nom,snap,tel,email,addr:oAddr,prods:prods.map(function(p){return p.name;}).join(', '),slot:dispoStr,total,filtre:filtre,modeLiv:modeLiv,modeRelais:modeRelais,modePay:modePay,vendeur:vendeur?vendeur.nom:'',parrain:parrain,parrainTel:parrainTel,parrainSnap:parrainSnap,parrainEmail:parrainEmail,genre:genre,parrGenre:parrGenre,nbCmd:nbCmdClient,livGratuite:remiseFidel||(modeLiv==='livraison'&&sub>=150),reduc:reduc,filtreInox:filtreInox,dechargeAccepted:true,dechargeAcceptedAt:(window._dechargeAcceptedAt||Date.now()),dechargeNoCompl:true,dechargeNoAmaigr:true,dechargeMajeur:true,domTom:(typeof isDomTom!=='undefined'&&isDomTom)||false};
+  var oData={id:Date.now().toString(),num,nom,snap,tel,email,addr:oAddr,prods:prods.map(function(p){return (p.qty||1)+'× '+p.name;}).join(', '),slot:dispoStr,total,filtre:filtre,modeLiv:modeLiv,modeRelais:modeRelais,modePay:modePay,vendeur:vendeur?vendeur.nom:'',parrain:parrain,parrainTel:parrainTel,parrainSnap:parrainSnap,parrainEmail:parrainEmail,genre:genre,parrGenre:parrGenre,nbCmd:nbCmdClient,livGratuite:remiseFidel||(modeLiv==='livraison'&&sub>=150),reduc:reduc,filtreInox:filtreInox,dechargeAccepted:true,dechargeAcceptedAt:(window._dechargeAcceptedAt||Date.now()),dechargeNoCompl:true,dechargeNoAmaigr:true,dechargeMajeur:true,domTom:(typeof isDomTom!=='undefined'&&isDomTom)||false};
 
   // ═══ PUSH DIRECT AU CLOUD + RETRY AUTOMATIQUE + LOG ═══
   // 1. Ajoute la commande à la queue locale (filet anti-perte définitif)
