@@ -593,13 +593,14 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 </div>
 
 <div class="overlay" id="delOverlay" onclick="if(event.target===this)cancelDel()">
-  <div class="modal" style="text-align:center">
+  <div class="modal" style="text-align:center;max-width:420px">
     <div style="font-size:36px;margin-bottom:10px">🗑️</div>
-    <h3 style="margin-bottom:8px">Supprimer la commande ?</h3>
-    <p style="font-size:13px;color:var(--k2);margin-bottom:20px">Cette action est irréversible.</p>
-    <div class="mbtns">
-      <button class="mcancel" onclick="cancelDel()">Annuler</button>
-      <button class="msave" style="background:var(--re,#EF4444)" onclick="confirmDel()">Supprimer</button>
+    <h3 style="margin-bottom:8px">Que veux-tu faire ?</h3>
+    <p id="delModalSubtitle" style="font-size:13px;color:var(--k2);margin-bottom:18px">Choisis l'action pour cette commande</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="confirmDel('fantome')" style="padding:14px;background:linear-gradient(135deg,#7C3AED,#6D28D9);border:none;border-radius:10px;font-size:14px;font-weight:900;color:#fff;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(124,58,237,0.3)">🚫 Marquer fantôme<div style="font-size:11px;font-weight:600;opacity:.85;margin-top:3px">Doublon, ne réponds plus, annulée — récupérable</div></button>
+      <button onclick="confirmDel('hard')" style="padding:14px;background:linear-gradient(135deg,#DC2626,#991B1B);border:none;border-radius:10px;font-size:14px;font-weight:900;color:#fff;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(220,38,38,0.3)">🔥 Supprimer définitivement<div style="font-size:11px;font-weight:600;opacity:.85;margin-top:3px">Disparition complète — irréversible</div></button>
+      <button onclick="cancelDel()" style="padding:12px;background:#fff;border:1.5px solid var(--bdr);border-radius:10px;font-size:13px;font-weight:800;color:var(--k2);cursor:pointer;font-family:inherit;margin-top:4px">Annuler</button>
     </div>
   </div>
 </div>
@@ -2722,13 +2723,39 @@ function navTo(addr) {
 async function editAddr(id) {
   var o = orders.find(function(x){return x.id===id;});
   if (!o) return;
-  var newAddr = prompt('Modifier l\'adresse :\n\n💡 Laisse vide et clique OK pour effacer l\'adresse', o.addr||'');
-  if (newAddr === null) return; // annulé
-  o.addr = newAddr.trim();
+  var ov = document.getElementById('editAddrOverlay');
+  if(!ov){
+    // Fallback prompt natif
+    var newAddr = prompt('Modifier l\'adresse :', o.addr||'');
+    if (newAddr === null) return;
+    o.addr = newAddr.trim();
+    o.lastModified=Date.now();
+    await saveStorage();
+    render();
+    toast('📍 Adresse modifiée');
+    return;
+  }
+  ov.dataset.orderId = id;
+  var inp = document.getElementById('editAddrInput');
+  if(inp){ inp.value = o.addr||''; setTimeout(function(){inp.focus();inp.select();},100); }
+  ov.style.display = 'flex';
+}
+function cancelEditAddr(){
+  document.getElementById('editAddrOverlay').style.display='none';
+}
+async function confirmEditAddr(){
+  var ov = document.getElementById('editAddrOverlay');
+  var inp = document.getElementById('editAddrInput');
+  var id = ov.dataset.orderId;
+  var o = orders.find(function(x){return x.id===id;});
+  if(!o){ ov.style.display='none'; return; }
+  var val = inp.value.trim();
+  o.addr = val;
   o.lastModified=Date.now();
+  ov.style.display='none';
   await saveStorage();
   render();
-  toast(newAddr.trim()?'📍 Adresse modifiée !':'🗑 Adresse effacée');
+  toast(val?'📍 Adresse modifiée':'🗑 Adresse effacée');
 }
 
 async function quickEditTotal(id, val){
@@ -4068,35 +4095,43 @@ async function saveBalance(id, type, amount) {
 var pendingDelId=null;
 function delOrder(id){
   pendingDelId=id;
+  // Update subtitle avec nom cliente si trouvée
+  var o = orders.find(function(x){return x.id===id;});
+  var sub = document.getElementById('delModalSubtitle');
+  if(sub && o){
+    sub.innerHTML = '<b>'+(o.nom||'')+'</b> · '+(o.num||'')+'<br><span style="color:#999;font-size:11px">'+(o.fantome?'⚠️ Déjà en fantôme — suppression définitive uniquement':'')+'</span>';
+  }
   document.getElementById('delOverlay').classList.add('show');
 }
 function cancelDel(){
   pendingDelId=null;
   document.getElementById('delOverlay').classList.remove('show');
 }
-async function confirmDel(){
+async function confirmDel(mode){
   if(!pendingDelId)return;
   var o = orders.find(function(x){return x.id===pendingDelId;});
+  if(!o){
+    pendingDelId=null;
+    document.getElementById('delOverlay').classList.remove('show');
+    return;
+  }
   var hard = false;
-  if(o){
-    if(o.fantome){
-      // Déjà fantôme → SUPPRESSION DÉFINITIVE
-      // On ajoute deletedAt qui exclut la commande même de la vue Vendeur
-      o.deletedAt = Date.now();
-      o.lastModified = Date.now();
-      hard = true;
-    } else {
-      // Première suppression → SOFT-DELETE (fantome)
-      o.fantome = true;
-      o.fantomeAt = Date.now();
-      o.lastModified = Date.now();
-    }
+  if(mode === 'hard'){
+    // SUPPRESSION DÉFINITIVE (tombstone) — disparaît partout
+    o.deletedAt = Date.now();
+    o.lastModified = Date.now();
+    hard = true;
+  } else {
+    // SOFT-DELETE fantôme (récupérable)
+    o.fantome = true;
+    o.fantomeAt = Date.now();
+    o.lastModified = Date.now();
   }
   pendingDelId=null;
   document.getElementById('delOverlay').classList.remove('show');
   await saveStorage();
   render();
-  toast(hard?'🔥 Supprimée définitivement':'🗑 Supprimée');
+  toast(hard?'🔥 Supprimée définitivement':'🚫 Marquée fantôme');
 }
 
 // ── EDIT ORDER ──────────────────────────────────────────
@@ -6161,6 +6196,19 @@ function pinDel(){
 }
 // init() appelé uniquement après PIN correct
 </script>
+
+<!-- EDIT ADDRESS OVERLAY -->
+<div id="editAddrOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:20px;width:100%;max-width:480px">
+    <div style="font-weight:900;font-size:15px;color:var(--rd);margin-bottom:8px">📍 Modifier l'adresse</div>
+    <div style="font-size:11px;color:#666;margin-bottom:12px">Format libre — ex: <i>5 Rue Paradis, 13001 Marseille (Bât A, code 1234)</i></div>
+    <textarea id="editAddrInput" rows="4" placeholder="Saisis l'adresse complète..." style="width:100%;box-sizing:border-box;border:1.5px solid var(--bdr);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px;resize:vertical;min-height:80px"></textarea>
+    <div style="display:flex;gap:10px">
+      <button type="button" onclick="cancelEditAddr()" style="flex:1;padding:14px;background:#fff;border:1.5px solid #DC2626;border-radius:10px;font-size:14px;font-weight:800;color:#DC2626;cursor:pointer;font-family:inherit">Annuler</button>
+      <button type="button" onclick="confirmEditAddr()" style="flex:2;padding:14px;background:linear-gradient(135deg,#16A34A,#15803D);border:none;border-radius:10px;font-size:14px;font-weight:900;color:#fff;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(22,163,74,0.35)">✅ Confirmer</button>
+    </div>
+  </div>
+</div>
 
 <!-- EDIT SLOT OVERLAY -->
 <div id="editSlotOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
