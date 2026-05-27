@@ -2061,15 +2061,27 @@ async function tog(id, field) {
     if(o.parrain){
       var parrTel=cleanTel(o.parrain);
       var marrNom='';
+      var marrFound=false;
       orders.forEach(function(ox){
-        if(cleanTel(ox.tel)===parrTel && ox.nom) marrNom=ox.nom;
+        if(cleanTel(ox.tel)===parrTel && ox.nom){ marrNom=ox.nom; marrFound=true; }
       });
+      // ═══ GARDE-FOU LOGIQUE ═══
+      // Si marraine inconnue dans la base (typo numéro, ou client jamais commandé) :
+      // → ne PAS envoyer le message (sinon "Tu gagnes +5€" mais "Cagnotte: 0€" — incohérent)
+      // → afficher une alerte dans le dashboard
+      if(!marrFound){
+        toast('⚠️ Marraine '+o.parrain+' inconnue — vérifie le numéro avant de valider le crédit');
+      } else {
       var marrLabel=marrNom||o.parrain;
       var nbFilleules=0;var cagnotte=0;
       orders.forEach(function(ox){
         if(!ox.parrain||!ox.payee) return;
         if(cleanTel(ox.parrain)===parrTel && isParrainageValid(ox)===true){nbFilleules++;cagnotte+=5;}
       });
+      // Garde-fou supplémentaire : si comptage = 0, n'envoie pas le message (incohérent)
+      if(nbFilleules===0){
+        toast('⚠️ Parrainage non validé pour '+marrLabel.split(' ')[0]+' (vendeur différent ou marraine sans commande)');
+      } else {
       var msgM='🎁 Bonne nouvelle '+marrLabel.split(' ')[0]+' !\n\n'+prenom+' vient de payer sa commande ✅\nTu gagnes *+5€* sur ta cagnotte !\n\n💰 Ta cagnotte : *'+cagnotte+'€* ('+nbFilleules+' filleule'+(nbFilleules>1?'s':'')+' payée'+(nbFilleules>1?'s':'')+')\n';
       if(nbFilleules<20) msgM+='\n🎁 Encore '+(20-nbFilleules)+' filleule'+(20-nbFilleules>1?'s':'')+' pour ta Smartbox Bien-être !\n';
       else if(nbFilleules<30) msgM+='\n🎁 Smartbox débloquée !\n💎 Encore '+(30-nbFilleules)+' filleule'+(30-nbFilleules>1?'s':'')+' pour ta Box Prestige VIP !\n';
@@ -2078,6 +2090,8 @@ async function tog(id, field) {
       msgM+='\n\n⚠️ Le crédit est utilisable à condition que toi et ta filleule ayez chacune passé au moins une commande via le formulaire Diana Detox.';
       msgM+='\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
       queueMessage(parrTel, msgM, marrLabel.split(' ')[0], 'Notifier la marraine ('+marrLabel+')');
+      } // end if nbFilleules>0
+      } // end if marrFound
 
       // 2. Notification FILLEULE
       var telFilleuleClean=cleanTel(o.tel||'');
