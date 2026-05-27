@@ -211,7 +211,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
     <div class="header-title-block">
       <div class="htitle">Diana <span>Detox</span></div>
       <div class="hdate" id="dateLabel"></div>
-      <div id="syncBadge" style="font-size:10px;color:#888;margin-top:2px;font-family:monospace;letter-spacing:.5px" onclick="diagSync()">v26.05.proxy · <span id="syncBadgeState">⏳</span></div>
+      <div id="syncBadge" style="font-size:10px;color:#888;margin-top:2px;font-family:monospace;letter-spacing:.5px" onclick="diagSync()">v26.05.crdt · <span id="syncBadgeState">⏳</span></div>
     </div>
   </div>
   <div class="header-actions">
@@ -888,6 +888,7 @@ async function saveStorage() {
     if(o.confirme === true && (!o.livree || !o.payee)){
       console.warn('[saveStorage] Forcé confirme=false sur '+(o.num||o.id)+' (livree='+!!o.livree+', payee='+!!o.payee+')');
       o.confirme = false;
+      o._confirme_at = Date.now();
       delete o.confirmeAt;
       o.lastModified = Date.now();
     }
@@ -997,26 +998,74 @@ function _doPushCloud(){
       .then(function(r){return r.ok?r.json():null;})
       .then(function(d){
         var cloudOrders = (d && d.record && Array.isArray(d.record.orders)) ? d.record.orders : [];
-        // MERGE par num (clé unique) — pour chaque cmd, garder la version avec lastModified le plus récent
+        // ═══ MERGE FIELD-LEVEL avec timestamps par flag ═══
+        // Pour chaque commande : prend la base (lastModified le plus récent), MAIS
+        // pour chaque flag protégé (livree/payee/confirme/clientConfirme), prend
+        // le côté avec _flag_at le plus récent. Évite qu'une modif sur un champ
+        // (ex: note) écrase un autre champ (ex: livree=true) sur l'autre appareil.
         var merged = {};
         orders.forEach(function(o){ if(o.num) merged[o.num] = o; });
         cloudOrders.forEach(function(co){
           if(!co.num) return;
           var local = merged[co.num];
-          if(!local){
-            // Cmd cloud absente du local → l'ajouter
-            merged[co.num] = co;
+          if(!local){ merged[co.num] = co; return; }
+          // Tombstone (deletedAt) : suppression définitive prévaut toujours
+          if(co.deletedAt && !local.deletedAt){ merged[co.num] = co; return; }
+          if(local.deletedAt && !co.deletedAt){ merged[co.num] = local; return; }
+          // Base : version avec lastModified le plus récent (pour les champs non-protégés)
+          var lLm = local.lastModified || local.createdAt || 0;
+          var cLm = co.lastModified || co.createdAt || 0;
+          var base, other;
+          if(cLm > lLm){ base = Object.assign({}, co); other = local; }
+          else { base = Object.assign({}, local); other = co; }
+          // Field-level merge pour flags protégés
+          ['livree','payee','confirme','clientConfirme'].forEach(function(f){
+            var baseAt = base['_'+f+'_at'] || 0;
+            var otherAt = other['_'+f+'_at'] || 0;
+            if(baseAt > 0 || otherAt > 0){
+              // Au moins un côté a un timestamp par flag → le plus récent gagne
+              if(otherAt > baseAt){
+                base[f] = other[f];
+                base['_'+f+'_at'] = otherAt;
+                if(f === 'confirme'){
+                  if(other[f] === true && other.confirmeAt) base.confirmeAt = other.confirmeAt;
+                  if(other[f] === false) delete base.confirmeAt;
+                }
+              }
+            } else if(local[f] !== co[f]){
+              // Legacy data sans timestamp par flag → préfère TRUE (anti-régression)
+              if(local[f] === true || co[f] === true){ base[f] = true; }
+            }
+          });
+          // completedAt : préserve la date la plus ancienne (1ère complétion)
+          if(base.livree && base.payee){
+            var candidates = [local.completedAt, co.completedAt].filter(function(x){return x;});
+            if(candidates.length) base.completedAt = Math.min.apply(null, candidates);
           } else {
-            // Si cloud plus récent → prend cloud
-            var lLm = local.lastModified || local.createdAt || 0;
-            var cLm = co.lastModified || co.createdAt || 0;
-            if(cLm > lLm) merged[co.num] = co;
-            // Si tombstone (deletedAt), garder le tombstone (suppression définitive)
-            if(co.deletedAt && !local.deletedAt) merged[co.num] = co;
-            if(local.deletedAt && !co.deletedAt) merged[co.num] = local;
-            // Si fantome local et pas cloud → garder fantome
-            if(local.fantome && !co.fantome && lLm >= cLm) merged[co.num] = local;
+            delete base.completedAt;
           }
+          // Fantome (soft-delete) : utilise fantomeAt comme timestamp
+          var lFantAt = local.fantomeAt || 0;
+          var cFantAt = co.fantomeAt || 0;
+          if(lFantAt > 0 || cFantAt > 0){
+            if(cFantAt > lFantAt){
+              base.fantome = co.fantome;
+              base.fantomeAt = co.fantomeAt;
+              base.fantomeReason = co.fantomeReason;
+            } else if(lFantAt > cFantAt){
+              base.fantome = local.fantome;
+              base.fantomeAt = local.fantomeAt;
+              base.fantomeReason = local.fantomeReason;
+            }
+          } else if(local.fantome !== co.fantome){
+            // Legacy : préfère fantome=true (suppression intentionnelle)
+            if(local.fantome === true || co.fantome === true){
+              base.fantome = true;
+              base.fantomeAt = local.fantomeAt || co.fantomeAt || Date.now();
+              base.fantomeReason = local.fantomeReason || co.fantomeReason || 'Non précisé';
+            }
+          }
+          merged[co.num] = base;
         });
         var mergedOrders = Object.values(merged);
         // Update local avec merged result
@@ -1974,6 +2023,7 @@ async function tog(id, field) {
   var o = orders.find(function(x){return x.id===id;});
   if (!o) return;
   o[field]=!o[field];
+  o['_'+field+'_at']=Date.now();
   o.lastModified=Date.now();
   // Sauvegarder la date de complétion (livré + payé)
   if(o.livree && o.payee && !o.completedAt) o.completedAt=Date.now();
@@ -2253,7 +2303,7 @@ async function toggleFantome(id){
   if(o.fantome){
     if(!confirm('Retirer le statut Fantôme de cette commande ?')) return;
     o.fantome=false;
-    o.fantomeAt=null;
+    o.fantomeAt=Date.now(); // garde timestamp même en off pour anti-régression merge
     toast('✅ Statut Fantôme retiré');
   } else {
     var reason=prompt('Raison (optionnel) :\nex: "3 relances sans réponse", "Ne paye plus", etc.','Ne répond plus après relance');
@@ -2321,6 +2371,7 @@ async function confClient(id){
   // Si DÉJÀ confirmé → toggle OFF directement (retire le statut)
   if(o.clientConfirme){
     o.clientConfirme = false;
+    o._clientConfirme_at = Date.now();
     delete o.confirmeAt;
     o.lastModified = Date.now();
     await saveStorage();
@@ -2470,6 +2521,7 @@ async function sendConfClient(id){
   msg+='\n\n👻 Snap : '+vSnap;
   openMsgApp(o.tel, msg, prenom);
   o.clientConfirme=true;
+  o._clientConfirme_at=Date.now();
   o.lastModified=Date.now();
   await saveStorage();
   render();
@@ -2482,6 +2534,7 @@ async function confVendeur(id) {
   // Si DÉJÀ confirmé → toggle OFF directement (retire le statut vendeur)
   if(o.confirme){
     o.confirme = false;
+    o._confirme_at = Date.now();
     delete o.confirmeAt;
     o.lastModified = Date.now();
     await saveStorage();
@@ -2533,6 +2586,7 @@ async function confVendeur(id) {
     +'💰 '+total+'€ - payée 💸';
   window.open('https://wa.me/'+telVendeur+'?text='+encodeURIComponent(msg),'_blank');
   o.confirme=true;
+  o._confirme_at=Date.now();
   if(!o.confirmeAt) o.confirmeAt=Date.now();
   o.lastModified=Date.now();
   await saveStorage();
@@ -5860,6 +5914,7 @@ async function notifierToutesTerminees(){
   for(var i=0;i<aNotifier.length;i++){
     var o=aNotifier[i];
     o.confirme=true;
+    o._confirme_at=Date.now();
     if(!o.confirmeAt) o.confirmeAt=Date.now();
     o.lastModified=Date.now();
   }
