@@ -1423,6 +1423,43 @@ function setRelais(r){
   updateFraisEnvoi();
 }
 
+function updateSlotAvailability(){
+  // Livraison Marseille = uniquement à partir de 14h
+  var isLivraisonMrs = modeLiv === 'livraison';
+  var allSlots = document.querySelectorAll('.slot[data-v], .slot2[data-v], .date-btn[data-v]');
+  allSlots.forEach(function(el){
+    var v = el.dataset.v || '';
+    var m = v.match(/(\d+)h/);
+    if(!m) return;
+    var startHour = parseInt(m[1], 10);
+    var shouldDisable = isLivraisonMrs && startHour < 14;
+    if(shouldDisable){
+      el.classList.add('disabled');
+      // Désélectionne si coché
+      if(el.classList.contains('on')){
+        el.classList.remove('on');
+        if(typeof dispoSlots !== 'undefined' && Array.isArray(dispoSlots)){
+          var idx = dispoSlots.indexOf(v);
+          if(idx>=0) dispoSlots.splice(idx, 1);
+        }
+      }
+    } else {
+      el.classList.remove('disabled');
+    }
+  });
+  // Message d'aide
+  var hint = document.getElementById('dispoHint');
+  if(hint){
+    if(isLivraisonMrs){
+      hint.innerHTML = '🛵 Livraison Marseille : <b>uniquement à partir de 14h</b> (matin indisponible)';
+      hint.style.color = '#DC2626';
+    } else {
+      hint.innerHTML = '⏰ On fait notre max pour livrer dans le créneau choisi !';
+      hint.style.color = '#B8922A';
+    }
+  }
+}
+
 function setModeLiv(m){
   // Livraison à domicile réactivée
   var pauseLivDate=new Date(2024,0,1,0,0,0); // date passée → pas de pause
@@ -1503,6 +1540,8 @@ function setModeLiv(m){
   Object.keys(dispoState).forEach(function(k){dispoState[k]={slots:[],de:'',ju:''};});
   document.querySelectorAll('#dm0 .slot,#dm1 .slot2,#dm30min .slot2').forEach(function(el){el.classList.remove('on');});
   document.querySelectorAll('.date-btn').forEach(function(b){var dot=document.getElementById('ddot'+b.dataset.i);if(dot)dot.style.display='none';});
+  // Grise les créneaux avant 14h si mode livraison Marseille
+  updateSlotAvailability();
   // Disponibilités
   document.getElementById('cardDispo').style.display=m==='envoi'?'none':'block';
   var h2Dispo=document.querySelector('#cardDispo .card-hdr h2');
