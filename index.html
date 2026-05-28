@@ -2155,14 +2155,16 @@ function editSlot(id) {
   var daysWrap = document.getElementById('editSlotDays');
   if(daysWrap){
     var jours=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+    var moisShort=['janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
     var prefixes=['Aujourd\'hui','Demain'];
     var dArr=[];
     for(var i=0;i<7;i++){
       var dt = new Date(Date.now()+i*86400000);
       var jourCap = jours[dt.getDay()].charAt(0).toUpperCase()+jours[dt.getDay()].slice(1);
-      var dateStr = jourCap+' '+dt.getDate();
-      // Pour les 2 premiers : label visible court ("Auj. 28", "Demain 29") mais valeur stockée = jour+date complet
-      var label = (i<2 ? prefixes[i]+' '+dt.getDate() : dateStr);
+      var moisAbbr = moisShort[dt.getMonth()];
+      var dateStr = jourCap+' '+dt.getDate()+' '+moisAbbr;
+      // Pour les 2 premiers : label visible court ("Auj. 28", "Demain 29") mais valeur stockée = jour+date+mois complet
+      var label = (i<2 ? prefixes[i]+' '+dt.getDate()+' '+moisAbbr : dateStr);
       dArr.push({label:label, value:dateStr});
     }
     daysWrap.innerHTML = dArr.map(function(d){
