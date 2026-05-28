@@ -1424,18 +1424,22 @@ function setRelais(r){
 }
 
 function updateSlotAvailability(){
-  // Livraison Marseille = uniquement à partir de 14h
-  var isLivraisonMrs = modeLiv === 'livraison';
+  // Règles métier :
+  // - Livraison Marseille (modeLiv='livraison') : uniquement à partir de 14h
+  // - Récupération sur place (modeLiv='place') : uniquement à partir de 10h
+  // - Envoi MR (modeLiv='envoi') : pas de restriction
+  var minHour = 0;
+  if(modeLiv === 'livraison') minHour = 14;
+  else if(modeLiv === 'place') minHour = 10;
   var allSlots = document.querySelectorAll('.slot[data-v], .slot2[data-v], .date-btn[data-v]');
   allSlots.forEach(function(el){
     var v = el.dataset.v || '';
     var m = v.match(/(\d+)h/);
     if(!m) return;
     var startHour = parseInt(m[1], 10);
-    var shouldDisable = isLivraisonMrs && startHour < 14;
+    var shouldDisable = minHour > 0 && startHour < minHour;
     if(shouldDisable){
       el.classList.add('disabled');
-      // Désélectionne si coché
       if(el.classList.contains('on')){
         el.classList.remove('on');
         if(typeof dispoSlots !== 'undefined' && Array.isArray(dispoSlots)){
@@ -1450,8 +1454,11 @@ function updateSlotAvailability(){
   // Message d'aide
   var hint = document.getElementById('dispoHint');
   if(hint){
-    if(isLivraisonMrs){
+    if(modeLiv === 'livraison'){
       hint.innerHTML = '🛵 Livraison Marseille : <b>uniquement à partir de 14h</b> (matin indisponible)';
+      hint.style.color = '#DC2626';
+    } else if(modeLiv === 'place'){
+      hint.innerHTML = '🏠 Récupération sur place : <b>uniquement à partir de 10h</b>';
       hint.style.color = '#DC2626';
     } else {
       hint.innerHTML = '⏰ On fait notre max pour livrer dans le créneau choisi !';
