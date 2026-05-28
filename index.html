@@ -5341,15 +5341,27 @@ async function saveOrder() {
   if(aTel){
     var telCleanA = cleanTel(aTel);
     var doublons = orders.filter(function(x){
-      if(!x.tel || x.fantome) return false;
+      if(!x.tel || x.fantome || x.deletedAt) return false;
       return cleanTel(x.tel)===telCleanA && !(x.livree && x.payee);
     });
     if(doublons.length>0){
-      var listDoub = doublons.slice(0,5).map(function(d){
+      var listDoubHtml = doublons.slice(0,5).map(function(d){
         var statut = d.livree?'livrée mais non payée':d.payee?'payée mais non livrée':'non payée non livrée';
-        return '• #'+d.num+' — '+(d.total||0)+'€ — '+statut;
-      }).join('\n');
-      var ok = confirm('⚠️ DOUBLON DÉTECTÉ\n\n'+nom+' ('+aTel+') a déjà '+doublons.length+' commande'+(doublons.length>1?'s':'')+' en cours :\n\n'+listDoub+'\n\nVeux-tu quand même ajouter cette nouvelle commande ?\n(Annule pour modifier la commande existante à la place)');
+        return '<div style="background:#FEF3C7;border-left:3px solid #F59E0B;padding:6px 10px;border-radius:4px;margin-bottom:4px;font-size:12px"><b>#'+d.num+'</b> — '+(d.total||0)+'€ — '+statut+'</div>';
+      }).join('');
+      var headerText = nom+' ('+aTel+') a déjà <b>'+doublons.length+'</b> commande'+(doublons.length>1?'s':'')+' en cours :';
+      var ok = await new Promise(function(resolve){
+        var ov = document.getElementById('doublonOverlay');
+        if(!ov){ resolve(confirm('⚠️ DOUBLON : continuer ?')); return; }
+        document.getElementById('doublonHeader').innerHTML = headerText;
+        document.getElementById('doublonList').innerHTML = listDoubHtml;
+        ov.style.display='flex';
+        window._doublonResolve = function(val){
+          ov.style.display='none';
+          window._doublonResolve = null;
+          resolve(val);
+        };
+      });
       if(!ok) return;
     }
   }
@@ -6314,6 +6326,20 @@ function pinDel(){
 }
 // init() appelé uniquement après PIN correct
 </script>
+
+<!-- DOUBLON OVERLAY -->
+<div id="doublonOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:20px;width:100%;max-width:480px">
+    <div style="font-weight:900;font-size:15px;color:#92400E;margin-bottom:8px">⚠️ DOUBLON DÉTECTÉ</div>
+    <div id="doublonHeader" style="font-size:13px;color:#333;margin-bottom:10px;line-height:1.5"></div>
+    <div id="doublonList" style="margin-bottom:14px;max-height:200px;overflow-y:auto"></div>
+    <div style="font-size:12px;color:#666;margin-bottom:14px;line-height:1.5">Veux-tu <b>quand même ajouter</b> cette nouvelle commande ?<br><span style="font-size:11px;color:#999">(Annule pour modifier la commande existante à la place)</span></div>
+    <div style="display:flex;gap:10px">
+      <button type="button" onclick="if(window._doublonResolve)window._doublonResolve(false);" style="flex:1;padding:14px;background:#fff;border:1.5px solid #DC2626;border-radius:10px;font-size:14px;font-weight:800;color:#DC2626;cursor:pointer;font-family:inherit">Annuler</button>
+      <button type="button" onclick="if(window._doublonResolve)window._doublonResolve(true);" style="flex:2;padding:14px;background:linear-gradient(135deg,#F59E0B,#D97706);border:none;border-radius:10px;font-size:14px;font-weight:900;color:#fff;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(245,158,11,0.35)">✅ Ajouter quand même</button>
+    </div>
+  </div>
+</div>
 
 <!-- PAYPAL MANQUE OVERLAY -->
 <div id="payManqueOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
