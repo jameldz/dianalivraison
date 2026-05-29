@@ -2580,6 +2580,32 @@ function handleSubmit(){
   }
   if(document.getElementById('heureErreur').style.display==='block'){toast('⚠️ Heure de fin avant heure de début !');return;}
 
+  // ═══ GARDE-FOU MÉTIER : créneaux interdits selon mode ═══
+  // Livraison Marseille : pas avant 14h
+  // Récupération sur place : pas avant 10h
+  var minHourBusiness = 0;
+  var minHourLabel = '';
+  if(modeLiv === 'livraison'){ minHourBusiness = 14; minHourLabel = 'Livraison Marseille : uniquement à partir de 14h'; }
+  else if(modeLiv === 'place'){ minHourBusiness = 10; minHourLabel = 'Récupération sur place : uniquement à partir de 10h'; }
+  if(minHourBusiness > 0 && dispoData.length > 0){
+    var slotsInterdits = [];
+    dispoData.forEach(function(d){
+      (d.slots||[]).forEach(function(s){
+        var m = s.match(/(\d+)h/);
+        if(m && parseInt(m[1],10) < minHourBusiness){
+          slotsInterdits.push(d.date+' : '+s);
+        }
+      });
+    });
+    if(slotsInterdits.length > 0){
+      document.getElementById('datesGrid').scrollIntoView({behavior:'smooth',block:'center'});
+      toast('⚠️ '+minHourLabel+' — créneaux refusés : '+slotsInterdits.slice(0,2).join(' ; '));
+      // Force update visuel pour griser à nouveau
+      if(typeof updateSlotAvailability === 'function') updateSlotAvailability();
+      return;
+    }
+  }
+
   // 5. Infos perso
   var nom,snap,tel,addr,cp,ville,compl,email;
   if(returning){
