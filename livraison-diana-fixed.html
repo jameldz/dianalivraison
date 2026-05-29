@@ -1437,9 +1437,11 @@ function updateSlotAvailability(){
     var m = v.match(/(\d+)h/);
     if(!m) return;
     var startHour = parseInt(m[1], 10);
-    var shouldDisable = minHour > 0 && startHour < minHour;
-    if(shouldDisable){
-      el.classList.add('disabled');
+    var shouldHide = minHour > 0 && startHour < minHour;
+    // Nettoie l'ancien grisage si existant
+    el.classList.remove('disabled');
+    if(shouldHide){
+      el.style.display = 'none'; // MASQUE COMPLÈTEMENT
       if(el.classList.contains('on')){
         el.classList.remove('on');
         if(typeof dispoSlots !== 'undefined' && Array.isArray(dispoSlots)){
@@ -1448,7 +1450,7 @@ function updateSlotAvailability(){
         }
       }
     } else {
-      el.classList.remove('disabled');
+      el.style.display = ''; // restaure
     }
   });
   // Message d'aide
