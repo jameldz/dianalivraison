@@ -912,7 +912,7 @@ function pushPendingOrders(){
   catch(e){ queue = []; }
   if(!queue.length) return;
 
-  fetch('https://api.jsonbin.io/v3/b/'+BIN_ID+'/latest?t='+Date.now(), {headers:{'X-Master-Key':KEY}})
+  fetch('/api/cloud?t='+Date.now(), {cache:'no-store'})
     .then(function(r){return r.ok ? r.json() : null;})
     .then(function(d){
       if(!d || !d.record) throw new Error('cloud unreachable');
@@ -948,9 +948,9 @@ function pushPendingOrders(){
 
       // Push avec les nouvelles commandes ajoutées
       var fullOrders = newOrders.concat(cloudOrders);
-      return fetch('https://api.jsonbin.io/v3/b/'+BIN_ID, {
+      return fetch('/api/cloud', {
         method:'PUT',
-        headers:{'Content-Type':'application/json','X-Master-Key':KEY},
+        headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
           orders: fullOrders,
           clients: d.record.clients || {},
@@ -1629,10 +1629,9 @@ async function init() {
     document.getElementById('sProd').textContent='1';
     document.getElementById('sDispo').textContent='2';
   }
-  // Charger le stock depuis JSONbin
+  // Charger le stock depuis /api/cloud (Upstash)
   try{
-    var jkey='$2a$10$Bl5XcpoCn.nkMDLQ4hV37OE5XSCTH0aEEAmPhQCQC9iw421Z1TPjy';
-    var rs=await fetch('https://api.jsonbin.io/v3/b/69e7f319856a6821895b22f4/latest',{headers:{'X-Master-Key':jkey}});
+    var rs=await fetch('/api/cloud?t='+Date.now(),{cache:'no-store'});
     if(rs.ok){var ds=await rs.json();if(ds.record&&ds.record.stock){STOCK=Object.assign(STOCK,ds.record.stock);updateStockDisplay();}if(ds.record&&ds.record.orders){cachedAllOrders=ds.record.orders;}}
   }catch(e){}
   await buildDates();
@@ -1894,9 +1893,7 @@ async function checkCagnotteDispo(){
   if(window._cagnotteCheckTimer) clearTimeout(window._cagnotteCheckTimer);
   window._cagnotteCheckTimer = setTimeout(async function(){
     try {
-      var jkey='$2a$10$Bl5XcpoCn.nkMDLQ4hV37OE5XSCTH0aEEAmPhQCQC9iw421Z1TPjy';
-      var jbin='69e7f319856a6821895b22f4';
-      var r = await fetch('https://api.jsonbin.io/v3/b/'+jbin+'/latest',{headers:{'X-Master-Key':jkey}});
+      var r = await fetch('/api/cloud?t='+Date.now(),{cache:'no-store'});
       if(!r.ok) return;
       var data = await r.json();
       var allOrders = (data.record && data.record.orders) || [];
@@ -2128,10 +2125,8 @@ async function buildDates(){
   var jj=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
   var mm=['jan.','fév.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
   var jf={semaine:[],dates:[]};
-  var jbin='69e7f319856a6821895b22f4';
-  var jkey='$2a$10$Bl5XcpoCn.nkMDLQ4hV37OE5XSCTH0aEEAmPhQCQC9iw421Z1TPjy';
   try{
-    var r=await fetch('https://api.jsonbin.io/v3/b/'+jbin+'/latest',{headers:{'X-Master-Key':jkey}});
+    var r=await fetch('/api/cloud?t='+Date.now(),{cache:'no-store'});
     if(r.ok){var d2=await r.json();if(d2.record&&d2.record.joursFermes){jf=d2.record.joursFermes;localStorage.setItem('diana_joursfermes',JSON.stringify(jf));}}
   }catch(e){
     // Fallback localStorage si pas de réseau
