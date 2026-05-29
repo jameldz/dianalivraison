@@ -1453,6 +1453,25 @@ function updateSlotAvailability(){
       el.style.display = ''; // restaure
     }
   });
+  // ═══ Onglet "✏️ Je choisis" : filtrer aussi les <select> options ═══
+  ['fDe','fJusqua'].forEach(function(selId){
+    var sel = document.getElementById(selId);
+    if(!sel) return;
+    var changed = false;
+    Array.prototype.forEach.call(sel.options, function(opt){
+      var v = opt.value || opt.textContent || '';
+      var m2 = v.match(/(\d+)h/);
+      if(!m2){ opt.style.display=''; opt.disabled=false; return; }
+      var startH = parseInt(m2[1],10);
+      // Cas spécial "00h00" = minuit fin de journée = OK
+      if(v.indexOf('00h')===0 && v!==''){ opt.style.display=''; opt.disabled=false; return; }
+      var hide = minHour > 0 && startH < minHour;
+      opt.style.display = hide ? 'none' : '';
+      opt.disabled = hide;
+      if(hide && sel.value === v){ sel.value = ''; changed = true; }
+    });
+    if(changed && typeof saveLibre==='function'){ try{ saveLibre(); }catch(e){} }
+  });
   // Message d'aide
   var hint = document.getElementById('dispoHint');
   if(hint){
