@@ -2113,7 +2113,16 @@ async function tog(id, field) {
         var em = o.addr.match(/[\w.+\-]+@[\w-]+\.[\w.\-]+/);
         if(em) emailMR = em[0];
       }
-      var msgMR='Bonjour '+prenom+' ! Ton paiement a bien été reçu ✅ Merci !\n\n📧 Je t\'envoie le lien Mondial Relay à ton adresse mail ('+(emailMR||'vérifie ton mail')+').\n\n👉 Clique sur le lien dans le mail pour choisir ton point relais.\n👉 Une fois fait, renvoie-moi un message ici pour me confirmer 🙏\n\nMerci ! ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
+      var msgMR;
+      if(emailMR){
+        // Cas normal : email connu, on l'inclut explicitement
+        msgMR='Bonjour '+prenom+' ! Ton paiement a bien été reçu ✅ Merci !\n\n📧 Je t\'envoie le lien Mondial Relay à ton adresse mail (*'+emailMR+'*).\n\n👉 Clique sur le lien dans le mail pour choisir ton point relais.\n👉 Une fois fait, renvoie-moi un message ici pour me confirmer 🙏\n\nMerci ! ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
+      } else {
+        // ⚠️ Pas d'email enregistré → demander l'email à la cliente au lieu de dire "vérifie ton mail"
+        msgMR='Bonjour '+prenom+' ! Ton paiement a bien été reçu ✅ Merci !\n\n⚠️ *Petite chose* : je n\'ai pas ton email pour t\'envoyer le lien Mondial Relay.\n\n📧 Peux-tu me l\'envoyer par message ici stp ? Je t\'envoie le lien dès réception 🙏\n\nMerci ! ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
+        // Toast dashboard pour alerter le user
+        try { toast('⚠️ '+(o.nom||'')+' : pas d\'email — message modifié pour demander l\'email'); } catch(e){}
+      }
       queueMessage(o.tel, msgMR, prenom, 'Lien Mondial Relay à '+prenom);
     }
     // Afficher la file si des messages sont à envoyer
