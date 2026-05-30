@@ -1427,13 +1427,13 @@ function updateSlotAvailability(){
   // Règles métier :
   // - Livraison Marseille (modeLiv='livraison') : uniquement à partir de 14h
   // - Récupération sur place (modeLiv='place') : uniquement à partir de 10h
-  // - Envoi MR (modeLiv='envoi') : pas de restriction
-  // - DIMANCHE : tous les modes uniquement à partir de 14h
+  // - Envoi MR (modeLiv='envoi') : pas de restriction (créneau indicatif, pas réel)
+  // - DIMANCHE : uniquement pour livraison/place → à partir de 14h (envoi non concerné)
   var minHour = 0;
   if(modeLiv === 'livraison') minHour = 14;
   else if(modeLiv === 'place') minHour = 10;
-  // Override dimanche → 14h minimum (s'applique à TOUS les modes)
-  if(typeof activeDate !== 'undefined' && activeDate && /^Dim\b/i.test(activeDate)){
+  // Override dimanche pour livraison/place seulement
+  if(modeLiv !== 'envoi' && typeof activeDate !== 'undefined' && activeDate && /^Dim\b/i.test(activeDate)){
     if(minHour < 14) minHour = 14;
   }
   var allSlots = document.querySelectorAll('.slot[data-v], .slot2[data-v], .date-btn[data-v]');
@@ -1481,7 +1481,7 @@ function updateSlotAvailability(){
   var hint = document.getElementById('dispoHint');
   var isDim = typeof activeDate !== 'undefined' && activeDate && /^Dim\b/i.test(activeDate);
   if(hint){
-    if(isDim){
+    if(isDim && modeLiv !== 'envoi'){
       hint.innerHTML = '📅 Dimanche : <b>à partir de 14h</b> uniquement (matin fermé)';
       hint.style.color = '#DC2626';
     } else if(modeLiv === 'livraison'){
@@ -2617,11 +2617,11 @@ function handleSubmit(){
   // ═══ GARDE-FOU MÉTIER : créneaux interdits selon mode + jour ═══
   // Livraison Marseille : pas avant 14h
   // Récupération sur place : pas avant 10h
-  // DIMANCHE (tous modes) : pas avant 14h
+  // DIMANCHE (livraison/place uniquement, envoi non concerné) : pas avant 14h
   var modeMinHour = 0;
   if(modeLiv === 'livraison') modeMinHour = 14;
   else if(modeLiv === 'place') modeMinHour = 10;
-  if(dispoData.length > 0){
+  if(dispoData.length > 0 && modeLiv !== 'envoi'){
     var slotsInterdits = [];
     var reasons = [];
     dispoData.forEach(function(d){
