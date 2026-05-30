@@ -2060,7 +2060,11 @@ async function tog(id, field) {
   // Si on vient de cocher "Payée" → préparer la file de messages à envoyer
   if(field==='payee' && o.payee){
     msgQueue=[];
-    var prenom=(o.nom||'').split(' ')[0];
+    // Nettoie le prénom : retire les emojis, drapeaux, caractères bizarres
+    // qui cassent l'encodage WhatsApp URL (ex: "Mimi❤️ 🇹🇳🇵🇸" devient "Mimi")
+    var prenomRaw=(o.nom||'').split(' ')[0];
+        var prenom = prenomRaw.replace(/[\uD800-\uDFFF]/g,'').replace(/[\uFE00-\uFE0F]/g,'').replace(/[\u200B-\u200F\u202A-\u202E\uFEFF]/g,'').replace(/[\u2600-\u27BF]/g,'').replace(/[\uFFFD]/g,'').trim();
+    if(!prenom) prenom = prenomRaw.trim() || 'cliente'; // fallback si tout est strippé
     // 1. Notification MARRAINE si parrain
     if(o.parrain){
       var parrTel=cleanTel(o.parrain);
@@ -2107,11 +2111,36 @@ async function tog(id, field) {
     }
     // 3. Message Mondial Relay si envoi
     if(o.modeLiv==='envoi'){
-      // Extraire l'email : d'abord o.email, sinon regex sur o.addr (gère "Mondial Relay — email", "Mondial Relay - email", etc.)
+      // Extraire l'email avec plusieurs fallbacks :
+      // 1. o.email direct
+      // 2. regex sur o.addr (gère "Mondial Relay — email", etc.)
+      // 3. chercher dans les autres commandes de la même cliente (par tel)
       var emailMR=o.email||'';
       if(!emailMR && o.addr){
         var em = o.addr.match(/[\w.+\-]+@[\w-]+\.[\w.\-]+/);
         if(em) emailMR = em[0];
+      }
+      if(!emailMR && o.tel){
+        var telClean = (o.tel||'').replace(/\s/g,'').replace(/^\+33/,'33').replace(/^0/,'33');
+        // Chercher dans toutes les autres commandes de la cliente
+        for(var ii=0; ii<orders.length; ii++){
+          var ox = orders[ii];
+          if(ox.id === o.id) continue;
+          if(ox.fantome || ox.deletedAt) continue;
+          var oxTel = (ox.tel||'').replace(/\s/g,'').replace(/^\+33/,'33').replace(/^0/,'33');
+          if(oxTel !== telClean) continue;
+          // Trouve email dans ox.email
+          if(ox.email && /^[\w.+\-]+@[\w-]+\.[\w.\-]+$/.test(ox.email)){ emailMR = ox.email; break; }
+          // Sinon regex sur ox.addr
+          if(ox.addr){
+            var em2 = ox.addr.match(/[\w.+\-]+@[\w-]+\.[\w.\-]+/);
+            if(em2){ emailMR = em2[0]; break; }
+          }
+        }
+        // Si trouvé : on update aussi la commande actuelle pour la prochaine fois
+        if(emailMR && !o.email){
+          try { o.email = emailMR; saveStorage(); } catch(e){}
+        }
       }
       var msgMR;
       if(emailMR){
