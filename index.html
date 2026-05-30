@@ -3545,10 +3545,20 @@ function getParrainageData(){
     marraines[k].cagnotteBrute=cagnotteBrute;
     marraines[k].cagnotte=Math.min(cagnotteBrute,CREDIT_CAP);
     marraines[k].capReached=cagnotteBrute>=CREDIT_CAP;
-    var used=0;
-    if(clients[k]&&clients[k].creditUsed) used=clients[k].creditUsed;
+    // ═══ Crédit utilisé : SOMME des creditApplied sur les commandes de la marraine (source de vérité) ═══
+    // Avant on lisait juste clients[k].creditUsed qui n'était jamais mis à jour → solde gonflé.
+    var usedFromOrders=0;
+    orders.forEach(function(o){
+      if(o.fantome||o.deletedAt) return;
+      var oTel=(o.tel||'').replace(/\s/g,'').replace(/^0/,'33');
+      if(oTel===k && o.creditApplied){
+        usedFromOrders += parseFloat(o.creditApplied)||0;
+      }
+    });
+    var usedFromClient=(clients[k]&&clients[k].creditUsed)||0;
+    var used=Math.max(usedFromOrders, usedFromClient); // prend le plus grand pour ne jamais sous-estimer
     marraines[k].creditUsed=used;
-    marraines[k].solde=Math.min(CREDIT_CAP,marraines[k].cagnotte-used);
+    marraines[k].solde=Math.max(0, Math.min(CREDIT_CAP, marraines[k].cagnotte-used));
   });
   return marraines;
 }
