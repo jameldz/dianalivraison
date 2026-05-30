@@ -1428,9 +1428,14 @@ function updateSlotAvailability(){
   // - Livraison Marseille (modeLiv='livraison') : uniquement à partir de 14h
   // - Récupération sur place (modeLiv='place') : uniquement à partir de 10h
   // - Envoi MR (modeLiv='envoi') : pas de restriction
+  // - DIMANCHE : tous les modes uniquement à partir de 14h
   var minHour = 0;
   if(modeLiv === 'livraison') minHour = 14;
   else if(modeLiv === 'place') minHour = 10;
+  // Override dimanche → 14h minimum (s'applique à TOUS les modes)
+  if(typeof activeDate !== 'undefined' && activeDate && /^Dim\b/i.test(activeDate)){
+    if(minHour < 14) minHour = 14;
+  }
   var allSlots = document.querySelectorAll('.slot[data-v], .slot2[data-v], .date-btn[data-v]');
   allSlots.forEach(function(el){
     var v = el.dataset.v || '';
@@ -1474,8 +1479,12 @@ function updateSlotAvailability(){
   });
   // Message d'aide
   var hint = document.getElementById('dispoHint');
+  var isDim = typeof activeDate !== 'undefined' && activeDate && /^Dim\b/i.test(activeDate);
   if(hint){
-    if(modeLiv === 'livraison'){
+    if(isDim){
+      hint.innerHTML = '📅 Dimanche : <b>à partir de 14h</b> uniquement (matin fermé)';
+      hint.style.color = '#DC2626';
+    } else if(modeLiv === 'livraison'){
       hint.innerHTML = '🛵 Livraison Marseille : <b>uniquement à partir de 14h</b> (matin indisponible)';
       hint.style.color = '#DC2626';
     } else if(modeLiv === 'place'){
@@ -2204,6 +2213,8 @@ function openDatePanel(val,idx){
     });
     // Griser les créneaux passés pour aujourd'hui (sur place)
     updatePastSlotsForDate(idx===0);
+    // Recalcule l'affichage des créneaux selon mode + jour (dimanche → 14h+)
+    if(typeof updateSlotAvailability === 'function') updateSlotAvailability();
     return;
   }
   if(activeDate===val){
@@ -2226,6 +2237,8 @@ function openDatePanel(val,idx){
   document.getElementById('fJusqua').value=st.ju||'';
   document.getElementById('heureErreur').style.display='none';
   updatePastSlotsForDate(idx===0);
+  // Recalcule l'affichage des créneaux selon mode + jour (dimanche → 14h+)
+  if(typeof updateSlotAvailability === 'function') updateSlotAvailability();
   setDispoTab(dispoTab);
   document.getElementById('dateSlotPanel').style.display='block';
 }
@@ -2601,27 +2614,33 @@ function handleSubmit(){
   }
   if(document.getElementById('heureErreur').style.display==='block'){toast('⚠️ Heure de fin avant heure de début !');return;}
 
-  // ═══ GARDE-FOU MÉTIER : créneaux interdits selon mode ═══
+  // ═══ GARDE-FOU MÉTIER : créneaux interdits selon mode + jour ═══
   // Livraison Marseille : pas avant 14h
   // Récupération sur place : pas avant 10h
-  var minHourBusiness = 0;
-  var minHourLabel = '';
-  if(modeLiv === 'livraison'){ minHourBusiness = 14; minHourLabel = 'Livraison Marseille : uniquement à partir de 14h'; }
-  else if(modeLiv === 'place'){ minHourBusiness = 10; minHourLabel = 'Récupération sur place : uniquement à partir de 10h'; }
-  if(minHourBusiness > 0 && dispoData.length > 0){
+  // DIMANCHE (tous modes) : pas avant 14h
+  var modeMinHour = 0;
+  if(modeLiv === 'livraison') modeMinHour = 14;
+  else if(modeLiv === 'place') modeMinHour = 10;
+  if(dispoData.length > 0){
     var slotsInterdits = [];
+    var reasons = [];
     dispoData.forEach(function(d){
+      var isDimDate = /^Dim\b/i.test(d.date||'');
+      var effectiveMin = isDimDate ? Math.max(modeMinHour, 14) : modeMinHour;
+      if(effectiveMin === 0) return;
       (d.slots||[]).forEach(function(s){
         var m = s.match(/(\d+)h/);
-        if(m && parseInt(m[1],10) < minHourBusiness){
+        if(m && parseInt(m[1],10) < effectiveMin){
           slotsInterdits.push(d.date+' : '+s);
+          if(isDimDate && reasons.indexOf('dimanche')<0) reasons.push('dimanche');
+          else if(!isDimDate && reasons.indexOf('mode')<0) reasons.push('mode');
         }
       });
     });
     if(slotsInterdits.length > 0){
       document.getElementById('datesGrid').scrollIntoView({behavior:'smooth',block:'center'});
-      toast('⚠️ '+minHourLabel+' — créneaux refusés : '+slotsInterdits.slice(0,2).join(' ; '));
-      // Force update visuel pour griser à nouveau
+      var lbl = reasons.indexOf('dimanche')>=0 ? 'Dimanche : à partir de 14h uniquement' : (modeLiv==='livraison'?'Livraison Marseille : à partir de 14h':'Récupération sur place : à partir de 10h');
+      toast('⚠️ '+lbl+' — créneaux refusés : '+slotsInterdits.slice(0,2).join(' ; '));
       if(typeof updateSlotAvailability === 'function') updateSlotAvailability();
       return;
     }
