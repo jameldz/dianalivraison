@@ -3000,7 +3000,26 @@ function handleSubmit(){
   var vendeurSnap = vendeur ? vendeur.snap : 'diana-detox';
   confirmMsg+='\n\n📸 *Conseil important* : prends une photo de toi MAINTENANT avant de commencer ta cure ! Beaucoup de nos clientes regrettent de ne pas l\'avoir fait - les résultats arrivent vite et tu voudras comparer 😊\nPartage tes résultats sur Snap 👻 '+vendeurSnap+' avec ta ville (#DianaDetox #TaVille) 💕';
   var filtre = dTotal() > 0;
+  // ═══ Récupération email : prend la valeur de l'un ou l'autre champ ═══
+  // fEmail (général) et fRelaisEmail (spécifique MR) doivent être synchronisés par oninput
+  // mais si jamais autofill/paste a rempli l'un sans déclencher l'event, on regarde les deux
   var email = document.getElementById('fEmail').value.trim();
+  if(!email){
+    var fre = document.getElementById('fRelaisEmail');
+    if(fre && fre.value.trim()) email = fre.value.trim();
+  }
+  // Resync : si email trouvé, propage aux 2 champs (au cas où)
+  if(email){
+    var feSync = document.getElementById('fEmail'); if(feSync && !feSync.value.trim()) feSync.value = email;
+    var freSync = document.getElementById('fRelaisEmail'); if(freSync && !freSync.value.trim()) freSync.value = email;
+  }
+  // ═══ Garde-fou final : envoi MR sans email = REFUS de la commande ═══
+  if(modeLiv==='envoi' && modeRelais!=='domicile' && !email){
+    toast('⚠️ Email obligatoire pour l\'envoi Mondial Relay');
+    var feFinal = document.getElementById('fRelaisEmail') || document.getElementById('fEmail');
+    if(feFinal){ try{showErr(feFinal.id);}catch(e){} feFinal.focus(); feFinal.scrollIntoView({behavior:'smooth',block:'center'}); }
+    return;
+  }
   var oAddr;
   if(modeLiv==='envoi' && modeRelais!=='domicile'){
     oAddr = 'Mondial Relay — '+email;
