@@ -2095,7 +2095,7 @@ async function tog(id, field) {
       else if(nbFilleules<30) msgM+='\n🎁 Smartbox débloquée !\n💎 Encore '+(30-nbFilleules)+' filleule'+(30-nbFilleules>1?'s':'')+' pour ta Box Prestige VIP !\n';
       else msgM+='\n💎 Box Prestige VIP débloquée ! Contacte-moi pour la récupérer !\n';
       msgM+='\n👉 Continue à partager - 5€ par personne qui commande 🚀';
-      msgM+='\n\n⚠️ Le crédit est utilisable à condition que toi et ta filleule ayez chacune passé au moins une commande via le formulaire Diana Detox.';
+      msgM+='\n\n⚠️ Le crédit est utilisable à condition que toi et ta filleule ayez chacune passé au moins une commande via le formulaire Diana Detox *avec la même vendeuse*.';
       msgM+='\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
       queueMessage(parrTel, msgM, marrLabel.split(' ')[0], 'Notifier la marraine ('+marrLabel+')');
       } // end if nbFilleules>0
@@ -2106,7 +2106,7 @@ async function tog(id, field) {
       var vendeurParam=(o.vendeur||'').toLowerCase();
       var snapParamT=o.snap?'&parrsnap='+encodeURIComponent(o.snap):'';
       var parrainageLink='https://dianalivraison.vercel.app/livraison-diana-fixed.html?parr='+telFilleuleClean+snapParamT+(vendeurParam?'&v='+vendeurParam:'');
-      var msgFilleule='🎉 Bonne nouvelle '+prenom+' !\n\nMerci pour ta commande ✅\nTu as gagné *5€ de crédit* grâce à ton parrainage !\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n⚠️ Condition : ta marraine et toi devez chacune avoir passé au moins une commande via le formulaire Diana Detox.\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque personne qui commande avec ton lien, tu gagnes *+5€* de crédit, et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖\u200d♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+parrainageLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
+      var msgFilleule='🎉 Bonne nouvelle '+prenom+' !\n\nMerci pour ta commande ✅\nTu as gagné *5€ de crédit* grâce à ton parrainage !\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n⚠️ Condition : ta marraine et toi devez chacune avoir passé au moins une commande via le formulaire Diana Detox *avec la même vendeuse*.\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque personne qui commande avec ton lien, tu gagnes *+5€* de crédit, et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖\u200d♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+parrainageLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
       queueMessage(o.tel, msgFilleule, prenom, 'Crédit filleule pour '+prenom);
     }
     // 3. Message Mondial Relay si envoi
@@ -2703,9 +2703,27 @@ async function sendConfClient(id){
   var lydiaLink=lydiaLinks[vendeurKey]||'';
 
   // ═══ CONSTRUCTION DU MESSAGE ═══
-  var msg='Bonjour '+prenom+' ! Commande #'+o.num+' confirmée ✅\n\n📦 '+prodsTxt+'\n💰 '+totalTxt;
-  if(o.filtreInox) msg+='\n🎁 Filtre INOX offert';
-  if(o.reduc) msg+='\n🎁 Réduction -'+o.reduc+'€';
+  // Texte sans emojis ambiguës (qui parfois s'affichent en ◇? sur WhatsApp)
+  var msg='Bonjour '+prenom+' ! Commande #'+o.num+' confirmee OK\n\n>> Produits : '+prodsTxt+'\n>> Total : '+totalTxt;
+  if(o.filtreInox){
+    msg+='\n>> Filtre INOX OFFERT (cadeau pour ta 1ere commande Daylia)';
+  } else {
+    // Si pas de filtre cette fois MAIS la cliente a déjà eu un filtre avant (Daylia précédent)
+    try {
+      var oTelC = (o.tel||'').replace(/\s/g,'').replace(/^0/,'33');
+      var hasDayliaThisOrder = (o.prods||'').toLowerCase().indexOf('daylia')!==-1;
+      var hadPrevDaylia = orders.some(function(x){
+        if(x.id===o.id || x.fantome || x.deletedAt) return false;
+        if(!x.payee) return false; // précédente commande PAYÉE seulement
+        var xTel = (x.tel||'').replace(/\s/g,'').replace(/^0/,'33');
+        return xTel===oTelC && (x.prods||'').toLowerCase().indexOf('daylia')!==-1;
+      });
+      if(hasDayliaThisOrder && hadPrevDaylia){
+        msg+='\n>> Filtre INOX deja offert sur ta commande precedente, garde-le bien :)';
+      }
+    } catch(e){}
+  }
+  if(o.reduc) msg+='\n>> Reduction -'+o.reduc+'€';
   // Mention fidélité si avantage offert (5ème, 10ème commande)
   if(o.livGratuite){
     var avantageMsg='Livraison OFFERTE';
@@ -2723,28 +2741,29 @@ async function sendConfClient(id){
     else if(mailPay) msg+='\n📧 '+mailPay;
   } else {
     // Mode espèces : rien à envoyer, paiement direct à la livraison / sur place
-    msg+='\n\n💵 *Paiement en espèces à la '+(ml==='place'?'récupération':'livraison')+'*';
+    msg+='\n\n>> *Paiement en especes a la '+(ml==='place'?'recuperation':'livraison')+'*';
+    msg+='\n>> *Si tu n\'as pas la monnaie, previens-moi AVANT le rendez-vous stp* (pour que je prepare le rendu)';
   }
 
   // ═══ INFOS MODE DE LIVRAISON ═══
   if(ml==='envoi'){
-    msg+='\n\n📦 *Envoi Mondial Relay*\nDès que ton paiement sera reçu, je t\'enverrai les instructions pour choisir ton point relais 🙏';
+    msg+='\n\n>> *Envoi Mondial Relay*\nDes que ton paiement sera recu, je t\'enverrai les instructions pour choisir ton point relais.';
   } else if(ml==='place'){
-    msg+=(slot?'\n\n📅 Rendez-vous le '+slot+' pour la récupération.':'')
-      +'\n📍 Caisse d\'Epargne, Place Saint Eugène 13007'
-      +'\n\n⚠️ En cas de changement, merci de me prévenir par WhatsApp.';
+    msg+=(slot?'\n\n>> Rendez-vous le '+slot+' pour la recuperation.':'')
+      +'\n>> Lieu : Caisse d\'Epargne, Place Saint Eugene 13007'
+      +'\n\n>> En cas de changement, merci de me prevenir par WhatsApp.';
   } else {
-    msg+=(slot?'\n\n📅 Rendez-vous le '+slot+' pour la livraison.':'')
-      +'\n📍 '+(o.addr||'')
-      +'\n\n⚠️ En cas de changement, merci de me prévenir par WhatsApp.';
+    msg+=(slot?'\n\n>> Rendez-vous le '+slot+' pour la livraison.':'')
+      +'\n>> Lieu : '+(o.addr||'')
+      +'\n\n>> En cas de changement, merci de me prevenir par WhatsApp.';
   }
 
   // ═══ DEMANDE DE RETOUR SNAP (important !) ═══
-  msg+='\n\n🌟 *Ton retour compte énormément*\nUne fois ta cure bien commencée, envoie-nous un petit mot sur Snap — tes ressentis, tes résultats, une photo... Ça nous aide beaucoup et ça motive les autres clientes 💛';
+  msg+='\n\n*Ton retour compte enormement*\nUne fois ta cure bien commencee, envoie-nous un petit mot sur Snap — tes ressentis, tes resultats, une photo... Ca nous aide beaucoup et ca motive les autres clientes <3';
 
   // ═══ RAPPEL UTILE (simplifié - sans référence site) ═══
-  msg+='\n\n📌 *Petit rappel :*\nCe numéro WhatsApp est dédié au *suivi de ta commande et de la livraison*.\n💬 Pour toute question (utilisation, conseils, ressentis...), contacte *'+vSnap+'* sur Snap 👻 — Diana est dispo là-bas pour échanger avec toi 😊';
-  msg+='\n\n👻 Snap : '+vSnap;
+  msg+='\n\n*Petit rappel :*\nCe numero WhatsApp est dedie au *suivi de ta commande et de la livraison*.\n>> Pour toute question (utilisation, conseils, ressentis...), contacte *'+vSnap+'* sur Snap — Diana est dispo la-bas pour echanger avec toi.';
+  msg+='\n\nSnap : '+vSnap;
   openMsgApp(o.tel, msg, prenom);
   o.clientConfirme=true;
   o._clientConfirme_at=Date.now();
