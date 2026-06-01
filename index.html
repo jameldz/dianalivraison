@@ -1974,7 +1974,24 @@ function render() {
         +'<button onclick="toggleLivGratuite(\''+o.id+'\')" style="background:'+(o.livGratuite?'linear-gradient(135deg,#22C55E,#15803D)':'var(--lt)')+';border:1.5px solid '+(o.livGratuite?'#22C55E':'var(--bdr)')+';border-radius:6px;padding:3px 7px;font-size:9px;font-weight:900;cursor:pointer;font-family:inherit;color:'+(o.livGratuite?'#fff':'var(--k2)')+';white-space:nowrap'+(o.livGratuite?';animation:blink-gratuit 1.5s ease-in-out infinite':'')+'">'+(o.livGratuite?'🚚 GRATUITE ✓':'🚚 Liv. gratuite')+'</button>'
         
         +(o.filtreInox?'<span style="background:#FFF8E1;color:#7A5A00;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900">🎁 Filtre INOX</span>':'')
-        +(o.parrain?'<span style="background:#E8F5E9;color:#2E7D32;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900">🎁 +5€ crédit filleule</span>':'')
+        +(o.parrain?(function(){
+          // Badge parrainage : couleur + texte selon parrStatus
+          var ps = o.parrStatus || '';
+          if(ps === 'rejected'){
+            return '<span style="background:#FEE2E2;color:#991B1B;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900" title="Vendeurs différents ou conditions non remplies">❌ Parrainage refusé</span>';
+          }
+          if(ps === 'flagged'){
+            return '<span style="background:#FEF3C7;color:#92400E;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900" title="À vérifier : marraine inconnue / même adresse / etc.">⚠️ À vérifier</span>';
+          }
+          if(ps === 'validated' && o.payee){
+            return '<span style="background:#DCFCE7;color:#166534;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900">✅ +5€ confirmé</span>';
+          }
+          if(ps === 'validated'){
+            return '<span style="background:#E8F5E9;color:#2E7D32;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900">🎁 +5€ (si payée)</span>';
+          }
+          // Pas de statut encore (en attente d'auto-validation au paiement)
+          return '<span style="background:#F3F4F6;color:#6B7280;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900">🎁 +5€ (en attente)</span>';
+        })():'')
         +(o.creditApplied?'<span style="background:#FEF3C7;color:#92400E;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900">💰 -'+o.creditApplied+'€ crédit</span>':'')
         +'<button onclick="delOrder(\''+o.id+'\')" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--k3)">🗑</button>'
         +'</div></div>'
@@ -2101,13 +2118,20 @@ async function tog(id, field) {
       } // end if nbFilleules>0
       } // end if marrFound
 
-      // 2. Notification FILLEULE
+      // 2. Notification FILLEULE — uniquement si parrainage RÉELLEMENT validé
+      // (sinon on promet 5€ qui ne seront pas attribués → cliente râle après)
+      var parrValide = (typeof isParrainageValid === 'function') && isParrainageValid(o) === true;
+      if(parrValide){
       var telFilleuleClean=cleanTel(o.tel||'');
       var vendeurParam=(o.vendeur||'').toLowerCase();
       var snapParamT=o.snap?'&parrsnap='+encodeURIComponent(o.snap):'';
       var parrainageLink='https://dianalivraison.vercel.app/livraison-diana-fixed.html?parr='+telFilleuleClean+snapParamT+(vendeurParam?'&v='+vendeurParam:'');
       var msgFilleule='🎉 Bonne nouvelle '+prenom+' !\n\nMerci pour ta commande ✅\nTu as gagné *5€ de crédit* grâce à ton parrainage !\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n⚠️ Condition : ta marraine et toi devez chacune avoir passé au moins une commande via le formulaire Diana Detox *avec la même vendeuse*.\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque personne qui commande avec ton lien, tu gagnes *+5€* de crédit, et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖\u200d♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+parrainageLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
       queueMessage(o.tel, msgFilleule, prenom, 'Crédit filleule pour '+prenom);
+      } else {
+        // Parrainage non valide : on alerte l'user au lieu de promettre 5€ à la cliente
+        try { toast('⚠️ '+(o.nom||'')+' : parrainage non validé (vendeur différent ou marraine inconnue) — pas de promesse 5€ envoyée'); } catch(e){}
+      }
     }
     // 3. Message Mondial Relay si envoi
     if(o.modeLiv==='envoi'){
