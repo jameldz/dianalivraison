@@ -2588,7 +2588,24 @@ window.openContreIndications = openContreIndications;
 window.closeContreIndications = closeContreIndications;
 window.onDechargeChange = onDechargeChange;
 
+// Verrou anti-doublon : empêche les double-clics et soumissions répétées rapprochées
+// Init au scope global pour survivre aux re-déclarations
+// Restauration depuis localStorage pour survivre à un F5 rapide
+window._submitLock = window._submitLock || { lastSubmitAt: 0 };
+try {
+  var _persistedLast = parseInt(localStorage.getItem('diana_last_submit_at')||'0', 10);
+  if(_persistedLast > window._submitLock.lastSubmitAt) window._submitLock.lastSubmitAt = _persistedLast;
+} catch(e){}
 function handleSubmit(){
+  // ═══ GARDE-FOU ANTI-DOUBLON (au tout début) ═══
+  // Si une commande a été poussée il y a moins de 60s → bloque
+  // (60s = délai raisonnable entre 2 vraies commandes différentes)
+  var nowTs = Date.now();
+  if(window._submitLock.lastSubmitAt && (nowTs - window._submitLock.lastSubmitAt) < 60000){
+    var secLeft = Math.ceil(60 - (nowTs - window._submitLock.lastSubmitAt)/1000);
+    toast('⚠️ Commande déjà envoyée il y a '+(Math.ceil((nowTs - window._submitLock.lastSubmitAt)/1000))+'s. Patiente '+secLeft+'s avant de re-essayer.');
+    return;
+  }
   // 0. Décharge / contre-indications obligatoire
   var dechargeCb = document.getElementById('dechargeCheck');
   if(dechargeCb && !dechargeCb.checked){
@@ -3047,6 +3064,9 @@ function handleSubmit(){
       lastError: null
     });
     localStorage.setItem('diana_pending_push', JSON.stringify(queue));
+    // ✅ Marque le verrou anti-doublon : 60s avant qu'une autre soumission soit acceptée
+    window._submitLock.lastSubmitAt = Date.now();
+    try { localStorage.setItem('diana_last_submit_at', String(Date.now())); } catch(e){}
     pushPendingOrders(); // tente immédiatement
   } catch(e){
     console.warn('[Queue] Erreur ajout queue:', e);
@@ -3194,7 +3214,7 @@ function notifMarraineRecap(){
   if(!lastParrainTel&&!lastParrainSnap){toast('⚠️ Pas de numéro ni snap du parrain');return;}
   var prenom=lastClientNom?lastClientNom.split(' ')[0]:'';
   var label=lastParrGenre==='m'?'parrain':'marraine';
-  var msg='Coucou ! C\'est '+prenom+' 😊\n\nJe viens de passer commande chez Diana Detox grâce à toi 🎁\nTu recevras *+5€ de crédit* sur ta cagnotte dès que ma commande sera validée et payée !\n\n⚠️ Pour que le parrainage compte, il faut que ta filleule *et* toi ayez chacune passé au moins une commande via le formulaire Diana Detox.\n\n👉 Suis ta cagnotte ici :\nhttps://dianalivraison.vercel.app/parrain\n\nMerci '+label+' ❤️';
+  var msg='Coucou ! C\'est '+prenom+' 😊\n\nJe viens de passer commande chez Diana Detox grâce à toi 🎁\nTu recevras *+5€ de crédit* sur ta cagnotte dès que ma commande sera validée et payée !\n\n⚠️ Pour que le parrainage compte, il faut que ta filleule *et* toi ayez chacune passé au moins une commande via le formulaire Diana Detox *avec la même vendeuse*.\n\n👉 Suis ta cagnotte ici :\nhttps://dianalivraison.vercel.app/parrain\n\nMerci '+label+' ❤️';
   if(lastParrainTel){
     var tel=lastParrainTel.replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
     window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msg),'_blank');
