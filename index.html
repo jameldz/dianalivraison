@@ -2814,17 +2814,17 @@ async function sendConfClient(id){
   if(o.livGratuite){
     var avantageMsg='Livraison OFFERTE';
     if(o.modeLiv==='envoi') avantageMsg='Frais de port OFFERTS';
-    else if(o.modeLiv==='place') avantageMsg='5€ de RÉDUCTION';
-    msg+='\n🎉 *FIDÉLITÉ : '+avantageMsg+' pour ta commande !* 🚚\nMerci d\'être une cliente fidèle ❤️';
+    else if(o.modeLiv==='place') avantageMsg='5€ de REDUCTION';
+    msg+='\n>> *FIDELITE : '+avantageMsg+' pour ta commande !*\nMerci d\'etre une cliente fidele <3';
   }
 
   // ═══ INSTRUCTIONS DE PAIEMENT INTÉGRÉES ═══
   if(mp==='paypal'){
-    msg+='\n\n💳 *Comment payer — PayPal (entre proches, sans frais)*\n👉 Montant exact : *'+totalTxt+'*\n📧 '+(mailPay||'[à compléter]');
+    msg+='\n\n>> *Comment payer — PayPal (entre proches, sans frais)*\n>> Montant exact : *'+totalTxt+'*\n>> Mail PayPal : '+(mailPay||'[a completer]');
   } else if(mp==='lydia'){
-    msg+='\n\n📱 *Comment payer — Lydia*\n👉 Montant à envoyer : *'+totalTxt+'*';
-    if(lydiaLink) msg+='\n👉 Lien direct :\n'+lydiaLink;
-    else if(mailPay) msg+='\n📧 '+mailPay;
+    msg+='\n\n>> *Comment payer — Lydia*\n>> Montant a envoyer : *'+totalTxt+'*';
+    if(lydiaLink) msg+='\n>> Lien direct :\n'+lydiaLink;
+    else if(mailPay) msg+='\n>> Mail : '+mailPay;
   } else {
     // Mode espèces : rien à envoyer, paiement direct à la livraison / sur place
     msg+='\n\n>> *Paiement en especes a la '+(ml==='place'?'recuperation':'livraison')+'*';
@@ -2844,12 +2844,12 @@ async function sendConfClient(id){
       +'\n\n>> En cas de changement, merci de me prevenir par WhatsApp.';
   }
 
-  // ═══ DEMANDE DE RETOUR SNAP (important !) ═══
-  msg+='\n\n*Ton retour compte enormement*\nUne fois ta cure bien commencee, envoie-nous un petit mot sur Snap — tes ressentis, tes resultats, une photo... Ca nous aide beaucoup et ca motive les autres clientes <3';
-
-  // ═══ RAPPEL UTILE (simplifié - sans référence site) ═══
-  msg+='\n\n*Petit rappel :*\nCe numero WhatsApp est dedie au *suivi de ta commande et de la livraison*.\n>> Pour toute question (utilisation, conseils, ressentis...), contacte *'+vSnap+'* sur Snap — Diana est dispo la-bas pour echanger avec toi.';
-  msg+='\n\nSnap : '+vSnap;
+  // ═══ DEMANDE DE RETOUR + RAPPEL FUSIONNÉS (1 seule mention "Snap" pour éviter
+  // que WhatsApp/iOS corrompe le rendu avec plusieurs "Snap : X" qui se mélangent) ═══
+  msg+='\n\n*Ton retour compte enormement*\nUne fois ta cure bien commencee, envoie-nous un petit mot — tes ressentis, tes resultats, une photo... Ca nous aide beaucoup et ca motive les autres clientes <3';
+  msg+='\n\n*Petit rappel :*\nCe numero WhatsApp est dedie au *suivi de ta commande et de la livraison*.\nPour toute question (utilisation, conseils, ressentis...), contacte-nous sur notre compte Snap (Diana est dispo la-bas pour echanger avec toi).';
+  // Une seule mention du Snap, tout à la fin et bien isolée
+  msg+='\n\n— — — —\nSnap : '+vSnap;
   openMsgApp(o.tel, msg, prenom);
   o.clientConfirme=true;
   o._clientConfirme_at=Date.now();
