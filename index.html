@@ -1274,6 +1274,31 @@ if(!window._initBootstrapDone){
 }
 
 // ── SAUVEGARDE AUTOMATIQUE LOCALE ──
+// PURGE AGRESSIVE AU DÉMARRAGE — exécute immédiatement, pas attendre un futur appel
+// (au cas où le code précédent avait MAX_BACKUPS=30 et que la version a changé)
+(function _purgeBackupsOnLoad(){
+  try {
+    var bks = JSON.parse(localStorage.getItem('diana_auto_backups')||'[]');
+    if(bks.length > 7){
+      var sorted = bks.sort(function(a,b){return (b.date||0)-(a.date||0);});
+      localStorage.setItem('diana_auto_backups', JSON.stringify(sorted.slice(0,7)));
+      console.log('[startup-purge] '+bks.length+' backups → 7');
+    }
+    // Audit quota au démarrage
+    var total = 0;
+    for(var i=0; i<localStorage.length; i++){
+      total += (localStorage.getItem(localStorage.key(i))||'').length;
+    }
+    var pct = total / (5*1024*1024) * 100;
+    if(pct > 85){
+      // Encore trop : on tape dans les backups plus aggressivement
+      var bks2 = JSON.parse(localStorage.getItem('diana_auto_backups')||'[]');
+      localStorage.setItem('diana_auto_backups', JSON.stringify(bks2.slice(0,3)));
+      console.warn('[startup-purge] quota '+pct.toFixed(0)+'% → réduit à 3 backups');
+    }
+  } catch(e){ console.warn('startup-purge fail:',e); }
+})();
+
 // Garde les 7 dernières sauvegardes (1 par jour minimum) dans localStorage
 // (avant : 30 → trop gros, saturait localStorage et empêchait le merge cloud→local)
 // Backup auto si > 4h depuis le dernier, ou si jour calendaire différent

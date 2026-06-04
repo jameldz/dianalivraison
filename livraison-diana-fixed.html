@@ -3159,6 +3159,25 @@ function handleSubmit(){
   document.getElementById('vSuccess').style.display='block';
   // 🎵 Petit son R&B chaleureux pour célébrer la commande
   playOrderSound();
+  // ═══ AUTO-OUVERTURE WhatsApp : envoie la commande au vendeur sans rien faire ═══
+  // Petit délai pour laisser le navigateur afficher l'écran de succès avant de switcher d'app
+  // (sur iOS, ouvre WhatsApp dans la même fenêtre — la cliente verra l'app WhatsApp arriver)
+  try {
+    setTimeout(function(){
+      try {
+        // window.open marche bien sur desktop ; sur mobile location.href est plus fiable
+        var isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+        if(isMobile){
+          window.location.href = waUrl;
+        } else {
+          window.open(waUrl, '_blank');
+        }
+      } catch(e){
+        // Fallback : si bloqué, le bouton "Valider sur WhatsApp" reste cliquable manuellement
+        console.warn('[auto-WhatsApp] bloqué :', e);
+      }
+    }, 1500);
+  } catch(e){}
   // Parrainage section
   var parrSec=document.getElementById('parrainSection');
   if(parrain){
