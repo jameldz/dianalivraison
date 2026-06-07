@@ -3166,6 +3166,7 @@ function setStatsFilt(v,el){
 }
 function statsMonthPrev(){statsMonthOffset--;renderBusinessStats();}
 function statsMonthNext(){if(statsMonthOffset<0){statsMonthOffset++;renderBusinessStats();}}
+function setStatsMonthOffset(offset){statsMonthOffset=offset;renderBusinessStats();}
 
 function renderBusinessStats(){
   var now=new Date();
@@ -3588,7 +3589,7 @@ function renderBusinessStats(){
         +'<div style="display:flex;flex-wrap:wrap;gap:10px">'
         +_renderProdCol('📅 Aujourd\'hui', prodJour, '#DC2626', '#FFFFFF', '#FEE2E2')
         +_renderProdCol('📆 Cette semaine', prodSemaine, '#EA580C', '#FFFFFF', '#FFEDD5')
-        +_renderProdCol('🗓️ Ce mois', prodMois, '#7F1D1D', '#FFFFFF', '#FECACA')
+        +_renderProdCol('🗓️ '+(isCurrentMonth?'Ce mois':moisNoms[viewDate.getMonth()]+' '+viewDate.getFullYear()), prodMois, '#7F1D1D', '#FFFFFF', '#FECACA')
         +'</div></div>';
     }
   } catch(eDianaStats){ console.warn('detail ventes Diana:', eDianaStats); }
@@ -3624,15 +3625,22 @@ function renderBusinessStats(){
       });
       var nb = _countDianaShort(mPaid);
       var ca = mPaid.reduce(function(s,o){return s+(parseFloat(o.total)||0);},0);
-      monthsData.push({label: moisShort[mDate.getMonth()]+' '+String(mDate.getFullYear()).slice(2), nb:nb, ca:ca, isCur: mi===0});
+      // offset par rapport au mois actuel pour la navigation au clic
+      monthsData.push({label: moisShort[mDate.getMonth()]+' '+String(mDate.getFullYear()).slice(2), nb:nb, ca:ca, isCur: mi===0, offset:-mi});
       if(nb>maxMonth) maxMonth = nb;
     }
     if(maxMonth>0){
       var monthsHtml = monthsData.map(function(m){
         var pct = maxMonth>0 ? Math.round(m.nb/maxMonth*100) : 0;
-        var color = m.isCur ? '#DC2626' : '#94A3B8';
-        var bg = m.isCur ? 'linear-gradient(180deg,#FEF3C7,#FEE2E2)' : '#F8FAFC';
-        return '<div style="flex:1;min-width:65px;text-align:center;background:'+bg+';border:1.5px solid '+color+';border-radius:10px;padding:8px 4px">'
+        // 3 états visuels :
+        // - sélectionné (statsMonthOffset = ce mois) : rouge + ring
+        // - mois actuel non sélectionné : orange clair
+        // - autres : gris
+        var isSelected = m.offset === statsMonthOffset;
+        var color = isSelected ? '#DC2626' : (m.isCur ? '#F59E0B' : '#94A3B8');
+        var bg = isSelected ? 'linear-gradient(180deg,#FEF3C7,#FEE2E2)' : (m.isCur ? '#FFFBEB' : '#F8FAFC');
+        var ring = isSelected ? 'box-shadow:0 0 0 3px rgba(220,38,38,0.25);' : '';
+        return '<div onclick="setStatsMonthOffset('+m.offset+')" title="Cliquer pour voir le détail de '+m.label+'" style="flex:1;min-width:65px;text-align:center;background:'+bg+';border:1.5px solid '+color+';border-radius:10px;padding:8px 4px;cursor:pointer;transition:transform 0.15s;'+ring+'" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'translateY(0)\'">'
           +'<div style="font-size:10px;font-weight:800;color:'+color+';text-transform:uppercase;margin-bottom:4px">'+m.label+'</div>'
           +'<div style="font-size:18px;font-weight:900;color:'+color+'">'+m.nb+'</div>'
           +'<div style="font-size:9px;color:#64748B;margin-top:2px">'+m.ca.toFixed(0)+'€</div>'
