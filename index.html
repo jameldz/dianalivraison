@@ -2153,6 +2153,7 @@ function render() {
         +'<button class="abtn" onclick="callClient(\''+o.tel+'\')"><span class="i">📞</span>Appeler</button>'
         +'<button class="abtn" onclick="navTo(\''+o.addr+'\')"><span class="i">🗺️</span>Maps</button>'
         +'<button class="abtn" onclick="openCadeau(\''+o.id+'\')"><span class="i">🎁</span>'+(o.cadeau?'Cadeau ✓':'Cadeau')+'</button>'
+        +'<button class="abtn'+(o.creditApplied>0?' gn':'')+'" onclick="openCreditParrainage(\''+o.id+'\')" title="Saisir le crédit parrainage appliqué sur cette commande"><span class="i">💰</span>'+(o.creditApplied>0?'-'+o.creditApplied+'€':'Crédit')+'</button>'
         +(o.modePay==='paypal'?'<button class="abtn" style="background:#FEF3C7;color:#92400E;border-color:#F59E0B" onclick="openPayManque(\''+o.id+'\')"><span class="i">💸</span>Manque</button>':'')
         +'<button class="abtn" onclick="editOrder(\''+o.id+'\')"><span class="i">✏️</span>Modifier</button>'
         +(function(){
@@ -3006,6 +3007,25 @@ function openCadeau(id){
   render();
   if(o.cadeau)toast('🎁 Cadeau enregistré : '+o.cadeau);
   else toast('Cadeau supprimé');
+}
+
+// ═══ Bouton "💰 Crédit parrainage" : tracker manuellement le crédit appliqué ═══
+// Sauvegarde dans o.creditApplied pour que les stats parrainage soient justes
+// même quand Jamel modifie le total à la main sans utiliser "Appliquer"
+function openCreditParrainage(id){
+  var o=orders.find(function(x){return x.id===id;});
+  if(!o)return;
+  var current=o.creditApplied||0;
+  var val=prompt('Crédit parrainage appliqué sur cette commande (en €) ?\n(Tape 0 pour retirer un crédit déjà enregistré)', current);
+  if(val===null)return; // annulé
+  var n=parseFloat(String(val).replace(',','.').replace(/[^\d.-]/g,''));
+  if(isNaN(n)||n<0){toast('⚠️ Montant invalide');return;}
+  o.creditApplied=n;
+  o.lastModified=Date.now();
+  saveStorage();
+  render();
+  if(n>0)toast('💰 Crédit parrainage enregistré : '+n+'€');
+  else toast('Crédit retiré');
 }
 
 function callClient(tel) {
