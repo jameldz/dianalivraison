@@ -3593,6 +3593,60 @@ function renderBusinessStats(){
     }
   } catch(eDianaStats){ console.warn('detail ventes Diana:', eDianaStats); }
 
+  // ═══════════════════════════════════════════════════════════════
+  // 📅 SECTION : HISTORIQUE 12 DERNIERS MOIS (additive, isolée)
+  // ═══════════════════════════════════════════════════════════════
+  try {
+    function _countDianaShort(arr){
+      var c = 0;
+      arr.forEach(function(o){
+        var p = (o.prods||'').toLowerCase();
+        function mq(re){var m = p.match(re); return m ? (m[1]?parseInt(m[1]):1) : 0;}
+        c += mq(/(\d+)\s*[×x]\s*g[éeè]lules?\s+diana/i)
+           + mq(/(\d+)\s*[×x]\s*th[éeè]\s+diana/i)
+           + mq(/(\d+)\s*[×x]\s*caf[éeè]\s+diana/i)
+           + mq(/(\d+)\s*[×x]\s*mini[\s-]+g[éeè]lules?/i)
+           + mq(/(\d+)\s*[×x]\s*mini[\s-]+th[éeè]/i)
+           + mq(/(\d+)\s*[×x]\s*mini[\s-]+caf[éeè]/i);
+      });
+      return c;
+    }
+    var moisShort=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sept','Oct','Nov','Déc'];
+    var monthsData = [];
+    var maxMonth = 0;
+    for(var mi=11; mi>=0; mi--){
+      var mDate = new Date(now.getFullYear(), now.getMonth()-mi, 1);
+      var mStart = mDate.getTime();
+      var mEnd = new Date(mDate.getFullYear(), mDate.getMonth()+1, 0, 23, 59, 59, 999).getTime();
+      var mPaid = paid.filter(function(o){
+        var d = o.createdAt||(parseInt(o.id)||0);
+        return d>=mStart && d<=mEnd;
+      });
+      var nb = _countDianaShort(mPaid);
+      var ca = mPaid.reduce(function(s,o){return s+(parseFloat(o.total)||0);},0);
+      monthsData.push({label: moisShort[mDate.getMonth()]+' '+String(mDate.getFullYear()).slice(2), nb:nb, ca:ca, isCur: mi===0});
+      if(nb>maxMonth) maxMonth = nb;
+    }
+    if(maxMonth>0){
+      var monthsHtml = monthsData.map(function(m){
+        var pct = maxMonth>0 ? Math.round(m.nb/maxMonth*100) : 0;
+        var color = m.isCur ? '#DC2626' : '#94A3B8';
+        var bg = m.isCur ? 'linear-gradient(180deg,#FEF3C7,#FEE2E2)' : '#F8FAFC';
+        return '<div style="flex:1;min-width:65px;text-align:center;background:'+bg+';border:1.5px solid '+color+';border-radius:10px;padding:8px 4px">'
+          +'<div style="font-size:10px;font-weight:800;color:'+color+';text-transform:uppercase;margin-bottom:4px">'+m.label+'</div>'
+          +'<div style="font-size:18px;font-weight:900;color:'+color+'">'+m.nb+'</div>'
+          +'<div style="font-size:9px;color:#64748B;margin-top:2px">'+m.ca.toFixed(0)+'€</div>'
+          +'<div style="margin-top:5px;height:3px;background:#E2E8F0;border-radius:2px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+color+'"></div></div>'
+          +'</div>';
+      }).join('');
+      html += '<div style="margin-top:14px;background:linear-gradient(135deg,#FFFFFF,#F1F5F9);border:2px solid #475569;border-radius:14px;padding:16px">'
+        +'<h3 style="font-size:15px;font-weight:900;margin-bottom:12px;color:#1E293B">📅 Historique 12 derniers mois — Produits Diana</h3>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:6px">'+monthsHtml+'</div>'
+        +'<div style="font-size:10px;color:#64748B;margin-top:10px;text-align:center">Nb total produits Diana vendus + CA correspondant. Mois courant en rouge.</div>'
+        +'</div>';
+    }
+  } catch(eHistMonths){ console.warn('historique 12 mois:', eHistMonths); }
+
   document.getElementById('businessStatsContent').innerHTML=html;
 }
 
