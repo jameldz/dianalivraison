@@ -3534,6 +3534,65 @@ function renderBusinessStats(){
     html+='</div>';
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // 📊 SECTION : DÉTAIL VENTES PRODUITS DIANA — JOUR / SEMAINE / MOIS
+  // (section purement ADDITIVE, ne touche à rien d'existant)
+  // ═══════════════════════════════════════════════════════════════
+  try {
+    function _countDianaInOrders(arr){
+      var c = {gelules:0, the:0, cafe:0, miniGelules:0, miniThe:0, miniCafe:0, total:0};
+      arr.forEach(function(o){
+        var p = (o.prods||'').toLowerCase();
+        // Détecter chaque produit Diana avec quantité
+        function matchQty(re){var m = p.match(re); return m ? (m[1]?parseInt(m[1]):1) : 0;}
+        var gel = matchQty(/(\d+)\s*[×x]\s*g[éeè]lules?\s+diana/i);
+        var the = matchQty(/(\d+)\s*[×x]\s*th[éeè]\s+diana/i);
+        var caf = matchQty(/(\d+)\s*[×x]\s*caf[éeè]\s+diana/i);
+        var mGel = matchQty(/(\d+)\s*[×x]\s*mini[\s-]+g[éeè]lules?/i);
+        var mThe = matchQty(/(\d+)\s*[×x]\s*mini[\s-]+th[éeè]/i);
+        var mCaf = matchQty(/(\d+)\s*[×x]\s*mini[\s-]+caf[éeè]/i);
+        c.gelules+=gel; c.the+=the; c.cafe+=caf;
+        c.miniGelules+=mGel; c.miniThe+=mThe; c.miniCafe+=mCaf;
+        c.total+=gel+the+caf+mGel+mThe+mCaf;
+      });
+      return c;
+    }
+    var prodJour    = isCurrentMonth ? _countDianaInOrders(inRange(paid, startOfDay)) : null;
+    var prodSemaine = isCurrentMonth ? _countDianaInOrders(inRange(paid, startOfWeek)) : null;
+    var prodMois    = _countDianaInOrders(inRange(paid, startOfMonth, endOfMonth));
+    function _renderProdCol(title, c, color, gradFrom, gradTo){
+      if(!c) return '';
+      if(c.total===0){
+        return '<div style="background:linear-gradient(135deg,'+gradFrom+','+gradTo+');border:2px solid '+color+';border-radius:12px;padding:14px;flex:1;min-width:160px">'
+          +'<div style="font-size:11px;font-weight:900;color:'+color+';text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">'+title+'</div>'
+          +'<div style="font-size:13px;color:#9CA3AF;text-align:center;padding:14px 0">— aucune vente —</div>'
+          +'</div>';
+      }
+      var rows = [
+        c.gelules>0?'<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span>💊 Gélules Diana</span><strong>'+c.gelules+'</strong></div>':'',
+        c.the>0?'<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span>🍵 Thé Diana</span><strong>'+c.the+'</strong></div>':'',
+        c.cafe>0?'<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span>☕ Café Diana</span><strong>'+c.cafe+'</strong></div>':'',
+        c.miniGelules>0?'<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:#92400E"><span>🌟 Mini Gélules</span><strong>'+c.miniGelules+'</strong></div>':'',
+        c.miniThe>0?'<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:#92400E"><span>🌟 Mini Thé</span><strong>'+c.miniThe+'</strong></div>':'',
+        c.miniCafe>0?'<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:#92400E"><span>🌟 Mini Café</span><strong>'+c.miniCafe+'</strong></div>':''
+      ].filter(Boolean).join('');
+      return '<div style="background:linear-gradient(135deg,'+gradFrom+','+gradTo+');border:2px solid '+color+';border-radius:12px;padding:14px;flex:1;min-width:160px">'
+        +'<div style="font-size:11px;font-weight:900;color:'+color+';text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center"><span>'+title+'</span><span style="background:'+color+';color:#fff;border-radius:10px;padding:2px 8px;font-size:11px">'+c.total+' total</span></div>'
+        +rows
+        +'</div>';
+    }
+    var hasAny = (prodJour && prodJour.total>0) || (prodSemaine && prodSemaine.total>0) || prodMois.total>0;
+    if(hasAny || isCurrentMonth){
+      html += '<div style="margin-top:14px;background:linear-gradient(135deg,#FFFFFF,#FEF3C7);border:2px solid #DC2626;border-radius:14px;padding:16px">'
+        +'<h3 style="font-size:15px;font-weight:900;margin-bottom:14px;color:#7F1D1D">📊 Détail ventes Diana — par période</h3>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:10px">'
+        +_renderProdCol('📅 Aujourd\'hui', prodJour, '#DC2626', '#FFFFFF', '#FEE2E2')
+        +_renderProdCol('📆 Cette semaine', prodSemaine, '#EA580C', '#FFFFFF', '#FFEDD5')
+        +_renderProdCol('🗓️ Ce mois', prodMois, '#7F1D1D', '#FFFFFF', '#FECACA')
+        +'</div></div>';
+    }
+  } catch(eDianaStats){ console.warn('detail ventes Diana:', eDianaStats); }
+
   document.getElementById('businessStatsContent').innerHTML=html;
 }
 
