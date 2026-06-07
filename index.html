@@ -2042,7 +2042,7 @@ function render() {
         +(function(){var ts=curFilt==='vendeur'&&o.confirmeAt?o.confirmeAt:curFilt==='terminee'&&o.completedAt?o.completedAt:o.createdAt;return ts?'<div style="font-size:10px;font-weight:700;color:var(--k3);margin-top:3px;text-align:center">'+new Date(ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' · '+new Date(ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</div>':'';}())
         +'</div>'
         +'<div class="oinfo">'
-        +'<div class="oname"><span style="cursor:pointer;text-decoration:underline dotted" onclick="openFiche(\''+o.id+'\')">'+o.nom+'</span>'+(o.fantome?'<span class="fantome-badge">🚫 FANTÔME</span>':'')+(recur?'<span class="recur-badge">⭐ Fidèle</span>':'')+(o.filtre?'<span class="filtre-badge">🎁 Filtre</span>':'')+(function(){if(!o.vendeur)return '';var vk=o.vendeur.toLowerCase().trim();var vColors={sabra:{bg:'linear-gradient(135deg,#EC4899,#BE185D)',ico:'👩‍🦰'},ilyes:{bg:'linear-gradient(135deg,#3B82F6,#1D4ED8)',ico:'👨'},syriane:{bg:'linear-gradient(135deg,#A855F7,#7C3AED)',ico:'👩'}};var vc=vColors[vk]||{bg:'#6366F1',ico:'👤'};return '<span style="background:'+vc.bg+';color:#fff;border-radius:8px;padding:3px 9px;font-size:11px;font-weight:900;margin-left:6px;box-shadow:0 2px 6px rgba(0,0,0,0.15);text-transform:uppercase;letter-spacing:0.3px">'+vc.ico+' '+o.vendeur+'</span>';}())+'</div>'
+        +'<div class="oname"><span style="cursor:pointer;text-decoration:underline dotted" onclick="openFiche(\''+o.id+'\')">'+o.nom+'</span>'+(o.fantome?'<span class="fantome-badge">🚫 FANTÔME</span>':'')+(recur?'<span class="recur-badge">⭐ Fidèle</span>':'')+(o.filtre?'<span class="filtre-badge" title="Cure Daylia : nécessite un filtre pour la consommation">🍵 Daylia inside</span>':'')+(function(){if(!o.vendeur)return '';var vk=o.vendeur.toLowerCase().trim();var vColors={sabra:{bg:'linear-gradient(135deg,#EC4899,#BE185D)',ico:'👩‍🦰'},ilyes:{bg:'linear-gradient(135deg,#3B82F6,#1D4ED8)',ico:'👨'},syriane:{bg:'linear-gradient(135deg,#A855F7,#7C3AED)',ico:'👩'}};var vc=vColors[vk]||{bg:'#6366F1',ico:'👤'};return '<span style="background:'+vc.bg+';color:#fff;border-radius:8px;padding:3px 9px;font-size:11px;font-weight:900;margin-left:6px;box-shadow:0 2px 6px rgba(0,0,0,0.15);text-transform:uppercase;letter-spacing:0.3px">'+vc.ico+' '+o.vendeur+'</span>';}())+'</div>'
         +'<div class="ometa" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px">'+(function(){var ml=o.modeLiv||'livraison';var badge='';if(ml==='place')badge='<span style="background:#EDE9FE;color:#7C3AED;border-radius:5px;padding:2px 7px;font-size:10px;font-weight:800">🏠 Sur place</span>';else if(ml==='envoi'){var relais=o.modeRelais||(/domicile/i.test(o.addr||'')?'domicile':/locker/i.test(o.addr||'')?'locker':'point');var relLbl=relais==='domicile'?'D':relais==='locker'?'L':'P';var relColor=relais==='domicile'?'#DC2626':relais==='locker'?'#7C3AED':'#059669';badge='<span style="background:#FEF3C7;color:#92400E;border-radius:5px;padding:2px 7px;font-size:10px;font-weight:800">📦 Envoi MR</span><span style="background:'+relColor+';color:#fff;border-radius:5px;padding:2px 7px;font-size:10px;font-weight:900;margin-left:3px" title="'+(relais==='domicile'?'Domicile':relais==='locker'?'Locker':'Point Relais')+'">'+relLbl+'</span>';}else badge='<span style="background:#DBEAFE;color:#1D4ED8;border-radius:5px;padding:2px 7px;font-size:10px;font-weight:800">🛵 Livraison</span>';return badge;}())+(o.modePay?'<span style="background:#F0FDF4;color:#166534;border-radius:5px;padding:2px 7px;font-size:10px;font-weight:800">💳 '+(o.modePay==='especes'?'Espèces':o.modePay==='paypal'?'PayPal':o.modePay==='lydia'?'Lydia':o.modePay)+'</span>':'')+'</div>'
         +(o.snap?'<div class="ometa">👻 '+o.snap+'</div>':'')
         +'<div class="oaddr">📍 '+(o.addr||'<span style="color:#aaa;font-style:italic">Adresse non renseignée</span>')+' <button onclick="editAddr(\''+o.id+'\')" style="background:none;border:none;font-size:11px;cursor:pointer;color:var(--rd)">✏️</button></div>'
@@ -2072,7 +2072,39 @@ function render() {
         +'<div style="display:flex;align-items:center;gap:3px"><input type="number" value="'+(o.total||0)+'" style="width:60px;padding:4px 6px;border:1.5px solid var(--bdr);border-radius:7px;font-size:15px;font-weight:900;color:var(--rd);font-family:inherit;text-align:center;background:var(--lt)" onchange="quickEditTotal(\''+o.id+'\',this.value)"><span style="font-size:15px;font-weight:900;color:var(--rd)">€</span></div>'
         +'<button onclick="toggleLivGratuite(\''+o.id+'\')" style="background:'+(o.livGratuite?'linear-gradient(135deg,#22C55E,#15803D)':'var(--lt)')+';border:1.5px solid '+(o.livGratuite?'#22C55E':'var(--bdr)')+';border-radius:6px;padding:3px 7px;font-size:9px;font-weight:900;cursor:pointer;font-family:inherit;color:'+(o.livGratuite?'#fff':'var(--k2)')+';white-space:nowrap'+(o.livGratuite?';animation:blink-gratuit 1.5s ease-in-out infinite':'')+'">'+(o.livGratuite?'🚚 GRATUITE ✓':'🚚 Liv. gratuite')+'</button>'
         
-        +(o.filtreInox?'<span style="background:#FFF8E1;color:#7A5A00;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900">🎁 Filtre INOX</span>':'')
+        +(function(){
+          // ═══ Badge filtre INOX explicite ═══
+          // Affiché UNIQUEMENT si la commande contient du Daylia (filtre inox = cadeau qui va avec Daylia)
+          var hasDaylia = (o.prods||'').toLowerCase().indexOf('daylia')!==-1;
+          if(!hasDaylia) return '';
+          // Cherche si la cliente a déjà reçu un filtre INOX (cmd payée + filtreInox=true, non fantôme/deleted)
+          var oTelClean = (o.tel||'').replace(/\s/g,'').replace(/^\+33/,'33').replace(/^0/,'33');
+          var oEmailLow = (o.email||'').toLowerCase();
+          var dejaFiltre = null;
+          for(var ii=0; ii<orders.length; ii++){
+            var ox = orders[ii];
+            if(ox.id===o.id) continue;
+            if(ox.fantome||ox.deletedAt) continue;
+            if(!ox.payee) continue;
+            if(!ox.filtreInox) continue;
+            var oxTel = (ox.tel||'').replace(/\s/g,'').replace(/^\+33/,'33').replace(/^0/,'33');
+            var oxEmail = (ox.email||'').toLowerCase();
+            if(oxTel===oTelClean || (oEmailLow && oxEmail===oEmailLow)){
+              dejaFiltre = ox;
+              break;
+            }
+          }
+          if(dejaFiltre){
+            // Cliente a déjà reçu un filtre INOX → badge gris
+            return '<span style="background:#F3F4F6;color:#6B7280;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900" title="Filtre INOX déjà offert sur la commande #'+dejaFiltre.num+'">ℹ️ Filtre déjà reçu</span>';
+          }
+          if(o.filtreInox){
+            // Filtre INOX coché sur cette cmd → badge crème (le système l'a auto-attribué)
+            return '<span style="background:#FFF8E1;color:#7A5A00;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900">🎁 Filtre INOX (à offrir)</span>';
+          }
+          // Daylia + jamais reçu de filtre + filtreInox=false → manqué par auto-détection
+          return '<span style="background:#DCFCE7;color:#166534;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900" title="Sa 1ère commande Daylia payée mais le filtre INOX n\'est pas coché — pense à l\'offrir">✅ Filtre INOX à offrir</span>';
+        })()
         +(o.parrain?(function(){
           // Badge parrainage : couleur + texte selon parrStatus
           var ps = o.parrStatus || '';
