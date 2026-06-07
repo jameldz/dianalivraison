@@ -2004,8 +2004,20 @@ function render() {
       // Plafond 120€ d'accumulation
       var CREDIT_CAP_ORDER=120;
       creditDispo=Math.min(creditDispo,CREDIT_CAP_ORDER);
-      var creditUsed=(clients[telClean]&&clients[telClean].creditUsed)||0;
-      var soldeDispo=Math.min(CREDIT_CAP_ORDER,creditDispo-creditUsed);
+      // ═══ Crédit utilisé : SOMME des creditApplied sur les commandes précédentes de la cliente ═══
+      // (avant on lisait clients[k].creditUsed qui n'était jamais mis à jour → solde gonflé)
+      var usedFromOrders=0;
+      orders.forEach(function(ox){
+        if(ox.id===o.id) return; // on exclut la commande en cours
+        if(ox.fantome||ox.deletedAt) return;
+        var oxTel=(ox.tel||'').replace(/\s/g,'').replace(/^0/,'33');
+        if(oxTel===telClean && ox.creditApplied){
+          usedFromOrders += parseFloat(ox.creditApplied)||0;
+        }
+      });
+      var usedFromClient=(clients[telClean]&&clients[telClean].creditUsed)||0;
+      var creditUsed=Math.max(usedFromOrders, usedFromClient); // prend le plus grand pour ne jamais sous-estimer
+      var soldeDispo=Math.max(0, Math.min(CREDIT_CAP_ORDER, creditDispo-creditUsed));
       if(soldeDispo>0 && !o.creditApplied){
         var sourceTxt='';
         if(creditAsMarraine>0 && creditAsFilleule>0){
