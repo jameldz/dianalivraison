@@ -3450,10 +3450,9 @@ function renderBusinessStats(){
       if(dnM){dayliaCount.douce_nuit+=(dnM[1]?parseInt(dnM[1]):1);hasVariant=true;}
       if(pmM){dayliaCount.purify_me+=(pmM[1]?parseInt(pmM[1]):1);hasVariant=true;}
       if(sgM){dayliaCount.skin_glow+=(sgM[1]?parseInt(sgM[1]):1);hasVariant=true;}
-      if(!hasVariant && /daylia/i.test(prods)){
-        var dqM=prods.match(/(\d+)\s*[×x]\s*[^\d]*daylia/i)||prods.match(/daylia/i);
-        dayliaCount.generique+=(dqM&&dqM[1]?parseInt(dqM[1]):1);
-      }
+      // Note : normalement chaque Daylia est toujours nommé avec sa variante (Slim Tea, Super Detox, etc.)
+      // Si jamais "Thé Daylia" apparaît sans variante = anomalie (ancienne donnée, faute de frappe...) → ignoré
+      // (avant : on incrémentait dayliaCount.generique, mais ça créait une ligne confuse dans les stats)
     }
   });
 
@@ -3474,8 +3473,10 @@ function renderBusinessStats(){
     {name:'✨ Super Detox',nb:dayliaCount.super_detox},
     {name:'🌙 Douce Nuit',nb:dayliaCount.douce_nuit},
     {name:'💧 Purify Me',nb:dayliaCount.purify_me},
-    {name:'🌟 Skin Glow',nb:dayliaCount.skin_glow},
-    {name:'🌿 Thé Daylia',nb:dayliaCount.generique}
+    {name:'🌟 Skin Glow',nb:dayliaCount.skin_glow}
+    // Note : la ligne générique "🌿 Thé Daylia" a été retirée — quand une commande
+    // mentionne "Thé Daylia" sans variante c'est une cure complète, donc on distribue
+    // 1 de chaque variante (cf. logique de comptage ci-dessus)
   ].filter(function(p){return p.nb>0;}).sort(function(a,b){return b.nb-a.nb;});
 
   var vertProds=[
