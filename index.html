@@ -2152,6 +2152,7 @@ function render() {
         +'<button class="abtn" onclick="navTo(\''+o.addr+'\')"><span class="i">🗺️</span>Maps</button>'
         +'<button class="abtn" onclick="openCadeau(\''+o.id+'\')"><span class="i">🎁</span>'+(o.cadeau?'Cadeau ✓':'Cadeau')+'</button>'
         +'<button class="abtn'+(o.creditApplied>0?' gn':'')+'" onclick="openCreditParrainage(\''+o.id+'\')" title="Saisir le crédit parrainage appliqué sur cette commande"><span class="i">💰</span>'+(o.creditApplied>0?'-'+o.creditApplied+'€':'Crédit')+'</button>'
+        +'<button class="abtn" onclick="openRevolutGuide(\''+o.id+'\')" title="Envoyer le tuto Revolut à la cliente"><span class="i">📲</span>Revolut</button>'
         +(o.modePay==='paypal'?'<button class="abtn" style="background:#FEF3C7;color:#92400E;border-color:#F59E0B" onclick="openPayManque(\''+o.id+'\')"><span class="i">💸</span>Manque</button>':'')
         +'<button class="abtn" onclick="editOrder(\''+o.id+'\')"><span class="i">✏️</span>Modifier</button>'
         +(function(){
@@ -3005,6 +3006,67 @@ function openCadeau(id){
   render();
   if(o.cadeau)toast('🎁 Cadeau enregistré : '+o.cadeau);
   else toast('Cadeau supprimé');
+}
+
+// ═══ Bouton "📲 Revolut" : ouvre un guide visuel + bouton copier WhatsApp ═══
+function openRevolutGuide(id){
+  var o = orders.find(function(x){return x.id===id;});
+  if(!o) return;
+  var prenom = (o.nom||'').split(' ')[0] || 'cliente';
+  var totalStr = (parseFloat(o.total)||0).toFixed(2)+'€';
+  var msgWA = 'Coucou '+prenom+' ! 💜\n\nVoici le pas à pas pour me payer en Revolut :\n\n1️⃣ Ouvre ton app Revolut\n2️⃣ Appuie sur "Payer" (bouton bleu en bas)\n3️⃣ Cherche par Revtag : *@jamesdiana*\n4️⃣ Entre le montant exact : *'+totalStr+'*\n   En note : "Diana Detox '+prenom+'"\n5️⃣ Confirme avec Face ID\n\n✅ C\'est instantané et gratuit, je reçois la notif tout de suite.\n\nPas de Revolut ? Tu peux télécharger l\'app gratuitement sur App Store / Play Store 🙏\n\nMerci ❤️\nDiana Detox';
+
+  var modal = document.getElementById('revolutModal');
+  if(modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'revolutModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;font-family:inherit';
+
+  var card = '<div style="background:#fff;border-radius:18px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;padding:0;box-shadow:0 20px 60px rgba(0,0,0,0.3)">'
+    + '<div style="background:#0666EB;color:#fff;border-radius:18px 18px 0 0;padding:18px 22px;display:flex;justify-content:space-between;align-items:center">'
+    +   '<div style="display:flex;align-items:center;gap:12px">'
+    +     '<div style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px">R</div>'
+    +     '<div><div style="font-size:16px;font-weight:900">Tuto Revolut</div><div style="font-size:12px;opacity:0.85">Pour '+prenom+' · '+totalStr+'</div></div>'
+    +   '</div>'
+    +   '<button onclick="document.getElementById(\'revolutModal\').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer">✕</button>'
+    + '</div>'
+    + '<div style="padding:20px 22px">'
+    +   '<div style="display:flex;flex-direction:column;gap:10px">'
+    +     '<div style="background:#F8FAFC;border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px"><div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#DBEAFE;color:#1E40AF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px">1</div><div style="flex:1"><div style="font-size:14px;font-weight:800">Ouvre l\'app Revolut</div><div style="font-size:12px;color:#64748B;margin-top:2px">Connecte-toi avec ton code ou Face ID</div></div></div>'
+    +     '<div style="background:#F8FAFC;border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px"><div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#DBEAFE;color:#1E40AF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px">2</div><div style="flex:1"><div style="font-size:14px;font-weight:800">Appuie sur Payer</div><div style="font-size:12px;color:#64748B;margin-top:2px">Bouton bleu en bas au centre</div></div></div>'
+    +     '<div style="background:#F8FAFC;border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px"><div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#DBEAFE;color:#1E40AF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px">3</div><div style="flex:1"><div style="font-size:14px;font-weight:800">Cherche par Revtag</div><div style="background:#0666EB;color:#fff;border-radius:8px;padding:10px 14px;font-size:18px;font-weight:900;text-align:center;margin-top:8px;font-family:monospace">@jamesdiana</div></div></div>'
+    +     '<div style="background:#F8FAFC;border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px"><div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#DBEAFE;color:#1E40AF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px">4</div><div style="flex:1"><div style="font-size:14px;font-weight:800">Entre le montant exact</div><div style="background:#FFF;border:2px solid #0666EB;border-radius:8px;padding:8px 12px;font-size:16px;font-weight:900;color:#0666EB;text-align:center;margin-top:8px">'+totalStr+'</div><div style="font-size:11px;color:#64748B;margin-top:6px">+ note : "Diana Detox '+prenom+'"</div></div></div>'
+    +     '<div style="background:#F0FDF4;border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px"><div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#DCFCE7;color:#15803D;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px">5</div><div style="flex:1"><div style="font-size:14px;font-weight:800">Confirme avec Face ID</div><div style="font-size:12px;color:#15803D;margin-top:2px">✅ Paiement reçu instantanément</div></div></div>'
+    +   '</div>'
+    +   '<div style="display:flex;gap:10px;margin-top:18px">'
+    +     '<button onclick="copyRevolutMsg(\''+o.id+'\')" style="flex:1;background:linear-gradient(135deg,#25D366,#1DA851);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">📋 Copier le message</button>'
+    +     '<button onclick="sendRevolutToClient(\''+o.id+'\')" style="flex:1;background:linear-gradient(135deg,#0666EB,#0451B8);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">📲 Envoyer WhatsApp</button>'
+    +   '</div>'
+    + '</div>'
+    + '</div>';
+  modal.innerHTML = card;
+  // close on backdrop click
+  modal.addEventListener('click', function(e){ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+function copyRevolutMsg(id){
+  var o = orders.find(function(x){return x.id===id;});
+  if(!o) return;
+  var prenom = (o.nom||'').split(' ')[0] || 'cliente';
+  var totalStr = (parseFloat(o.total)||0).toFixed(2)+'€';
+  var msg = 'Coucou '+prenom+' ! 💜\n\nVoici le pas à pas pour me payer en Revolut :\n\n1️⃣ Ouvre ton app Revolut\n2️⃣ Appuie sur "Payer" (bouton bleu en bas)\n3️⃣ Cherche par Revtag : *@jamesdiana*\n4️⃣ Entre le montant exact : *'+totalStr+'*\n   En note : "Diana Detox '+prenom+'"\n5️⃣ Confirme avec Face ID\n\n✅ C\'est instantané et gratuit, je reçois la notif tout de suite.\n\nPas de Revolut ? Tu peux télécharger l\'app gratuitement sur App Store / Play Store 🙏\n\nMerci ❤️\nDiana Detox';
+  try { navigator.clipboard.writeText(msg).then(function(){toast('📋 Message Revolut copié ! Colle-le sur WhatsApp');}); } catch(e){ toast('📋 Erreur copie'); }
+}
+
+function sendRevolutToClient(id){
+  var o = orders.find(function(x){return x.id===id;});
+  if(!o) return;
+  var prenom = (o.nom||'').split(' ')[0] || 'cliente';
+  var totalStr = (parseFloat(o.total)||0).toFixed(2)+'€';
+  var msg = 'Coucou '+prenom+' ! 💜\n\nVoici le pas à pas pour me payer en Revolut :\n\n1️⃣ Ouvre ton app Revolut\n2️⃣ Appuie sur "Payer" (bouton bleu en bas)\n3️⃣ Cherche par Revtag : *@jamesdiana*\n4️⃣ Entre le montant exact : *'+totalStr+'*\n   En note : "Diana Detox '+prenom+'"\n5️⃣ Confirme avec Face ID\n\n✅ C\'est instantané et gratuit.\n\nPas de Revolut ? App Store / Play Store 🙏\n\nMerci ❤️';
+  openMsgApp(o.tel, msg, prenom);
+  var m = document.getElementById('revolutModal'); if(m) m.remove();
 }
 
 // ═══ Bouton "💰 Crédit parrainage" : tracker manuellement le crédit appliqué ═══
