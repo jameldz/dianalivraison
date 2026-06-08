@@ -1626,11 +1626,9 @@ function render() {
   if(impayees48h.length>0){
     globalAlerts.push('<div style="background:#FEF3C7;border:2px solid #F59E0B;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:800;color:#92400E;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><div><span style="font-size:18px">⏰</span> <strong>'+impayees48h.length+' envoi'+(impayees48h.length>1?'s':'')+' impayé'+(impayees48h.length>1?'s':'')+'</strong> depuis +48h</div><button onclick="relancerImpayees()" style="background:#F59E0B;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap">📲 Relancer toutes</button></div>');
   }
-  // 3. Auto-notifier vendeur quand livré+payé (non encore notifié)
-  var aNotifier=orders.filter(function(o){return o.livree && o.payee && !o.confirme && !o.fantome;});
-  if(aNotifier.length>0){
-    globalAlerts.push('<div style="background:#EFF6FF;border:2px solid #3B82F6;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:800;color:#1E40AF;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><div><span style="font-size:18px">📲</span> <strong>'+aNotifier.length+' commande'+(aNotifier.length>1?'s':'')+' terminée'+(aNotifier.length>1?'s':'')+'</strong> — vendeur pas notifié</div><button onclick="notifierToutesTerminees()" style="background:#3B82F6;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap">📲 Notifier toutes</button></div>');
-  }
+  // 3. Bannière "Notifier toutes" RETIRÉE (le user voulait gérer manuellement chaque carte)
+  // Avant : un bouton ouvrait notifierToutesTerminees() qui basculait tout en masse → user disait que ses commandes
+  // disparaissaient toutes seules de Terminée vers Notifié à cause de clics involontaires sur cette bannière.
   var alertsEl=document.getElementById('globalAlerts');
   if(!alertsEl){
     alertsEl=document.createElement('div');
