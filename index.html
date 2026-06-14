@@ -2351,23 +2351,42 @@ function editSlot(id) {
     var moisShort=['janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
     var prefixes=['Aujourd\'hui','Demain'];
     var dArr=[];
-    for(var i=0;i<7;i++){
+    // === Restriction livraison à domicile : Lundi/Mercredi/Samedi uniquement ===
+    var __ml = (o.modeLiv || '').toLowerCase();
+    var __restrictLiv = (__ml === 'livraison');
+    var __JOURS_LIV = [1, 3, 6]; // 1=Lundi, 3=Mercredi, 6=Samedi
+    var __maxI = __restrictLiv ? 21 : 7; // chercher plus loin pour trouver assez de Lun/Mer/Sam
+    for(var i=0;i<__maxI;i++){
       var dt = new Date(Date.now()+i*86400000);
+      if(__restrictLiv && __JOURS_LIV.indexOf(dt.getDay()) === -1) continue;
       var jourCap = jours[dt.getDay()].charAt(0).toUpperCase()+jours[dt.getDay()].slice(1);
       var moisAbbr = moisShort[dt.getMonth()];
       var dateStr = jourCap+' '+dt.getDate()+' '+moisAbbr;
       // Pour les 2 premiers : label visible court ("Auj. 28", "Demain 29") mais valeur stockée = jour+date+mois complet
       var label = (i<2 ? prefixes[i]+' '+dt.getDate()+' '+moisAbbr : dateStr);
       dArr.push({label:label, value:dateStr});
+      if(__restrictLiv && dArr.length >= 6) break; // limiter à ~6 dates Lun/Mer/Sam à venir
     }
     daysWrap.innerHTML = dArr.map(function(d){
       return '<button type="button" class="esd" data-v="'+d.value+'" onclick="pickEditSlotDay(this)" style="padding:8px 12px;background:#fff;border:1.5px solid var(--bdr);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">'+d.label+'</button>';
     }).join('');
   }
+  // === Restriction horaires : 18h-00h pour livraison à domicile, autres grisés non sélectionnables ===
+  var __mlH = (o.modeLiv || '').toLowerCase();
+  var __restrictLivH = (__mlH === 'livraison');
   // Hook hour buttons
   document.querySelectorAll('#editSlotHours .esh').forEach(function(b){
-    b.onclick = function(){ pickEditSlotHour(b); };
-    b.style.cssText = 'padding:8px 12px;background:#fff;border:1.5px solid var(--bdr);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit';
+    var __v = b.getAttribute('data-v') || '';
+    var __ok = !__restrictLivH || (__v === 'Soir (18h-21h)' || __v === 'Soirée (21h-00h)');
+    if(__ok){
+      b.onclick = function(){ pickEditSlotHour(b); };
+      b.style.cssText = 'padding:8px 12px;background:#fff;border:1.5px solid var(--bdr);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit';
+      b.disabled = false;
+    } else {
+      b.onclick = null;
+      b.style.cssText = 'padding:8px 12px;background:#f3f3f3;border:1.5px solid #e5e5e5;border-radius:10px;font-size:12px;font-weight:700;color:#bbb;cursor:not-allowed;font-family:inherit;opacity:0.5;pointer-events:none;text-decoration:line-through';
+      b.disabled = true;
+    }
   });
   ov.style.display = 'flex';
 }
