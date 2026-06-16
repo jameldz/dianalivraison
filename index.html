@@ -5283,71 +5283,17 @@ function filterByPeriod(p) {
 }
 
 function calcBenef(o) {
-  var b = 0;
-  var prods = (o.prods||'').toLowerCase();
-  var prodsNorm = prods.replace(/[éèê]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u');
-
-  // ═══ MINI-CURE DÉCOUVERTE 15J : 1/2 d'une cure → coût 6,50€, vendu 30€ → bénéfice 23,50€ ═══
-  // À calculer AVANT Diana pour ne pas double-compter
-  var miniCount = 0;
-  var miniRe = /(\d+)\s*[×x]\s*mini[\s-]*cure[^,+]*?(g[eé]lules?|th[eé]|caf[eé])/gi;
-  var mm;
-  while((mm=miniRe.exec(prodsNorm))!==null) miniCount += parseInt(mm[1]);
-  if(miniCount===0){
-    var miniMatches = prodsNorm.match(/mini[\s-]*cure[^,+]*?(g[eé]lules?|th[eé]|caf[eé])/gi);
-    if(miniMatches) miniCount = miniMatches.length;
-  }
-  b += miniCount * 23.50;
-  // Retire les Mini-Cures du texte avant la détection Diana pour éviter les doubles comptes
-  var prodsNormSansMini = prodsNorm.replace(/(\d+\s*[×x]\s*)?mini[\s-]*cure[^,+]*/gi, '');
-
-  // ═══ DIANA : bénéfice 42€ par unité (vendu 55 - acheté 13) ═══
-  var dianaCount = 0;
-  // Format "1× Café Diana" ou "2× Thé Diana"
-  var dianaRe = /(\d+)\s*[×x]\s*(caf[eé]\s*diana|th[eé]\s*diana|g[eé]lules?\s*diana)/gi;
-  var dm;
-  while((dm=dianaRe.exec(prodsNormSansMini))!==null) dianaCount += parseInt(dm[1]);
-  // Format sans quantité : compter chaque mention
-  if(dianaCount===0){
-    if(/caf[eé]\s*diana/.test(prodsNormSansMini)) dianaCount++;
-    if(/th[eé]\s*diana/.test(prodsNormSansMini)) dianaCount++;
-    if(/g[eé]lules?\s*diana/.test(prodsNormSansMini)) dianaCount++;
-  }
-  b += dianaCount * 42;
-
-  // ═══ DAYLIA : prix variable - (qté × 5€ coût) ═══
-  var dayliaQty = 0;
-  var dayliaNames = ['douce nuit','super detox','slim tea','purify me','skin glow'];
-  // Format "1× Slim Tea" ou "2× Douce Nuit"
-  var dayliaRe = /(\d+)\s*[×x]\s*(douce nuit|super detox|slim tea|purify me|skin glow)/gi;
-  var dym;
-  while((dym=dayliaRe.exec(prodsNorm))!==null) dayliaQty += parseInt(dym[1]);
-  // Format sans quantité
-  if(dayliaQty===0){
-    dayliaNames.forEach(function(name){ if(prodsNorm.indexOf(name)!==-1) dayliaQty++; });
-  }
-  // Fallback : si "daylia" ou "thé daylia" mentionné mais aucun nom spécifique
-  if(dayliaQty===0 && /daylia/.test(prodsNorm)) dayliaQty=1;
-  if(dayliaQty>0){
-    var prixDaylia = dayliaQty===1?25:dayliaQty===2?45:dayliaQty===3?60:60+(dayliaQty-3)*20;
-    b += prixDaylia - (dayliaQty * 5);
-  }
-
-  // ═══ LIVRAISON : 5€ bénéfice (sauf gratuite) ═══
-  if(o.livree && !o.livGratuite) b += 5;
-
-  // ═══ PRODUITS VERTS : bénéfice 35€ par unité (vendu 50 - acheté 15) ═══
-  var vertCount=0;
-  var vertRe=/(\d+)\s*[×x]\s*(th[eé]\s*vert|g[eé]lules?\s*vert)/gi;
-  var vm;
-  while((vm=vertRe.exec(prodsNorm))!==null) vertCount+=parseInt(vm[1]);
-  if(vertCount===0){
-    if(/th[eé]\s*vert/.test(prodsNorm)) vertCount++;
-    if(/g[eé]lules?\s*vert/.test(prodsNorm)) vertCount++;
-  }
-  b+=vertCount*35;
-
-  return b;
+  // === CORRIGE : marge reelle = encaisse - cout d'achat, lecture quantite "5x Nom" ET "Nom x5" ===
+  var PRIX_ACHAT = { diana:13, vert:15, daylia:5, mini:6.5 };
+  var prods=(o.prods||'').toLowerCase().replace(/[\u00e9\u00e8\u00ea]/g,'e').replace(/[\u00e0\u00e2]/g,'a').replace(/[\u00fb\u00f9]/g,'u');
+  function qty(t,p){var tot=0,m;var a=new RegExp('(\\d+)\\s*[\u00d7x]\\s*(?:'+p+')','gi');while((m=a.exec(t))!==null)tot+=parseInt(m[1]);var b=new RegExp('(?:'+p+')[^,+]*?[\u00d7x]\\s*(\\d+)','gi');while((m=b.exec(t))!==null)tot+=parseInt(m[1]);if(tot===0){var mm=t.match(new RegExp(p,'gi'));if(mm)tot=mm.length;}return tot;}
+  var mini=qty(prods,'mini[\\s-]*cure');
+  var reste=prods.replace(/(\d+\s*[\u00d7x]\s*)?mini[\s-]*cure[^,+]*/gi,'');
+  var diana=qty(reste,'caf[e]\\s*diana|th[e]\\s*diana|g[e]lules?\\s*diana');
+  var vert=qty(reste,'th[e]\\s*vert|g[e]lules?\\s*vert');
+  var daylia=qty(reste,'douce nuit|super detox|slim tea|purify me|skin glow');
+  var cout=diana*PRIX_ACHAT.diana+vert*PRIX_ACHAT.vert+daylia*PRIX_ACHAT.daylia+mini*PRIX_ACHAT.mini;
+  return Math.round(((o.total||0)-cout)*100)/100;
 }
 
 function renderStats() {
