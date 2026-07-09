@@ -3044,12 +3044,25 @@ function handleSubmit(){
   var filtreInox=false;
   if(hasDayliaCmd){
     try{
-      var telC2=tel.replace(/\s/g,'').replace(/^0/,'33');
+      // Normalisation robuste : gère +33, 0033, 0, avec/sans espaces
+      var normTelFn = function(t){return (t||'').replace(/\s/g,'').replace(/^\+33/,'33').replace(/^0033/,'33').replace(/^0/,'33');};
+      var telC2 = normTelFn(tel);
+      var emailC2 = (email||'').toLowerCase().trim();
       var dayliaDejaCmd=cachedAllOrders.some(function(o){
-        var oTel=(o.tel||'').replace(/\s/g,'').replace(/^0/,'33');
-        return oTel===telC2 && (o.prods||'').toLowerCase().indexOf('daylia')!==-1;
+        if(o.fantome || o.deletedAt) return false;
+        var oTel = normTelFn(o.tel);
+        var oEmail = (o.email||'').toLowerCase().trim();
+        var sameClient = (telC2 && oTel===telC2) || (emailC2 && oEmail===emailC2);
+        return sameClient && (o.prods||'').toLowerCase().indexOf('daylia')!==-1;
       });
-      if(!dayliaDejaCmd) filtreInox=true;
+      // Vérifier aussi le registre legacy filtreOffertClients
+      var dansRegistre = false;
+      try {
+        var reg = JSON.parse(localStorage.getItem('filtreOffertClients')||'{}');
+        var telNoPlus = (tel||'').replace(/\s/g,'');
+        dansRegistre = !!(reg[telC2] || reg[telNoPlus] || (emailC2 && reg[emailC2]));
+      } catch(eR){}
+      if(!dayliaDejaCmd && !dansRegistre) filtreInox=true;
     }catch(e){}
   }
   // Application du crédit cagnotte choisi par la cliente
@@ -3135,7 +3148,7 @@ function handleSubmit(){
   if(modeLiv==='envoi'){
     // Liens de paiement par vendeur
     var lydiaLinks={sabra:'',ilyes:'https://pay.lydia.me/l?t=ilyesm5cyz',syriane:'https://pay.lydia.me/l?t=syrianem8817'};
-    var paypalEmails={sabra:'cifusil@yahoo.fr',ilyes:'dianaadetox@gmail.com',syriane:'syriane.mokhaissi@gmail.com'};
+    var paypalEmails={sabra:'cifusil@yahoo.fr',ilyes:'ilyesmokhaissi@gmail.com',syriane:'syriane.mokhaissi@gmail.com'};
     var vKey=(vendeurKey||'sabra').toLowerCase();
     var paySection='';
     if(modePay==='lydia'){
