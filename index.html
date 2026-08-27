@@ -905,7 +905,7 @@ async function saveStorage() {
         try {
           var bks = JSON.parse(localStorage.getItem('diana_auto_backups')||'[]');
           if(bks.length > 3){
-            localStorage.setItem('diana_auto_backups', JSON.stringify(bks.slice(0,3)));
+            localStorage.setItem('diana_auto_backups', JSON.stringify(bks.slice(0,1)));
           } else {
             localStorage.removeItem('diana_auto_backups');
           }
@@ -1279,9 +1279,9 @@ if(!window._initBootstrapDone){
 (function _purgeBackupsOnLoad(){
   try {
     var bks = JSON.parse(localStorage.getItem('diana_auto_backups')||'[]');
-    if(bks.length > 7){
+    if(bks.length > 1){
       var sorted = bks.sort(function(a,b){return (b.date||0)-(a.date||0);});
-      localStorage.setItem('diana_auto_backups', JSON.stringify(sorted.slice(0,7)));
+      localStorage.setItem('diana_auto_backups', JSON.stringify(sorted.slice(0,1)));
       console.log('[startup-purge] '+bks.length+' backups → 7');
     }
     // Audit quota au démarrage
@@ -1293,7 +1293,7 @@ if(!window._initBootstrapDone){
     if(pct > 85){
       // Encore trop : on tape dans les backups plus aggressivement
       var bks2 = JSON.parse(localStorage.getItem('diana_auto_backups')||'[]');
-      localStorage.setItem('diana_auto_backups', JSON.stringify(bks2.slice(0,3)));
+      localStorage.setItem('diana_auto_backups', JSON.stringify(bks2.slice(0,1)));
       console.warn('[startup-purge] quota '+pct.toFixed(0)+'% → réduit à 3 backups');
     }
   } catch(e){ console.warn('startup-purge fail:',e); }
@@ -1305,7 +1305,7 @@ if(!window._initBootstrapDone){
 function autoBackupIfNeeded(){
   try{
     var FOUR_HOURS=4*60*60*1000;
-    var MAX_BACKUPS=7;
+    var MAX_BACKUPS=1;
     var backups=JSON.parse(localStorage.getItem('diana_auto_backups')||'[]');
     var now=Date.now();
     var lastBackup=backups.length>0?backups[0].date:0;
@@ -1363,7 +1363,7 @@ function checkLocalStorageQuota(){
       try {
         var bks = JSON.parse(localStorage.getItem('diana_auto_backups')||'[]');
         if(bks.length > 3){
-          localStorage.setItem('diana_auto_backups', JSON.stringify(bks.slice(0,3)));
+          localStorage.setItem('diana_auto_backups', JSON.stringify(bks.slice(0,1)));
         }
       } catch(e){}
       try { if(typeof toast === 'function') toast('⚠️ Stockage local presque plein ('+pct.toFixed(0)+'%) — vieux backups nettoyés'); } catch(e){}
