@@ -496,6 +496,25 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
     </div>
     </div>
 
+
+<!-- IRON MAGIC -->
+<div style="margin:14px 0 8px;padding:10px 12px;background:linear-gradient(135deg,#1a1a1a,#292929);border:2px solid #F97316;border-radius:12px;text-align:center">
+  <div style="font-size:14px;font-weight:900;color:#F97316;margin-bottom:3px">💪 Iron Magic <span style="background:#EF4444;color:white;font-size:10px;padding:2px 8px;border-radius:20px;margin-left:4px">NEW</span></div>
+  <div style="font-size:11px;color:#aaa;font-weight:600">Prends du poids rapidement · Énergie · Force · Gélules 30 jours</div>
+</div>
+<div class="prod" id="pIRM">
+  <div class="prod-top" onclick="togProd('IRM')">
+    <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#1a1a1a,#F97316);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">💪</div>
+    <div style="flex:1;margin-left:10px">
+      <div class="prod-name">Iron Magic <span style="background:linear-gradient(135deg,#EF4444,#DC2626);color:white;font-size:9px;font-weight:900;padding:2px 7px;border-radius:20px;letter-spacing:1px;vertical-align:middle">NEW</span></div>
+      <div style="font-size:10px;color:#E65100;font-weight:700;margin:2px 0">⚡ Prise de poids rapide · Os renforcés · Énergie maximale</div>
+      <div class="prod-price" style="color:#D97706;font-weight:900">90 € · gélules 30 jours</div>
+    </div>
+    <div class="chk">✓</div>
+  </div>
+  <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('IRM',-1)">−</button><input class="qval" id="qIRM" value="1" readonly><button class="qbtn" onclick="chQ('IRM',1)">+</button></div><span class="qtot" id="tIRM">90€</span></div>
+</div>
+
 <!-- FRAIS ENVOI -->
 <div id="fraisEnvoi" style="display:none;margin:0 0 10px;background:linear-gradient(135deg,var(--rs),#FFF0F5);border:1.5px solid var(--bdr);border-radius:11px;padding:12px 14px;font-size:13px;font-weight:800;color:var(--rd)"></div>
 <div id="horsFrameInfo" style="display:none;margin:0 0 10px;background:#FFF8E1;border:1.5px solid #F9A825;border-radius:11px;padding:10px 14px">
@@ -1076,7 +1095,7 @@ function setParrGenre(g){
 var addrOk = false;
 var editAddrOk = false;
 var PRODS = {CAF:{name:'Café Diana',ico:'☕',price:55},THE:{name:'Thé Diana',ico:'🍵',price:55},GEL:{name:'Gélules Diana',ico:'✨',price:55}};
-var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 15j',ico:'🌟',price:30},MTH:{name:'Mini-Cure Thé 15j',ico:'🌟',price:30},MCA:{name:'Mini-Cure Café 15j',ico:'🌟',price:30}};
+var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 15j',ico:'🌟',price:30},MTH:{name:'Mini-Cure Thé 15j',ico:'🌟',price:30},MCA:{name:'Mini-Cure Café 15j',ico:'🌟',price:30},IRM:{name:'Iron Magic — Prise de Poids',ico:'💪',price:90}};
 
 // Stock — mis à jour depuis JSONbin
 var STOCK = {CAF:999,THE:999,GEL:999,DN:999,SD:999,ST:999,PM:999,GU:999};
@@ -1096,7 +1115,7 @@ var modeRelais = 'point';
 
 // Poids en grammes par produit
 var POIDS = {CAF:280, THE:500, GEL:50};
-var POIDS_MINI = {MCA:140, MTH:250, MGE:25}; // Mini-Cures 15j = 1/2 de la cure complète
+var POIDS_MINI = {MCA:140, MTH:250, MGE:25, IRM:200}; // Mini-Cures 15j = 1/2 de la cure complète
 var POIDS_DAYLIA = 100; // par unité (~100g)
 
 function calcPoids(){
