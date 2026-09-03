@@ -3545,7 +3545,7 @@ function renderBusinessStats(){
   var dianaCount={gelules:0,the:0,cafe:0};
   var dayliaCount={slim_tea:0,super_detox:0,douce_nuit:0,purify_me:0,skin_glow:0,generique:0};
   var vertCount={the:0,gelule:0};
-  var miniCount={gelules:0,the:0,cafe:0};
+  var miniCount={gelules:0,the:0,cafe:0,irm:0};
 
   paid.forEach(function(o){
     var prodsRaw=(o.prods||'').toLowerCase();
@@ -3557,6 +3557,8 @@ function renderBusinessStats(){
     while((mxg=miniReG.exec(prodsRaw))!==null) miniCount.gelules+=(mxg[1]?parseInt(mxg[1]):1);
     while((mxt=miniReT.exec(prodsRaw))!==null) miniCount.the+=(mxt[1]?parseInt(mxt[1]):1);
     while((mxc=miniReC.exec(prodsRaw))!==null) miniCount.cafe+=(mxc[1]?parseInt(mxc[1]):1);
+    var miniReI=/(\d+)?\s*[×x]?\s*iron[\s-]*magic/gi; var mxi;
+    while((mxi=miniReI.exec(prodsRaw))!==null) miniCount.irm+=(mxi[1]?parseInt(mxi[1]):1);
     // Retire les Mini-Cure du texte avant la détection Diana
     var prods=prodsRaw.replace(/(\d+\s*[×x]\s*)?mini[\s-]*cure[^,+]*/gi,'');
     // Diana : compter les quantités
@@ -3602,7 +3604,8 @@ function renderBusinessStats(){
   var miniProds=[
     {name:'🌟 Mini Gélules 15j',nb:miniCount.gelules},
     {name:'🌟 Mini Thé 15j',nb:miniCount.the},
-    {name:'🌟 Mini Café 15j',nb:miniCount.cafe}
+    {name:'🌟 Mini Café 15j',nb:miniCount.cafe},
+    {name:'💪 Iron Magic',nb:miniCount.irm}
   ].filter(function(p){return p.nb>0;}).sort(function(a,b){return b.nb-a.nb;});
 
   var dayliaProds=[
