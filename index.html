@@ -3545,7 +3545,7 @@ function renderBusinessStats(){
   var dianaCount={gelules:0,the:0,cafe:0};
   var dayliaCount={slim_tea:0,super_detox:0,douce_nuit:0,purify_me:0,skin_glow:0,generique:0};
   var vertCount={the:0,gelule:0};
-  var miniCount={gelules:0,the:0,cafe:0,irm:0};
+  var miniCount={gelules:0,the:0,cafe:0};
 
   paid.forEach(function(o){
     var prodsRaw=(o.prods||'').toLowerCase();
@@ -3557,8 +3557,6 @@ function renderBusinessStats(){
     while((mxg=miniReG.exec(prodsRaw))!==null) miniCount.gelules+=(mxg[1]?parseInt(mxg[1]):1);
     while((mxt=miniReT.exec(prodsRaw))!==null) miniCount.the+=(mxt[1]?parseInt(mxt[1]):1);
     while((mxc=miniReC.exec(prodsRaw))!==null) miniCount.cafe+=(mxc[1]?parseInt(mxc[1]):1);
-    var miniReI=/(\d+)?\s*[×x]?\s*iron[\s-]*magic/gi; var mxi;
-    while((mxi=miniReI.exec(prodsRaw))!==null) miniCount.irm+=(mxi[1]?parseInt(mxi[1]):1);
     // Retire les Mini-Cure du texte avant la détection Diana
     var prods=prodsRaw.replace(/(\d+\s*[×x]\s*)?mini[\s-]*cure[^,+]*/gi,'');
     // Diana : compter les quantités
@@ -3604,8 +3602,7 @@ function renderBusinessStats(){
   var miniProds=[
     {name:'🌟 Mini Gélules 15j',nb:miniCount.gelules},
     {name:'🌟 Mini Thé 15j',nb:miniCount.the},
-    {name:'🌟 Mini Café 15j',nb:miniCount.cafe},
-    {name:'💪 Iron Magic',nb:miniCount.irm}
+    {name:'🌟 Mini Café 15j',nb:miniCount.cafe}
   ].filter(function(p){return p.nb>0;}).sort(function(a,b){return b.nb-a.nb;});
 
   var dayliaProds=[
@@ -4896,6 +4893,7 @@ function rebuildProdsString(){
   var qMiniGel=parseInt((document.getElementById('qty-mini-gel')||{}).value)||0;
   var qMiniThe=parseInt((document.getElementById('qty-mini-the')||{}).value)||0;
   var qMiniCaf=parseInt((document.getElementById('qty-mini-caf')||{}).value)||0;
+  var qMiniIrm=parseInt((document.getElementById('qty-mini-irm')||{}).value)||0;
   var parts=[];
   if(qCafe>0) parts.push('Café Diana'+(qCafe>1?' x'+qCafe:''));
   if(qThe>0) parts.push('Thé Diana'+(qThe>1?' x'+qThe:''));
@@ -4903,6 +4901,7 @@ function rebuildProdsString(){
   if(qMiniGel>0) parts.push((qMiniGel>1?qMiniGel+'× ':'1× ')+'Mini-Cure Gélules 15j');
   if(qMiniThe>0) parts.push((qMiniThe>1?qMiniThe+'× ':'1× ')+'Mini-Cure Thé 15j');
   if(qMiniCaf>0) parts.push((qMiniCaf>1?qMiniCaf+'× ':'1× ')+'Mini-Cure Café 15j');
+  if(qMiniIrm>0) parts.push((qMiniIrm>1?qMiniIrm+'× ':'1× ')+'Iron Magic — Prise de Poids');
   // Assembler les variantes Daylia en une seule entrée "Thé Daylia — variants"
   var dayliaNames=[];
   dayliaVariants.forEach(function(v){
@@ -4990,6 +4989,11 @@ function editFieldRow(key,val){
     var qtyMiniGel = getQtyMini('g[eé]lules?');
     var qtyMiniThe = getQtyMini('th[eé]');
     var qtyMiniCaf = getQtyMini('caf[eé]');
+    var qtyMiniIrm = (function(){
+      var m = lower.match(/(\d+)\s*[×x]\s*iron[\s-]*magic/i);
+      if(m) return parseInt(m[1])||1;
+      return /iron[\s-]*magic/i.test(lower) ? 1 : 0;
+    })();
     // Retire les Mini-Cures du texte avant détection Diana pour éviter double comptage
     var lowerSansMini = lower.replace(/(\d+\s*[×x]\s*)?mini[\s-]*cure[^,+]*/gi, '');
     function getQtyDianaSansMini(productKey){
@@ -5030,7 +5034,8 @@ function editFieldRow(key,val){
     var prodsMini=[
       {key:'mini-gel',name:'🌟 Mini-Cure Gélules 15j',qty:qtyMiniGel},
       {key:'mini-the',name:'🌟 Mini-Cure Thé 15j',qty:qtyMiniThe},
-      {key:'mini-caf',name:'🌟 Mini-Cure Café 15j',qty:qtyMiniCaf}
+      {key:'mini-caf',name:'🌟 Mini-Cure Café 15j',qty:qtyMiniCaf},
+      {key:'mini-irm',name:'💪 Iron Magic — Prise de Poids',qty:qtyMiniIrm}
     ];
     prodsMini.forEach(function(p){
       var bgCol=p.qty>0?'#FFF3E0':'#f5f5f5';
