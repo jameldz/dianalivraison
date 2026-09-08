@@ -3054,8 +3054,8 @@ function handleSubmit(){
     // Filtre INOX offert si 1ère commande Daylia
   }catch(e){}
   var hasDayliaCmd=dTotal()>0;
-  var filtreInox=false;
-  if(hasDayliaCmd){
+  var filtreInox=false; // RUPTURE DE STOCK
+  if(false){
     try{
       // Normalisation robuste : gère +33, 0033, 0, avec/sans espaces
       var normTelFn = function(t){return (t||'').replace(/\s/g,'').replace(/^\+33/,'33').replace(/^0033/,'33').replace(/^0/,'33');};
@@ -3177,7 +3177,7 @@ function handleSubmit(){
         +(ppEmail?'\n📧 Envoie à : *'+ppEmail+'*':'');
     }
     shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 Total : '+total.toFixed(2)+'€'
-      +(filtreInox?'\n🎁 Filtre INOX offert (1ère commande Daylia)':'')
+      ':'')
       +(reducParr?'\n🎁 +5€ de crédit gagné (utilisable dès ta prochaine commande)':'')
       +paySection
       +'\n\n📦 Dès que ton paiement est reçu, tu recevras un mail à ton adresse ('+email+') avec le lien pour choisir ton point Mondial Relay.'
@@ -3185,14 +3185,14 @@ function handleSubmit(){
     confirmMsg=shortConfirm+fideliteMsg;
   } else if(modeLiv==='place'){
     shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 '+total.toFixed(2)+'€'
-      +(filtreInox?'\n🎁 Filtre INOX offert':'')
+      
       +(rdvStr?'\n📅 '+rdvStr:'')
       +'\n📍 Caisse d\'Epargne, Place Saint Eugène 13007'
       +'\n\n💵 Paiement en espèces sur place. À bientôt !';
     confirmMsg=shortConfirm+fideliteMsg+snapInstructions;
   } else {
     shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 '+total.toFixed(2)+'€'
-      +(filtreInox?'\n🎁 Filtre INOX offert':'')
+      
       +(rdvStr?'\n📅 '+rdvStr:'')
       +'\n📍 '+addr+(cp?', '+cp:'')
       +'\n\n💵 Paiement en espèces à la livraison. À bientôt !';
@@ -3306,7 +3306,7 @@ function handleSubmit(){
     +(modeLiv==='livraison'&&sub>=150?'🚚 *Livraison OFFERTE* (commande ≥150€)\n':'')
     +(modeLiv==='envoi'&&modeRelais!=='domicile'&&sub>=150?'📦 *Frais de port OFFERTS* (commande ≥150€ · point relais/locker)\n':'')
     +(remiseFidel?'🎁 *'+(modeLiv==='place'?'-5€ de réduction':modeLiv==='envoi'?'Frais de port OFFERTS':'Livraison OFFERTE')+' — fidélité '+nbCmdClient+'ème commande*\n':'')
-    +(filtreInox?'🎁 *Filtre INOX offert* — 1ère commande Daylia\n':'')
+    
     +'💰 *Total : '+total.toFixed(2)+'€*\n'
     +'\n'
     +livDetail+'\n'
