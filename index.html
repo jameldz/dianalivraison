@@ -1125,9 +1125,15 @@ function _doPushCloud(){
             clients = mergedClients;
             try { localStorage.setItem('diana_clients', JSON.stringify(clients)); } catch(e){}
           }
-          // JOURSFERMES : cloud wins si défini (rarement modifié, choix simple)
+          // JOURSFERMES : merge union local+cloud → on ne perd jamais une date ajoutée localement
           if(d.record.joursFermes){
-            joursFermes = d.record.joursFermes;
+            var cloudJF = d.record.joursFermes;
+            var localDates = (joursFermes && joursFermes.dates) || [];
+            var cloudDates = cloudJF.dates || [];
+            var allDates = localDates.slice();
+            cloudDates.forEach(function(d2){ if(allDates.indexOf(d2)<0) allDates.push(d2); });
+            var semaine = (joursFermes && joursFermes.semaine && joursFermes.semaine.length) ? joursFermes.semaine : (cloudJF.semaine || []);
+            joursFermes = { dates: allDates, semaine: semaine };
             try { localStorage.setItem('diana_joursfermes', JSON.stringify(joursFermes)); } catch(e){}
           }
           // STOCK : cloud wins (modifié rarement, dernière version gagne)
