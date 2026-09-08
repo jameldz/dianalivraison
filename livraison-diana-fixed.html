@@ -202,7 +202,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
   <div class="card-hdr"><span class="step">1</span><h2>Comment veux-tu recevoir ta commande ?</h2></div>
   <div class="card-body">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:10px">
-      <div class="mode-btn on" id="mEnvoi" onclick="setModeLiv('envoi')">
+      <div class="mode-btn" id="mEnvoi" onclick="setModeLiv('envoi')">
         <div class="mode-ico">📦</div>
         <div class="mode-lbl">Envoi</div>
         <div class="mode-sub">Mondial Relay…</div>
@@ -212,7 +212,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
         <div class="mode-lbl">Sur place</div>
         <div class="mode-sub">Tu viens</div>
       </div>
-      <div class="mode-btn" id="mLiv" onclick="setModeLiv('livraison')">
+      <div class="mode-btn on" id="mLiv" onclick="setModeLiv('livraison')">
         <div class="mode-ico">🛵</div>
         <div class="mode-lbl" style="font-size:11px">Livraison</div>
         <div class="mode-sub" style="color:#B91C1C;font-weight:700">📍 Marseille uniquement</div>
@@ -1108,7 +1108,7 @@ var DAYLIA = [
   {id:'GU', name:'🌟 Skin Glow',   ico:'', desc:'Spécialiste rétention d\'eau & dégonflement — draine, purifie, riche en minéraux et vitamines, active le collagène, fermeté de la peau, effet lift, anti-âge, affine la jawline & réduit le double menton, régule les hormones'}
 ];
 var dQty = {DN:0,SD:0,ST:0,PM:0,GU:0};
-var modeLiv = 'envoi';
+var modeLiv = 'livraison';
 var modePay = 'especes';
 var modeTransport = 'mondial';
 var modeRelais = 'point';
@@ -3041,18 +3041,12 @@ function handleSubmit(){
     var clientOrders=allOrders.filter(function(o){return (o.tel||'').replace(/\s/g,'').replace(/^0/,'33')===telClean;});
     nbCmdClient=clientOrders.length+1;
     nbCmdMode=nbCmdClient;
-    // 5ème commande toutes livraisons confondues
-    if(nbCmdClient%5===0){
-      if(modeLiv==='envoi' && modeRelais!=='domicile'){remiseFidel=true;frais=0;}
-      else if(modeLiv==='envoi' && modeRelais==='domicile'){/* pas de frais offerts en domicile */}
-      else if(modeLiv==='livraison'){remiseFidel=true;frais=0;}
-      else if(modeLiv==='place'){remiseFidel=true;reduc+=5;}
-    }
+    // Livraison gratuite 5ème commande : désactivée
     // Filtre INOX offert si 1ère commande Daylia
   }catch(e){}
   var hasDayliaCmd=dTotal()>0;
-  var filtreInox=false;
-  if(hasDayliaCmd){
+  var filtreInox=false; // Rupture de stock
+  if(false && hasDayliaCmd){
     try{
       // Normalisation robuste : gère +33, 0033, 0, avec/sans espaces
       var normTelFn = function(t){return (t||'').replace(/\s/g,'').replace(/^\+33/,'33').replace(/^0033/,'33').replace(/^0/,'33');};

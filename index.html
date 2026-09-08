@@ -1754,17 +1754,17 @@ function render() {
     }
     // Priorité : 0=nouvelle, 1=envoi payé prêt à expédier, 2=livraison/place, 3=envoi non payé
     function getPrio(o){
-      if(!o.clientConfirme) return 0;
       var ml=o.modeLiv||'livraison';
-      if(ml==='envoi' && o.payee) return 1; // Envoi payé → prêt à expédier (urgent)
-      if(ml==='livraison' || ml==='place') return 2; // Espèces sur place
-      return 3; // Envoi pas encore payé
+      if(ml==='livraison' || ml==='place') return o.clientConfirme ? 2 : 0.5;
+      if(!o.clientConfirme) return 0;
+      if(ml==='envoi' && o.payee) return 1;
+      return 3;
     }
     filtered.sort(function(a,b){
       var pa=getPrio(a), pb=getPrio(b);
       if(pa!==pb) return pa-pb;
       // Pour livraisons et sur place (prio 2) : trier par date du créneau
-      if(pa===2){
+      if(pa===2 || pa===0.5){
         var da=parseSlotDate(a.pickedSlot||a.slot);
         var db=parseSlotDate(b.pickedSlot||b.slot);
         if(da && db) return da-db;
