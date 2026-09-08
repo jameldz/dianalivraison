@@ -1719,9 +1719,7 @@ function render() {
             var year=new Date().getFullYear();
             d=new Date(year,mo,parseInt(m2[1]));
             var now=new Date();
-            if(d<new Date(now.getFullYear(),now.getMonth()-1,1)){
-              d=new Date(year+1,mo,parseInt(m2[1]));
-            }
+            // Vieilles commandes non livrées gardent leur date originale → apparaissent en tête
           }
         }
       }
