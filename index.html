@@ -1753,8 +1753,8 @@ function render() {
     // Priorité : 0=nouvelle, 1=envoi payé prêt à expédier, 2=livraison/place, 3=envoi non payé
     function getPrio(o){
       var ml=o.modeLiv||'livraison';
-      if(ml==='livraison' || ml==='place') return o.clientConfirme ? 2 : 0.5;
       if(!o.clientConfirme) return 0;
+      if(ml==='livraison' || ml==='place') return 2;
       if(ml==='envoi' && o.payee) return 1;
       return 3;
     }
@@ -1762,7 +1762,7 @@ function render() {
       var pa=getPrio(a), pb=getPrio(b);
       if(pa!==pb) return pa-pb;
       // Pour livraisons et sur place (prio 2) : trier par date du créneau
-      if(pa===2 || pa===0.5){
+      if(pa===2){
         var da=parseSlotDate(a.pickedSlot||a.slot);
         var db=parseSlotDate(b.pickedSlot||b.slot);
         if(da && db) return da-db;
@@ -1770,7 +1770,12 @@ function render() {
         if(!da && db) return 1;
         return (b.createdAt||parseInt(b.id)||0)-(a.createdAt||parseInt(a.id)||0);
       }
-      // Pour le reste : plus récente d'abord
+      // Nouvelles livraisons/place : trier par slot
+      var mlA=a.modeLiv||'livraison',mlB=b.modeLiv||'livraison';
+      if(pa===0 && (mlA==='livraison'||mlA==='place')&&(mlB==='livraison'||mlB==='place')){
+        var da2=parseSlotDate(a.pickedSlot||a.slot),db2=parseSlotDate(b.pickedSlot||b.slot);
+        if(da2&&db2) return da2-db2;
+      }
       return (b.createdAt||parseInt(b.id)||0)-(a.createdAt||parseInt(a.id)||0);
     });
   }
