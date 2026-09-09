@@ -3177,7 +3177,6 @@ function handleSubmit(){
         +(ppEmail?'\n📧 Envoie à : *'+ppEmail+'*':'');
     }
     shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 Total : '+total.toFixed(2)+'€'
-      ':'')
       +(reducParr?'\n🎁 +5€ de crédit gagné (utilisable dès ta prochaine commande)':'')
       +paySection
       +'\n\n📦 Dès que ton paiement est reçu, tu recevras un mail à ton adresse ('+email+') avec le lien pour choisir ton point Mondial Relay.'
