@@ -2143,12 +2143,8 @@ function render() {
             // Cliente a déjà reçu un filtre INOX → badge gris
             return '<span style="background:#F3F4F6;color:#6B7280;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900" title="Filtre INOX déjà offert sur la commande #'+dejaFiltre.num+'">ℹ️ Filtre déjà reçu</span>';
           }
-          if(o.filtreInox){
-            // Filtre INOX coché sur cette cmd → badge crème (le système l'a auto-attribué)
-            return '<span style="background:#FFF8E1;color:#7A5A00;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900">🎁 Filtre INOX (à offrir)</span>';
-          }
-          // Daylia + jamais reçu de filtre + filtreInox=false → manqué par auto-détection
-          return '<span style="background:#DCFCE7;color:#166534;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900" title="Sa 1ère commande Daylia payée mais le filtre INOX n\'est pas coché — pense à l\'offrir">✅ Filtre INOX à offrir</span>';
+          // Filtre INOX désactivé - rupture de stock
+          return '';
         })()
         +(o.parrain?(function(){
           // Badge parrainage : couleur + texte selon parrStatus
@@ -2926,8 +2922,8 @@ async function sendConfClient(id){
   // ═══ CONSTRUCTION DU MESSAGE ═══
   // Texte sans emojis ambiguës (qui parfois s'affichent en ◇? sur WhatsApp)
   var msg='Bonjour '+prenom+' ! Commande #'+o.num+' confirmee OK\n\n>> Produits : '+prodsTxt+'\n>> Total : '+totalTxt;
-  if(o.filtreInox){
-    msg+='\n>> Filtre INOX OFFERT (cadeau pour ta 1ere commande Daylia)';
+  if(false){
+    msg+='';
   } else {
     // Si pas de filtre cette fois MAIS la cliente a déjà eu un filtre avant (Daylia précédent)
     try {
