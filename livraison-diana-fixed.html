@@ -201,11 +201,15 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 <div class="card">
   <div class="card-hdr"><span class="step">1</span><h2>Comment veux-tu recevoir ta commande ?</h2></div>
   <div class="card-body">
+    <div style="background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:10px;padding:10px 12px;margin-bottom:10px;text-align:center">
+      <div style="font-size:13px;font-weight:900;color:#92400E">⚠️ Stock faible — Envoi Mondial Relay indisponible à partir de dimanche</div>
+      <div style="font-size:11px;color:#78350F;margin-top:3px;font-weight:600">Bientôt en rupture de stock · Privilégie la livraison ou le sur place</div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:10px">
       <div class="mode-btn on" id="mEnvoi" onclick="setModeLiv('envoi')">
         <div class="mode-ico">📦</div>
         <div class="mode-lbl">Envoi</div>
-        <div class="mode-sub">Mondial Relay…</div>
+        <div class="mode-sub" style="color:#D97706;font-weight:700">⚠️ Jusqu'à dim.</div>
       </div>
       <div class="mode-btn" id="mPlace" onclick="setModeLiv('place')">
         <div class="mode-ico">🏠</div>
@@ -493,6 +497,8 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
         <div class="chk">✓</div>
       </div>
       <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('MCA',-1)">−</button><input class="qval" id="qMCA" value="1" readonly><button class="qbtn" onclick="chQ('MCA',1)">+</button></div><span class="qtot" id="tMCA">30€</span></div>
+    </div>
+    </div>
 
 
 <!-- IRON MAGIC -->
@@ -512,7 +518,6 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
   </div>
   <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('IRM',-1)">−</button><input class="qval" id="qIRM" value="1" readonly><button class="qbtn" onclick="chQ('IRM',1)">+</button></div><span class="qtot" id="tIRM">90€</span></div>
 </div>
-    </div>
 
 <!-- FRAIS ENVOI -->
 <div id="fraisEnvoi" style="display:none;margin:0 0 10px;background:linear-gradient(135deg,var(--rs),#FFF0F5);border:1.5px solid var(--bdr);border-radius:11px;padding:12px 14px;font-size:13px;font-weight:800;color:var(--rd)"></div>
