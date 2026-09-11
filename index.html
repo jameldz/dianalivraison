@@ -2197,7 +2197,10 @@ function render() {
         +'<button class="abtn" onclick="openCadeau(\''+o.id+'\')"><span class="i">🎁</span>'+(o.cadeau?'Cadeau ✓':'Cadeau')+'</button>'
         +'<button class="abtn'+(o.creditApplied>0?' gn':'')+'" onclick="openCreditParrainage(\''+o.id+'\')" title="Saisir le crédit parrainage appliqué sur cette commande"><span class="i">💰</span>'+(o.creditApplied>0?'-'+o.creditApplied+'€':'Crédit')+'</button>'
         +(o.modePay==='paypal'?'<button class="abtn" style="background:#FEF3C7;color:#92400E;border-color:#F59E0B" onclick="openPayManque(\''+o.id+'\')"><span class="i">💸</span>Manque</button>':'')
-        +'<button class="abtn" onclick="openSAV(\''+o.id+'\')" title="Guide SAV : procédures et messages prêts"><span class="i">🛟</span>SAV</button>'
+        +(function(){
+          var sv=o.sav, ouvert=!!(sv&&sv.journal&&sv.journal.length&&sv.statut!=='resolu');
+          return '<button class="abtn'+(ouvert?' rd':'')+'" style="'+(ouvert?'background:#FEE2E2;color:#991B1B;border-color:#DC2626;font-weight:900':'')+'" onclick="openSAV(\''+o.id+'\')" title="Dossier SAV : procédures, messages et historique"><span class="i">🛟</span>'+(ouvert?'SAV ●':'SAV')+'</button>';
+        })()
         +'<button class="abtn" onclick="editOrder(\''+o.id+'\')"><span class="i">✏️</span>Modifier</button>'
         +(function(){
           // Bouton Fantôme : toujours visible si pas payée (décision manuelle)
@@ -3095,21 +3098,7 @@ function callClient(tel) {
   window.location.href='tel:'+tel.replace(/\s/g,'');
 }
 
-// ═══ GUIDE SAV ═══
-// Ouvre le guide SAV avec le prénom et le n° de commande pré-remplis.
-// Pour changer de page SAV, il suffit de modifier SAV_URL ci-dessous.
-var SAV_URL='https://claude.ai/code/artifact/777a8e60-01a5-4f73-aba7-885fcab8fd43';
-function openSAV(id){
-  var o=null;
-  try{ if(id && typeof orders!=='undefined') o=orders.find(function(x){return x.id===id;}); }catch(e){}
-  var prenom='', num='';
-  if(o){
-    prenom=(o.nom||'').trim().split(/\s+/)[0]||'';
-    num=o.num||'';
-  }
-  var u=SAV_URL+'?prenom='+encodeURIComponent(prenom)+'&num='+encodeURIComponent(num);
-  window.open(u,'_blank');
-}
+
 
 function sendTutoPaypal(id,mode){
   var o=orders.find(function(x){return x.id===id;});
@@ -6871,5 +6860,6 @@ function pinDel(){
     </div>
   </div>
 </div>
+<script src="/sav.js"></script>
 </body>
 </html>
