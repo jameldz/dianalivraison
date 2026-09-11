@@ -3228,6 +3228,11 @@ function handleSubmit(){
     oAddr = addr+', '+cp+' '+ville+(compl?' ('+compl+')':'');
   }
   // Bloquer espèces + envoi MR (impossible de payer en espèces par courrier)
+  // Forcer espèces si livraison ou sur place — jamais PayPal
+  if(modeLiv==='livraison' || modeLiv==='place'){
+    modePay='especes';
+  }
+  // Forcer PayPal si envoi et espèces sélectionné
   if(modeLiv==='envoi' && modePay==='especes'){
     modePay='paypal';
     setModePay('paypal');
