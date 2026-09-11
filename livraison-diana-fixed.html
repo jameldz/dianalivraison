@@ -3054,8 +3054,8 @@ function handleSubmit(){
     // Filtre INOX offert si 1ère commande Daylia
   }catch(e){}
   var hasDayliaCmd=dTotal()>0;
-  var filtreInox=false; // RUPTURE DE STOCK
-  if(false){
+  var filtreInox=false;
+  if(hasDayliaCmd){
     try{
       // Normalisation robuste : gère +33, 0033, 0, avec/sans espaces
       var normTelFn = function(t){return (t||'').replace(/\s/g,'').replace(/^\+33/,'33').replace(/^0033/,'33').replace(/^0/,'33');};
