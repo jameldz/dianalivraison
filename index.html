@@ -4691,9 +4691,15 @@ var EDIT_HIDDEN=['id','num','livree','payee','confirme','clientConfirme','create
 
 function calcProdsTotal(prodsStr){
   var parts=(prodsStr||'').split(',').map(function(p){return p.trim();}).filter(Boolean);
-  var dianaCount=0, dayliaCount=0, miniCount=0;
+  var dianaCount=0, dayliaCount=0, miniCount=0, ironCount=0;
   parts.forEach(function(p){
     var pl=p.toLowerCase();
+    // ═══ Iron Magic : prix fixe 90€/u — à détecter EN PREMIER (ne matche ni Diana ni Mini-Cure) ═══
+    if(/iron[\s-]*magic/i.test(pl)){
+      var qtyIrm = pl.match(/(\d+)\s*[×x]/);
+      ironCount += qtyIrm ? parseInt(qtyIrm[1]) : 1;
+      return;
+    }
     // ═══ Mini-Cure 7j : à détecter AVANT Diana (sinon "Mini-Cure Gélules" matcherait Diana) ═══
     if(/mini[\s-]*cure/i.test(pl)){
       var qtyM = pl.match(/(\d+)\s*[×x]/);
@@ -4724,6 +4730,7 @@ function calcProdsTotal(prodsStr){
   });
   var dianaTotal = dianaCount * 55;
   var miniTotal = miniCount * 30;
+  var ironTotal = ironCount * 90;
   var dayliaTotal = 0;
   if(dianaCount > 0){
     dayliaTotal = dayliaCount * 20;
@@ -4733,7 +4740,7 @@ function calcProdsTotal(prodsStr){
     else if(dayliaCount===3) dayliaTotal=60;
     else if(dayliaCount>=4) dayliaTotal=dayliaCount*20;
   }
-  return dianaTotal + dayliaTotal + miniTotal;
+  return dianaTotal + dayliaTotal + miniTotal + ironTotal;
 }
 
 function recalcEditTotal(){
