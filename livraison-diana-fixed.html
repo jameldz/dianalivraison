@@ -1624,8 +1624,10 @@ function setModeLiv(m){
   document.getElementById('payOptions').style.display=m==='envoi'?'block':'none';
   document.getElementById('payEspecesOnly').style.display=m!=='envoi'?'block':'none';
   var payEsp=document.getElementById('payEspecesOnly');
-  if(payEsp&&m!=='envoi'){payEsp.textContent=m==='place'?'💵 Espèces sur place':'💵 Espèces à la livraison';}
-  else if(modePay==='especes'){setModePay('paypal');}
+  if(payEsp&&m!=='envoi'){
+    payEsp.textContent=m==='place'?'💵 Espèces sur place':'💵 Espèces à la livraison';
+    if(modePay!=='especes'){modePay='especes';}
+  } else if(modePay==='especes'){setModePay('paypal');}
   updateFraisEnvoi();
   updateTotal();
 }
