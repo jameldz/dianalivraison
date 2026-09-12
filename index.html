@@ -233,12 +233,11 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
     <div class="stat"><div class="stat-val" id="sTot">0</div><div class="stat-lbl">Total</div></div>
     <div class="stat"><div class="stat-val" id="sReste">0</div><div class="stat-lbl">En cours</div></div>
     <div class="stat"><div class="stat-val" id="sLiv">0</div><div class="stat-lbl">Livrées</div></div>
-    <div class="stat"><div class="stat-val" id="sCa">0€</div><div class="stat-lbl">CA</div></div>
+    <div class="stat"><div class="stat-val" id="sCa">0</div><div class="stat-lbl">📦 À expédier</div></div>
   </div>
 </div>
 
 <div class="route-wrap">
-  <button class="route-btn" id="routeBtn" onclick="openRoute()">🗺️ Trajet optimisé - toutes les livraisons</button>
   <button class="route-btn" id="colisBtn" onclick="openColisMR()" style="background:linear-gradient(135deg,#7C3AED,#6D28D9);margin-top:6px">📦 Colis MR à expédier</button>
 </div>
 
@@ -636,6 +635,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
     🎁 🎁 Smartbox à 20 · 💎 Box Prestige à 30 filleul(e)s.<br>
     <span style="font-size:11px;color:#92400E">🔒 13 protections anti-triche actives</span>
   </div>
+  <div id="parrRecap"></div>
   <div id="parrAlertBanner" style="display:none;margin-bottom:12px"></div>
   <div id="parrainageList"></div>
   <div id="parrainageEmpty" style="text-align:center;padding:30px;color:var(--k3);font-size:14px">Aucun parrainage pour l'instant</div>
@@ -1607,8 +1607,9 @@ function render() {
   var enCours = ordersVisibles.filter(function(o){return !(o.livree && o.payee);}).length;
   document.getElementById('sReste').textContent = enCours;
   document.getElementById('sLiv').textContent   = livrees;
-  document.getElementById('sCa').textContent    = Math.round(ca)+'€';
-  document.getElementById('routeBtn').disabled = false;
+  var aExpedier = ordersVisibles.filter(function(o){return o.modeLiv==='envoi'&&o.payee&&!o.livree;}).length;
+  document.getElementById('sCa').textContent    = aExpedier;
+  var _rb=document.getElementById('routeBtn'); if(_rb) _rb.disabled = false;
 
   // Compteurs vendeurs (commandes en cours uniquement)
   var nbSabra=orders.filter(function(o){return (o.vendeur||'').toLowerCase().trim()==='sabra' && !(o.livree && o.payee);}).length;
@@ -1654,8 +1655,8 @@ function render() {
     alertsEl=document.createElement('div');
     alertsEl.id='globalAlerts';
     alertsEl.style.cssText='padding:0 16px;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;';
-    var routeBtn=document.getElementById('routeBtn');
-    if(routeBtn&&routeBtn.parentNode) routeBtn.parentNode.after(alertsEl);
+    var anchorBtn=document.getElementById('colisBtn')||document.getElementById('routeBtn');
+    if(anchorBtn&&anchorBtn.parentNode) anchorBtn.parentNode.after(alertsEl);
   }
   alertsEl.innerHTML=globalAlerts.join('');
 
@@ -3987,7 +3988,7 @@ function getParrainageData(){
 function renderParrainage(){
   var data=getParrainageData();
   var parrSearch=(document.getElementById('parrSearchInput')?document.getElementById('parrSearchInput').value:'').toLowerCase().trim();
-  var keys=Object.keys(data).sort(function(a,b){return data[b].filleules.length-data[a].filleules.length;});
+  var keys=Object.keys(data).sort(function(a,b){return (data[b].solde-data[a].solde)||(data[b].filleules.length-data[a].filleules.length);});
   // Filtrer par recherche
   if(parrSearch){
     keys=keys.filter(function(k){
@@ -4008,7 +4009,7 @@ function renderParrainage(){
   }
   var panel=document.getElementById('parrainageList');
   var empty=document.getElementById('parrainageEmpty');
-  if(!keys.length){panel.innerHTML='';empty.style.display='block';document.getElementById('parrAlertBanner').style.display='none';return;}
+  if(!keys.length){panel.innerHTML='';empty.style.display='block';document.getElementById('parrAlertBanner').style.display='none';var _re=document.getElementById('parrRecap');if(_re)_re.innerHTML='';return;}
   empty.style.display='none';
 
   // ═══ BANNIÈRE ALERTE ═══
@@ -4038,6 +4039,20 @@ function renderParrainage(){
   // Update header badge
   updateParrAlertBadge();
 
+  // ═══ RÉCAP CAGNOTTES (vue d'ensemble claire) ═══
+  var _allK=Object.keys(data);
+  var _avecCredit=0,_totalRestant=0,_totalUtilise=0,_totalGagne=0;
+  _allK.forEach(function(kk){var d=data[kk];_totalRestant+=(d.solde||0);_totalUtilise+=(d.creditUsed||0);_totalGagne+=(d.cagnotte||0);if((d.solde||0)>0)_avecCredit++;});
+  var recapHtml='<div style="background:linear-gradient(135deg,#FBF6F4,#F4EBE8);border:1.5px solid #E7D9D5;border-radius:14px;padding:14px 16px;margin-bottom:12px">'
+    +'<div style="font-size:13px;font-weight:900;color:#8E1B2C;margin-bottom:10px">💰 Cagnottes clientes — vue d\'ensemble</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+    +'<div style="background:#fff;border-radius:10px;padding:10px 12px"><div style="font-size:22px;font-weight:900;color:#16A34A">'+_totalRestant+'€</div><div style="font-size:11px;color:#6E5D61;font-weight:700">Crédit à utiliser (total)</div></div>'
+    +'<div style="background:#fff;border-radius:10px;padding:10px 12px"><div style="font-size:22px;font-weight:900;color:#C42A3F">'+_avecCredit+'</div><div style="font-size:11px;color:#6E5D61;font-weight:700">Clientes avec du crédit</div></div>'
+    +'</div>'
+    +'<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:#8A7B7F;font-weight:600"><span>Déjà utilisé : <strong>'+Math.round(_totalUtilise)+'€</strong></span><span>Gagné en tout : <strong>'+Math.round(_totalGagne)+'€</strong></span></div>'
+    +'<div style="font-size:10px;color:#A89DA0;margin-top:6px">Classées par crédit à utiliser — les clientes qui attendent leur crédit sont en haut.</div>'
+    +'</div>';
+  var _recapEl=document.getElementById('parrRecap'); if(_recapEl) _recapEl.innerHTML=recapHtml;
   var html='';
   keys.forEach(function(k){
     var m=data[k];
