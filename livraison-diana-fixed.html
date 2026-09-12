@@ -1680,8 +1680,8 @@ async function init() {
   }
   // Charger le stock depuis /api/cloud (Upstash)
   try{
-    var rs=await fetch('/api/cloud?t='+Date.now(),{cache:'no-store'});
-    if(rs.ok){var ds=await rs.json();if(ds.record&&ds.record.stock){STOCK=Object.assign(STOCK,ds.record.stock);updateStockDisplay();}if(ds.record&&ds.record.orders){cachedAllOrders=ds.record.orders;}}
+    var rs=await fetch('/api/config?t='+Date.now(),{cache:'no-store'});
+    if(rs.ok){var ds=await rs.json();if(ds.record&&ds.record.stock){STOCK=Object.assign(STOCK,ds.record.stock);updateStockDisplay();}}
   }catch(e){}
   await buildDates();
   buildDaylia();
@@ -1946,6 +1946,7 @@ async function checkCagnotteDispo(){
       if(!r.ok) return;
       var data = await r.json();
       var allOrders = (data.record && data.record.orders) || [];
+      cachedAllOrders = allOrders;
       window._cagnotteLastChecked = telNorm;
 
       // 1. Trouver le vendeur principal de cette cliente (sa 1ère commande)
@@ -2175,7 +2176,7 @@ async function buildDates(){
   var mm=['jan.','fév.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
   var jf={semaine:[],dates:[]};
   try{
-    var r=await fetch('/api/cloud?t='+Date.now(),{cache:'no-store'});
+    var r=await fetch('/api/config?t='+Date.now(),{cache:'no-store'});
     if(r.ok){var d2=await r.json();if(d2.record&&d2.record.joursFermes){jf=d2.record.joursFermes;localStorage.setItem('diana_joursfermes',JSON.stringify(jf));}}
   }catch(e){
     // Fallback localStorage si pas de réseau
