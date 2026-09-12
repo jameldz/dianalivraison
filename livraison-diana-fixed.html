@@ -1942,17 +1942,29 @@ async function checkCagnotteDispo(){
   if(window._cagnotteCheckTimer) clearTimeout(window._cagnotteCheckTimer);
   window._cagnotteCheckTimer = setTimeout(async function(){
     try {
-      var r = await fetch('/api/cloud?t='+Date.now(),{cache:'no-store'});
-      if(!r.ok) return;
-      var data = await r.json();
-      var allOrders = (data.record && data.record.orders) || [];
-      cachedAllOrders = allOrders;
+      // Cagnotte : calcul CÔTÉ SERVEUR (ne télécharge plus les fiches des autres clientes).
+      // Repli automatique sur l'ancienne méthode si l'endpoint est indisponible.
+      var allOrders = null; // rempli uniquement en repli
+      var _cg = null;       // résultat serveur si disponible
+      try {
+        var _cr = await fetch('/api/cagnotte',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tel:telNorm})});
+        if(!_cr.ok) throw new Error('http '+_cr.status);
+        _cg = await _cr.json();
+        if(_cg && _cg.error) throw new Error(_cg.error);
+      } catch(_epErr){
+        _cg = null;
+        var r = await fetch('/api/cloud?t='+Date.now(),{cache:'no-store'});
+        if(!r.ok) return;
+        var data = await r.json();
+        allOrders = (data.record && data.record.orders) || [];
+      }
       window._cagnotteLastChecked = telNorm;
 
-      // 1. Trouver le vendeur principal de cette cliente (sa 1ère commande)
-      var mesCommandes = allOrders.filter(function(o){
+      // 1. Commandes de la cliente (serveur si dispo, sinon repli local)
+      var mesCommandes = _cg ? (_cg.ownOrders||[]) : allOrders.filter(function(o){
         return _normTel(o.tel)===telNorm;
       }).sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0);});
+      cachedAllOrders = _cg ? mesCommandes : allOrders;
 
       // ═══ FIDÉLITÉ VENDEUR : si cliente connue, forcer le vendeur de sa 1ère commande ═══
       if(mesCommandes.length > 0){
@@ -2026,51 +2038,49 @@ async function checkCagnotteDispo(){
       }
       var monVendeur = (mesCommandes[0] && (mesCommandes[0].vendeur||'').toLowerCase().trim()) || '';
 
-      // 2. Crédit en tant que MARRAINE : compter filleules valides+payées
-      var creditMarraine = 0;
-      var nbFilleules = 0;
-      allOrders.forEach(function(o){
-        if(!o.parrain || !o.payee || o.fantome || o.parrStatus==='rejected') return;
-        if(_normTel(o.parrain)!==telNorm) return;
-        // Vérif vendeur unique
-        if(o.parrStatus!=='validated'){
-          var fV = (o.vendeur||'').toLowerCase().trim();
-          if(!fV || (monVendeur && fV!==monVendeur)) return;
-        }
-        nbFilleules++;
-        creditMarraine += 5;
-      });
-
-      // 3. Crédit en tant que FILLEULE : 5€ par commande où elle était filleule (avec marraine ayant payé)
-      var creditFilleule = 0;
-      var nbFoisFilleule = 0;
-      mesCommandes.forEach(function(o){
-        if(!o.parrain || !o.payee || o.fantome || o.parrStatus==='rejected') return;
-        if(o.parrStatus!=='validated'){
-          var marraineTel = _normTel(o.parrain);
-          var marraineVend = '';
-          var marraineHasPaid = false;
-          allOrders.forEach(function(y){
-            if(_normTel(y.tel)===marraineTel){
-              if(!marraineVend) marraineVend = (y.vendeur||'').toLowerCase().trim();
-              if(y.payee && !y.fantome) marraineHasPaid = true;
-            }
-          });
-          if(!marraineHasPaid) return;
-          if(marraineVend && monVendeur && marraineVend!==monVendeur) return;
-        }
-        nbFoisFilleule++;
-        creditFilleule += 5;
-      });
-
-      // 4. Crédit déjà utilisé
-      var creditUsed = 0;
-      mesCommandes.forEach(function(o){
-        if(o.creditApplied) creditUsed += parseFloat(o.creditApplied)||0;
-      });
-
-      var creditTotal = creditMarraine + creditFilleule;
-      var creditDispo = Math.max(0, creditTotal - creditUsed);
+      // Crédit : valeurs du SERVEUR si dispo, sinon calcul local (repli, logique identique)
+      var nbFilleules = 0, nbFoisFilleule = 0, creditUsed = 0, creditDispo = 0;
+      if(_cg){
+        nbFilleules = _cg.nbFilleules||0;
+        nbFoisFilleule = _cg.nbFoisFilleule||0;
+        creditUsed = _cg.creditUsed||0;
+        creditDispo = _cg.creditDispo||0;
+      } else {
+        var creditMarraine = 0;
+        allOrders.forEach(function(o){
+          if(!o.parrain || !o.payee || o.fantome || o.parrStatus==='rejected') return;
+          if(_normTel(o.parrain)!==telNorm) return;
+          if(o.parrStatus!=='validated'){
+            var fV = (o.vendeur||'').toLowerCase().trim();
+            if(!fV || (monVendeur && fV!==monVendeur)) return;
+          }
+          nbFilleules++;
+          creditMarraine += 5;
+        });
+        var creditFilleule = 0;
+        mesCommandes.forEach(function(o){
+          if(!o.parrain || !o.payee || o.fantome || o.parrStatus==='rejected') return;
+          if(o.parrStatus!=='validated'){
+            var marraineTel = _normTel(o.parrain);
+            var marraineVend = '';
+            var marraineHasPaid = false;
+            allOrders.forEach(function(y){
+              if(_normTel(y.tel)===marraineTel){
+                if(!marraineVend) marraineVend = (y.vendeur||'').toLowerCase().trim();
+                if(y.payee && !y.fantome) marraineHasPaid = true;
+              }
+            });
+            if(!marraineHasPaid) return;
+            if(marraineVend && monVendeur && marraineVend!==monVendeur) return;
+          }
+          nbFoisFilleule++;
+          creditFilleule += 5;
+        });
+        mesCommandes.forEach(function(o){
+          if(o.creditApplied) creditUsed += parseFloat(o.creditApplied)||0;
+        });
+        creditDispo = Math.max(0, (creditMarraine + creditFilleule) - creditUsed);
+      }
       window._cagnotteAvailable = creditDispo;
 
       if(creditDispo > 0){
