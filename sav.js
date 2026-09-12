@@ -214,6 +214,18 @@ function savDossier(o){
   if(!o.sav.journal) o.sav.journal=[];
   return o.sav;
 }
+function savNbCommandes(o){
+  if(!o) return 0;
+  try{
+    var tel=(o.tel||'').replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
+    var nom=(o.nom||'').toLowerCase().trim();
+    return orders.filter(function(x){
+      if(x.fantome||x.deletedAt) return false;
+      var xt=(x.tel||'').replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
+      return (tel && xt===tel) || (nom && (x.nom||'').toLowerCase().trim()===nom);
+    }).length;
+  }catch(e){ return 0; }
+}
 function savPrenom(o){ return ((o&&o.nom)||'').trim().split(/\s+/)[0]||'cliente'; }
 function savDateStr(ts){
   var d=new Date(ts);
@@ -330,6 +342,7 @@ function savRenderBody(id){
     +'<div style="flex:1;min-width:0">'
     +'<div style="font-size:16px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Dossier SAV — '+savEsc(o.nom||'')+'</div>'
     +'<div style="font-size:12px;opacity:.85">Commande #'+savEsc(o.num||'')+(c?' · '+savEsc(c.t):'')+'</div>'
+    +(function(){var nb=savNbCommandes(o);return nb>1?'<div style="font-size:11px;font-weight:800;margin-top:2px;color:#FFE08A">⭐ Cliente fidèle — '+nb+' commandes</div>':'';})()
     +'</div>'
     +'<button onclick="document.getElementById(\'savModal\').remove()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;flex-shrink:0">✕</button>'
     +'</div>';
