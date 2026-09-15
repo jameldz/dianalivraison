@@ -1103,7 +1103,7 @@ var PRODS = {CAF:{name:'Café Diana',ico:'☕',price:55},THE:{name:'Thé Diana',
 var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 15j',ico:'🌟',price:30},MTH:{name:'Mini-Cure Thé 15j',ico:'🌟',price:30},MCA:{name:'Mini-Cure Café 15j',ico:'🌟',price:30},IRM:{name:'Iron Magic — Prise de Poids',ico:'💪',price:90}};
 
 // Stock — mis à jour depuis JSONbin
-var STOCK = {CAF:0,THE:0,GEL:0,DN:0,SD:0,ST:0,PM:0,GU:0};
+var STOCK = {CAF:0,THE:0,GEL:0,DN:0,SD:0,ST:0,PM:0,GU:0,MGE:0,MTH:0,MCA:0,IRM:0};
 var cachedAllOrders=[];
 var DAYLIA = [
   {id:'DN', name:'🌙 Douce Nuit',  ico:'', desc:'Le soir — détox nocturne, sommeil profond'},
@@ -1622,6 +1622,9 @@ function setModeLiv(m){
   document.getElementById('cardNotes').style.display=(m==='envoi'||m==='place')?'none':'block';
   var isp=document.getElementById('infoSnapPlace');if(isp)isp.style.display=m==='place'?'block':'none';
   // Paiement
+  var bp=document.getElementById('bannerPayEnvoi');
+  if(!bp){bp=document.createElement('div');bp.id='bannerPayEnvoi';bp.style.cssText='background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:10px;padding:10px 14px;margin-bottom:10px;display:none';bp.innerHTML='<div style="font-size:13px;font-weight:900;color:#92400E">⚡ Règle par PayPal dès maintenant pour recevoir ton colis rapidement</div><div style="font-size:11px;color:#78350F;margin-top:3px;font-weight:600">Ton colis part uniquement après réception de ton paiement — plus vite tu paies, plus vite tu reçois !</div>';var pd=document.getElementById('payOptions');if(pd&&pd.parentNode)pd.parentNode.insertBefore(bp,pd);}
+  if(bp)bp.style.display=m==='envoi'?'block':'none';
   document.getElementById('payOptions').style.display=m==='envoi'?'block':'none';
   document.getElementById('payEspecesOnly').style.display=m!=='envoi'?'block':'none';
   var payEsp=document.getElementById('payEspecesOnly');
