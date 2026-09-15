@@ -2195,7 +2195,7 @@ async function buildDates(){
   }
   var h='';
   dispoState={};dispoDateIdx={};
-  for(var i=0;i<10;i++){
+  for(var i=0;i<15;i++){
     var d=new Date();d.setDate(d.getDate()+i);
     var lbl=i===0?"Auj'":i===1?'Dem.':jj[d.getDay()];
     var val=jj[d.getDay()]+' '+d.getDate()+' '+mm[d.getMonth()];
@@ -2213,7 +2213,7 @@ async function buildDates(){
 }
 
 // === PATCH livraison domicile Lun/Mer/Sam 18h-00h ===
-var JOURS_LIVRAISON_DOM = [1, 3, 6];
+var JOURS_LIVRAISON_DOM = [1, 3, 4, 6];
 function applyLivDayRestriction(){
   try {
     var isLiv = (typeof modeLiv !== 'undefined' && modeLiv === 'livraison');
@@ -3127,7 +3127,7 @@ function handleSubmit(){
     var earliestDiff = 999;
     dispoData.forEach(function(d){
       // Comparer la date dispo avec les 10 prochains jours pour trouver laquelle est la plus proche
-      for(var i=0;i<10;i++){
+      for(var i=0;i<15;i++){
         var dd=new Date();dd.setDate(dd.getDate()+i);
         var val=jj2b[dd.getDay()]+' '+dd.getDate()+' '+mm2b[dd.getMonth()];
         if(d.date===val && i < earliestDiff){earliestDiff=i;earliest=d.date;}
