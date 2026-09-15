@@ -580,6 +580,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
   <div class="card-hdr"><span class="step" id="sDispo">5</span><h2>Quand es-tu disponible ?</h2></div>
   <div class="card-body">
     <div id="banner24h" style="display:none;background:#FFF8E6;border:1px solid #F0C060;border-radius:9px;padding:9px 13px;font-size:12px;color:#7A5A00;margin-bottom:12px">⚡ Livraison <strong>sous 24h</strong> dans la mesure du possible</div>
+    <div id="bannerPrecommande" style="background:linear-gradient(135deg,#EDE9FE,#DDD6FE);border:2px solid #7C3AED;border-radius:12px;padding:12px 16px;margin-bottom:12px;text-align:center"><div style="font-size:13px;font-weight:900;color:#5B21B6">📅 Produits disponibles en PRÉCOMMANDE uniquement</div><div style="font-size:11px;color:#6D28D9;margin-top:3px;font-weight:600">Stock en cours de réapprovisionnement — Ta commande sera traitée dès réception du stock</div></div>
     <div id="bannerUrgence" style="display:none;background:linear-gradient(135deg,#FFF0F0,#FFE0E0);border:1.5px solid #FF4444;border-radius:9px;padding:9px 13px;font-size:12px;font-weight:800;color:#CC0000;margin-bottom:12px;text-align:center;animation:blink 1.2s ease-in-out infinite">🔥 Stock limité — Commande vite avant rupture !</div>
     <div style="font-size:11px;color:var(--k2);margin-bottom:8px">Clique sur une date puis choisis tes créneaux <strong style="color:var(--rd)">*</strong></div>
     <div class="dates-grid" id="datesGrid"></div>
@@ -1102,7 +1103,7 @@ var PRODS = {CAF:{name:'Café Diana',ico:'☕',price:55},THE:{name:'Thé Diana',
 var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 15j',ico:'🌟',price:30},MTH:{name:'Mini-Cure Thé 15j',ico:'🌟',price:30},MCA:{name:'Mini-Cure Café 15j',ico:'🌟',price:30},IRM:{name:'Iron Magic — Prise de Poids',ico:'💪',price:90}};
 
 // Stock — mis à jour depuis JSONbin
-var STOCK = {CAF:999,THE:999,GEL:999,DN:999,SD:999,ST:999,PM:999,GU:999};
+var STOCK = {CAF:0,THE:0,GEL:0,DN:0,SD:0,ST:0,PM:0,GU:0};
 var cachedAllOrders=[];
 var DAYLIA = [
   {id:'DN', name:'🌙 Douce Nuit',  ico:'', desc:'Le soir — détox nocturne, sommeil profond'},
@@ -1698,8 +1699,9 @@ function updateStockDisplay(){
     var rupture=STOCK[id]<=0;
     var faible=STOCK[id]>0&&STOCK[id]<=50;
     if(rupture){
-      el.style.opacity='0.4';el.style.pointerEvents='none';
-      var nm=el.querySelector('.prod-name,.day-nm');if(nm)nm.innerHTML+=' <span style="font-size:10px;color:#CC0000;font-weight:800">RUPTURE</span>';
+      el.style.opacity='1';el.style.pointerEvents='auto';
+      var nm=el.querySelector('.prod-name,.day-nm');
+      if(nm&&!nm.innerHTML.includes('PRÉCOMMANDE'))nm.innerHTML+=' <span style="font-size:10px;color:#7C3AED;font-weight:800;background:#EDE9FE;padding:2px 5px;border-radius:4px">📅 PRÉCOMMANDE</span>';
     } else if(faible){
       stockFaible=true;
     }
