@@ -1623,7 +1623,7 @@ function setModeLiv(m){
   var isp=document.getElementById('infoSnapPlace');if(isp)isp.style.display=m==='place'?'block':'none';
   // Paiement
   var bp=document.getElementById('bannerPayEnvoi');
-  if(!bp){bp=document.createElement('div');bp.id='bannerPayEnvoi';bp.style.cssText='background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:10px;padding:10px 14px;margin-bottom:10px;display:none';bp.innerHTML='<div style="font-size:13px;font-weight:900;color:#92400E">⚡ Règle par PayPal dès maintenant pour recevoir ton colis rapidement</div><div style="font-size:11px;color:#78350F;margin-top:3px;font-weight:600">Ton colis part uniquement après réception de ton paiement — plus vite tu paies, plus vite tu reçois !</div>';var pd=document.getElementById('payOptions');if(pd&&pd.parentNode)pd.parentNode.insertBefore(bp,pd);}
+  if(!bp){bp=document.createElement('div');bp.id='bannerPayEnvoi';bp.style.cssText='background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:10px;padding:10px 14px;margin-bottom:10px;display:none';var t1=document.createElement('div');t1.style.cssText='font-size:13px;font-weight:900;color:#92400E';t1.textContent='⚡ Précommande + paiement PayPal maintenant = PRIORITAIRE dès le réassort !';var t2=document.createElement('div');t2.style.cssText='font-size:11px;color:#78350F;margin-top:3px;font-weight:600';t2.textContent='Réassort bientôt — celles qui ont payé partent les premières · Sans paiement = file d’attente';bp.appendChild(t1);bp.appendChild(t2);var pd=document.getElementById('payOptions');if(pd&&pd.parentNode)pd.parentNode.insertBefore(bp,pd);}
   if(bp)bp.style.display=m==='envoi'?'block':'none';
   document.getElementById('payOptions').style.display=m==='envoi'?'block':'none';
   document.getElementById('payEspecesOnly').style.display=m!=='envoi'?'block':'none';
@@ -2199,12 +2199,13 @@ async function buildDates(){
   }
   var h='';
   dispoState={};dispoDateIdx={};
+  var DATE_MIN=new Date('2026-09-25');
   for(var i=0;i<10;i++){
     var d=new Date();d.setDate(d.getDate()+i);
     var lbl=i===0?"Auj'":i===1?'Dem.':jj[d.getDay()];
     var val=jj[d.getDay()]+' '+d.getDate()+' '+mm[d.getMonth()];
     var dateStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    var isClosed=(jf.semaine||[]).indexOf(d.getDay())!==-1||(jf.dates||[]).indexOf(dateStr)!==-1;
+    var isClosed=(jf.semaine||[]).indexOf(d.getDay())!==-1||(jf.dates||[]).indexOf(dateStr)!==-1||d<DATE_MIN;
     dispoState[val]={slots:[],de:'',ju:''};
     dispoDateIdx[val]=i;
     h+='<div class="date-btn'+(isClosed?' disabled':'')+'" id="dchip'+i+'" data-v="'+val+'" data-i="'+i+'" data-dow="'+d.getDay()+'"'+(isClosed?'':' onclick="selectDate(\''+val+'\','+i+')"')+'>'
