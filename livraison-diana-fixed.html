@@ -1520,6 +1520,7 @@ function updateSlotAvailability(){
 }
 
 function setModeLiv(m){
+  if(m==='livraison'&&new Date()>=new Date('2026-10-07'))m='place';
   // Livraison à domicile réactivée
   var pauseLivDate=new Date(2024,0,1,0,0,0); // date passée → pas de pause
   if(m==='livraison' && new Date()<pauseLivDate){
@@ -1689,6 +1690,7 @@ async function init() {
   await buildDates();
   buildDaylia();
   // Appliquer le mode actuel (envoi par défaut, ou celui que l'utilisateur a déjà cliqué)
+  if(new Date()>=new Date('2026-10-07')){var b=document.getElementById('mLiv');if(b){b.style.opacity='0.4';b.style.pointerEvents='none';var s=b.querySelector('.mode-sub');if(s)s.textContent='Indisponible';}if(modeLiv==='livraison')modeLiv='place';}
   setModeLiv(modeLiv);
 }
 
