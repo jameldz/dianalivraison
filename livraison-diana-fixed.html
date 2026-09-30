@@ -504,7 +504,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 <!-- IRON MAGIC -->
 <div style="margin:14px 0 8px;padding:10px 12px;background:linear-gradient(135deg,#1a1a1a,#292929);border:2px solid #F97316;border-radius:12px;text-align:center">
   <div style="font-size:14px;font-weight:900;color:#F97316;margin-bottom:3px">💪 Iron Magic <span style="background:#EF4444;color:white;font-size:10px;padding:2px 8px;border-radius:20px;margin-left:4px">NEW</span></div>
-  <div style="font-size:11px;color:#aaa;font-weight:600">Prends du poids rapidement · Énergie · Force · Gélules 30 jours</div>
+  <div style="font-size:11px;color:#aaa;font-weight:600">Prise de masse · Énergie · Gélules 30 jours</div>
 </div>
 <div class="prod" id="pIRM">
   <div class="prod-top" onclick="togProd('IRM')">
@@ -687,6 +687,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 </div>
 
 <!-- PAIEMENT -->
+<div id="cardFidele11" class="card" style="display:none;border:2px solid #7C3AED;margin-bottom:12px"><div class="card-hdr" style="background:linear-gradient(135deg,#7C3AED,#5B21B6)"><h2 style="color:#fff">🎁 Produit offert — Récompense fidélité !</h2></div><div class="card-body"><div style="font-size:13px;color:#5B21B6;font-weight:800;margin-bottom:8px">🏆 C'est ta 11ème commande — choisis ton produit offert !</div><div style="font-size:12px;color:#6D28D9;margin-bottom:12px">Un produit Diana au choix, offert pour te remercier de ta fidélité ❤️</div><label style="display:flex;align-items:center;gap:10px;padding:10px;border:2px solid #DDD6FE;border-radius:10px;cursor:pointer;margin-bottom:6px"><input type="radio" name="fidele11prod" value="GEL"> <span style="font-size:13px;font-weight:700">💊 Gélules Diana <span style="color:#7C3AED">(offert)</span></span></label><label style="display:flex;align-items:center;gap:10px;padding:10px;border:2px solid #DDD6FE;border-radius:10px;cursor:pointer;margin-bottom:6px"><input type="radio" name="fidele11prod" value="THE"> <span style="font-size:13px;font-weight:700">🍵 Thé Diana <span style="color:#7C3AED">(offert)</span></span></label><label style="display:flex;align-items:center;gap:10px;padding:10px;border:2px solid #DDD6FE;border-radius:10px;cursor:pointer"><input type="radio" name="fidele11prod" value="CAF"> <span style="font-size:13px;font-weight:700">☕ Café Diana <span style="color:#7C3AED">(offert)</span></span></label></div></div>
 <div class="card" id="cardPay">
   <div class="card-hdr"><span>💳</span><h2>Mode de paiement</h2></div>
   <div class="card-body">
@@ -2031,7 +2032,6 @@ async function checkCagnotteDispo(){
         document.getElementById('cagnotteAmount').textContent = creditDispo;
         document.getElementById('cagnotteSource').textContent = 'Source : '+src.join(' + ') + (creditUsed>0 ? ' (− '+creditUsed+'€ déjà utilisés)' : '');
         document.getElementById('cagnotteBanner').style.display = 'block';
-        // Auto-appliquer immédiatement
         setTimeout(function(){ if(typeof applyCagnotte==='function' && (window._cagnotteApplied||0)<creditDispo) applyCagnotte(); }, 300);
       } else {
         document.getElementById('cagnotteBanner').style.display = 'none';
@@ -2698,6 +2698,7 @@ function handleSubmit(){
   // Mémorise le timestamp d'acceptation pour preuve juridique
   window._dechargeAcceptedAt = Date.now();
 
+  var fidele11='';(function(){var c11=document.getElementById('cardFidele11');if(!c11||c11.style.display==='none')return;var f11=document.querySelector('input[name="fidele11prod"]:checked');if(f11){var m={GEL:'Gélules Diana',THE:'Thé Diana',CAF:'Café Diana'};fidele11=m[f11.value]||'';}})();
   // 1. Produits
   var prods=getProds();
   if(!prods.length){document.getElementById('sProd').closest('.card').scrollIntoView({behavior:'smooth',block:'center'});toast('⚠️ Choisis au moins un produit');return;}
@@ -3006,6 +3007,7 @@ function handleSubmit(){
     });
     nbCmdClient=clientOrders.length+1;
     nbCmdMode=nbCmdClient;
+    (function(){var c11=document.getElementById('cardFidele11');if(!c11)return;var is11=(new Date()>=new Date('2026-10-01'))&&nbCmdClient>0&&(nbCmdClient%11===0);c11.style.display=is11?'block':'none';})();
     // Livraison gratuite 5ème commande : désactivée
     // Filtre INOX offert si 1ère commande Daylia
   }catch(e){}
@@ -3041,6 +3043,7 @@ function handleSubmit(){
   // Si paiement Lydia : on inflate le total pour couvrir les frais Lydia (3.28%)
   // Comme ça la cliente paie le bon montant et on reçoit le net attendu
   var total=modePay==='lydia'?Math.round(totalBase*1.0328):totalBase;
+  var fidele11Msg=fidele11?'\n\n🎁 *Produit offert fidélité* : '+fidele11+' — Félicitations pour ta 11ème commande ! ❤️':'';
   var dispoStr=dispoData.map(function(d){return d.date+' : '+d.slots.join(', ');}).join('\n');
   var prodsLines=prods.map(function(p){return p.name+(p.qty>1?' x'+p.qty:'')+' — '+p.total+'€';}).join('\n');
   var relaisLabels={point:'Point Relais',locker:'Locker',domicile:'Domicile'};
@@ -3086,7 +3089,7 @@ function handleSubmit(){
   }
   var snapInstructions='';
   if(modeLiv==='place'){
-    snapInstructions='\n\n👻 Quand tu es prête, envoie-moi ces 2 messages sur Snap :\n'
+    snapInstructions='\n\n📲 Quand tu es prête, envoie-moi ces 2 messages sur WhatsApp :\n'
       +'\n1️⃣ Avant de partir :\n'
       +'"Bonjour ! Je pars maintenant pour récupérer ma commande. Je serai là dans 10-15 min :)"\n'
       +'\n2️⃣ Quand tu es devant la Caisse Epargne :\n'
@@ -3142,14 +3145,14 @@ function handleSubmit(){
       +paySection
       +'\n\n📦 Dès que ton paiement est reçu, tu recevras un mail à ton adresse ('+email+') avec le lien pour choisir ton point Mondial Relay.'
       +'\n👉 Merci de me renvoyer un message une fois ton point choisi 🙏';
-    confirmMsg=shortConfirm+fideliteMsg+surpriseMsg;
+    confirmMsg=shortConfirm+fideliteMsg+fidele11Msg+surpriseMsg;
   } else if(modeLiv==='place'){
     shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 '+total.toFixed(2)+'€'
       
       +(rdvStr?'\n📅 '+rdvStr:'')
       +'\n📍 Caisse d\'Epargne, Place Saint Eugène 13007'
       +'\n\n💵 Paiement en espèces sur place. À bientôt !';
-    confirmMsg=shortConfirm+fideliteMsg+surpriseMsg+snapInstructions;
+    confirmMsg=shortConfirm+fideliteMsg+fidele11Msg+surpriseMsg+snapInstructions;
   } else {
     shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 '+total.toFixed(2)+'€'
       
@@ -3201,7 +3204,8 @@ function handleSubmit(){
   // ═══ Crédit cagnotte effectivement appliqué — DOIT être persisté ═══
   // (sinon le total est réduit mais on perd la trace → stats fausses + cagnotte réutilisable)
   var creditAppliedFinal = parseFloat(window._cagnotteCreditEffectif||window._cagnotteApplied||0);
-  var oData={id:Date.now().toString(),num,nom,snap,tel,email,addr:oAddr,prods:prods.map(function(p){return (p.qty||1)+'× '+p.name;}).join(', '),slot:dispoStr,total,filtre:filtre,modeLiv:modeLiv,modeRelais:modeRelais,modePay:modePay,vendeur:vendeur?vendeur.nom:'',parrain:parrain,parrainTel:parrainTel,parrainSnap:parrainSnap,parrainEmail:parrainEmail,genre:genre,parrGenre:parrGenre,nbCmd:nbCmdClient,livGratuite:remiseFidel||(modeLiv==='livraison'&&sub>=150),reduc:reduc,filtreInox:filtreInox,creditApplied:creditAppliedFinal,dechargeAccepted:true,dechargeAcceptedAt:(window._dechargeAcceptedAt||Date.now()),dechargeNoCompl:true,dechargeNoAmaigr:true,dechargeMajeur:true,domTom:(typeof isDomTom!=='undefined'&&isDomTom)||false};
+  var oData={
+    fidele11:fidele11,id:Date.now().toString(),num,nom,snap,tel,email,addr:oAddr,prods:prods.map(function(p){return (p.qty||1)+'× '+p.name;}).join(', '),slot:dispoStr,total,filtre:filtre,modeLiv:modeLiv,modeRelais:modeRelais,modePay:modePay,vendeur:vendeur?vendeur.nom:'',parrain:parrain,parrainTel:parrainTel,parrainSnap:parrainSnap,parrainEmail:parrainEmail,genre:genre,parrGenre:parrGenre,nbCmd:nbCmdClient,livGratuite:remiseFidel||(modeLiv==='livraison'&&sub>=150),reduc:reduc,filtreInox:filtreInox,creditApplied:creditAppliedFinal,dechargeAccepted:true,dechargeAcceptedAt:(window._dechargeAcceptedAt||Date.now()),dechargeNoCompl:true,dechargeNoAmaigr:true,dechargeMajeur:true,domTom:(typeof isDomTom!=='undefined'&&isDomTom)||false};
 
   // ═══ PUSH DIRECT AU CLOUD + RETRY AUTOMATIQUE + LOG ═══
   // 1. Ajoute la commande à la queue locale (filet anti-perte définitif)
