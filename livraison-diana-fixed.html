@@ -3144,8 +3144,9 @@ function handleSubmit(){
   }
   // Surprise 1ère commande à partir du 1er oct
   var surpriseMsg='';
-  if(new Date()>=new Date('2026-10-01') && nbCmdClient===1){
-    surpriseMsg='\n\n🎁 *Une petite attention t\'attend avec ta commande* — on a hâte que tu la découvres ! 🤩';
+  var _dS=new Date();
+  if(_dS>=new Date('2026-10-01')&&_dS<new Date('2026-12-01')){
+    surpriseMsg='\n\n🎁 *Une petite attention t\'attend avec ta commande* — on a hâte que tu la découvres ! 🤩';
   }
   var snapInstructions='';
   if(modeLiv==='place'){
