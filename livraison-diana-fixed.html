@@ -2031,6 +2031,8 @@ async function checkCagnotteDispo(){
         document.getElementById('cagnotteAmount').textContent = creditDispo;
         document.getElementById('cagnotteSource').textContent = 'Source : '+src.join(' + ') + (creditUsed>0 ? ' (− '+creditUsed+'€ déjà utilisés)' : '');
         document.getElementById('cagnotteBanner').style.display = 'block';
+        // Auto-appliquer immédiatement
+        setTimeout(function(){ if(typeof applyCagnotte==='function' && (window._cagnotteApplied||0)<creditDispo) applyCagnotte(); }, 300);
       } else {
         document.getElementById('cagnotteBanner').style.display = 'none';
       }
