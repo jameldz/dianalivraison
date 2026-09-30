@@ -2224,6 +2224,7 @@ async function tog(id, field) {
   o[field]=!o[field];
   o['_'+field+'_at']=Date.now();
   o.lastModified=Date.now();
+  if(field==='livree' && o.livree && !o.payee && (o.modePay==='especes' || !o.modePay)){ o.payee=true; o._payee_at=Date.now(); }
   // Sauvegarder la date de complétion (livré + payé)
   if(o.livree && o.payee && !o.completedAt) o.completedAt=Date.now();
   if(!(o.livree && o.payee)) delete o.completedAt;
