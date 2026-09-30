@@ -3142,6 +3142,11 @@ function handleSubmit(){
     });
     livraisonStr = earliest || dispoData[0].date;
   }
+  // Surprise 1ère commande à partir du 1er oct
+  var surpriseMsg='';
+  if(new Date()>=new Date('2026-10-01') && nbCmdClient===1){
+    surpriseMsg='\n\n🎁 *Une petite attention t\'attend avec ta commande* — on a hâte que tu la découvres ! 🤩';
+  }
   var snapInstructions='';
   if(modeLiv==='place'){
     snapInstructions='\n\n👻 Quand tu es prête, envoie-moi ces 2 messages sur Snap :\n'
@@ -3200,14 +3205,14 @@ function handleSubmit(){
       +paySection
       +'\n\n📦 Dès que ton paiement est reçu, tu recevras un mail à ton adresse ('+email+') avec le lien pour choisir ton point Mondial Relay.'
       +'\n👉 Merci de me renvoyer un message une fois ton point choisi 🙏';
-    confirmMsg=shortConfirm+fideliteMsg;
+    confirmMsg=shortConfirm+fideliteMsg+surpriseMsg;
   } else if(modeLiv==='place'){
     shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 '+total.toFixed(2)+'€'
       
       +(rdvStr?'\n📅 '+rdvStr:'')
       +'\n📍 Caisse d\'Epargne, Place Saint Eugène 13007'
       +'\n\n💵 Paiement en espèces sur place. À bientôt !';
-    confirmMsg=shortConfirm+fideliteMsg+snapInstructions;
+    confirmMsg=shortConfirm+fideliteMsg+surpriseMsg+snapInstructions;
   } else {
     shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 '+total.toFixed(2)+'€'
       
