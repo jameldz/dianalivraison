@@ -2280,13 +2280,13 @@ async function tog(id, field) {
       var nbFilleules=0;var cagnotte=0;
       orders.forEach(function(ox){
         if(!ox.parrain||!ox.payee) return;
-        if(cleanTel(ox.parrain)===parrTel && isParrainageValid(ox)===true){nbFilleules++;cagnotte+=(new Date()>=new Date('2026-10-01')?10:5);}
+        if(cleanTel(ox.parrain)===parrTel && isParrainageValid(ox)===true){nbFilleules++;cagnotte+=10;}
       });
       // Garde-fou supplémentaire : si comptage = 0, n'envoie pas le message (incohérent)
       if(nbFilleules===0){
         toast('⚠️ Parrainage non validé pour '+marrLabel.split(' ')[0]+' (vendeur différent ou marraine sans commande)');
       } else {
-      var msgM='🎁 Bonne nouvelle '+marrLabel.split(' ')[0]+' !\n\n'+prenom+' vient de payer sa commande ✅\nTu gagnes *+'+(new Date()>=new Date('2026-10-01')?10:5)+'€* sur ta cagnotte !\n\n💰 Ta cagnotte : *'+cagnotte+'€* ('+nbFilleules+' filleule'+(nbFilleules>1?'s':'')+' payée'+(nbFilleules>1?'s':'')+')\n';
+      var msgM='🎁 Bonne nouvelle '+marrLabel.split(' ')[0]+' !\n\n'+prenom+' vient de payer sa commande ✅\nTu gagnes *+'+10+'€* sur ta cagnotte !\n\n💰 Ta cagnotte : *'+cagnotte+'€* ('+nbFilleules+' filleule'+(nbFilleules>1?'s':'')+' payée'+(nbFilleules>1?'s':'')+')\n';
       if(nbFilleules<20) msgM+='\n🎁 Encore '+(20-nbFilleules)+' filleule'+(20-nbFilleules>1?'s':'')+' pour ta Smartbox Bien-être !\n';
       else if(nbFilleules<30) msgM+='\n🎁 Smartbox débloquée !\n💎 Encore '+(30-nbFilleules)+' filleule'+(30-nbFilleules>1?'s':'')+' pour ta Box Prestige VIP !\n';
       else msgM+='\n💎 Box Prestige VIP débloquée ! Contacte-moi pour la récupérer !\n';
@@ -3963,7 +3963,7 @@ function getParrainageData(){
     marraines[k].validatedCount=validatedPaid;
     marraines[k].validatedUnpaid=validatedUnpaid;
     marraines[k].pendingCount=pending;
-    var bonusParr=(new Date()>=new Date('2026-10-01')?10:5);var cagnotteBrute=validatedPaid*bonusParr;
+    var bonusParr=10;var cagnotteBrute=validatedPaid*bonusParr;
     marraines[k].cagnotteBrute=cagnotteBrute;
     marraines[k].cagnotte=Math.min(cagnotteBrute,CREDIT_CAP);
     marraines[k].capReached=cagnotteBrute>=CREDIT_CAP;
@@ -4563,7 +4563,7 @@ async function useCredit(key){
   var cagnotte=0;
   orders.forEach(function(ox){
     if(!ox.parrain||!ox.payee) return;
-    if(cleanTel(ox.parrain)===marraineTel && isParrainageValid(ox)===true){cagnotte+=(new Date()>=new Date('2026-10-01')?10:5);}
+    if(cleanTel(ox.parrain)===marraineTel && isParrainageValid(ox)===true){cagnotte+=10;}
   });
   var used=(clients[key]&&clients[key].creditUsed)||0;
   var dispo=cagnotte-used;
