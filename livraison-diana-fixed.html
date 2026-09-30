@@ -1101,7 +1101,7 @@ function setParrGenre(g){
 var addrOk = false;
 var editAddrOk = false;
 var PRODS = {CAF:{name:'Café Diana',ico:'☕',price:75},THE:{name:'Thé Diana',ico:'🍵',price:75},GEL:{name:'Gélules Diana',ico:'✨',price:75}};
-var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 15j',ico:'🌟',price:(new Date()>=new Date('2026-10-01')?40:30)},MTH:{name:'Mini-Cure Thé 15j',ico:'🌟',price:(new Date()>=new Date('2026-10-01')?40:30)},MCA:{name:'Mini-Cure Café 15j',ico:'🌟',price:(new Date()>=new Date('2026-10-01')?40:30)},IRM:{name:'Iron Magic — Prise de Poids',ico:'💪',price:90}};
+var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 15j',ico:'🌟',price:40},MTH:{name:'Mini-Cure Thé 15j',ico:'🌟',price:40},MCA:{name:'Mini-Cure Café 15j',ico:'🌟',price:40},IRM:{name:'Iron Magic — Prise de Poids',ico:'💪',price:90}};
 
 // Stock — mis à jour depuis JSONbin
 var STOCK = {CAF:999,THE:999,GEL:999,DN:999,SD:999,ST:999,PM:999,GU:999,MGE:999,MTH:999,MCA:999,IRM:999,DAY:999};
@@ -1455,7 +1455,7 @@ function updateSlotAvailability(){
 }
 
 function setModeLiv(m){
-  if(m==='livraison'&&new Date()>=new Date('2026-10-07'))m='place';
+  if(m==='livraison'&&(function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261007;})())m='place';
   // Livraison à domicile réactivée
   var pauseLivDate=new Date(2024,0,1,0,0,0); // date passée → pas de pause
   if(m==='livraison' && new Date()<pauseLivDate){
@@ -1625,7 +1625,7 @@ async function init() {
   await buildDates();
   buildDaylia();
   // Appliquer le mode actuel (envoi par défaut, ou celui que l'utilisateur a déjà cliqué)
-  if(new Date()>=new Date('2026-10-07')){var b=document.getElementById('mLiv');if(b){b.style.opacity='0.4';b.style.pointerEvents='none';var s=b.querySelector('.mode-sub');if(s)s.textContent='Indisponible';}if(modeLiv==='livraison')modeLiv='place';}
+  if((function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261007;})()){var b=document.getElementById('mLiv');if(b){b.style.opacity='0.4';b.style.pointerEvents='none';var s=b.querySelector('.mode-sub');if(s)s.textContent='Indisponible';}if(modeLiv==='livraison')modeLiv='place';}
   setModeLiv(modeLiv);
 }
 
@@ -1688,7 +1688,7 @@ function togProd(id){
       var q=parseInt(document.getElementById('q'+k).value)||1;
       document.getElementById('t'+k).textContent=(prix*q)+'€';
     } else {
-      document.getElementById('t'+k).textContent=(new Date()>=new Date('2026-10-01')?75:55)+'€';
+      document.getElementById('t'+k).textContent='75€';
     }
   });
   // Mini-Cures à prix fixe 30€/unité
@@ -1737,7 +1737,7 @@ function chQ(id,d){
   });
 }
 function getPrixDiana(qtyTotale){
-  return new Date()>=new Date('2026-10-01')?75:55;
+  return 75;
 }
 function getPrixDaylia(qtyTotale){
   return null;
@@ -2154,7 +2154,7 @@ async function buildDates(){
 }
 
 // === PATCH livraison domicile Lun/Mer/Sam 18h-00h ===
-var JOURS_LIVRAISON_DOM=(new Date()>=new Date('2026-09-30'))?[1,4]:[1,3,4,6];
+var JOURS_LIVRAISON_DOM=(function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20260930;})()?[1,4]:[1,3,4,6];
 function applyLivDayRestriction(){
   try {
     var isLiv = (typeof modeLiv !== 'undefined' && modeLiv === 'livraison');
@@ -3007,7 +3007,7 @@ function handleSubmit(){
     });
     nbCmdClient=clientOrders.length+1;
     nbCmdMode=nbCmdClient;
-    (function(){var c11=document.getElementById('cardFidele11');if(!c11)return;var is11=(new Date()>=new Date('2026-10-01'))&&nbCmdClient>0&&(nbCmdClient%11===0);c11.style.display=is11?'block':'none';})();
+    (function(){var c11=document.getElementById('cardFidele11');if(!c11)return;var is11=((function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261001;})())&&nbCmdClient>0&&(nbCmdClient%11===0);c11.style.display=is11?'block':'none';})();
     // Livraison gratuite 5ème commande : désactivée
     // Filtre INOX offert si 1ère commande Daylia
   }catch(e){}
@@ -3084,7 +3084,7 @@ function handleSubmit(){
   }
   // Surprise 1ère commande à partir du 1er oct
   var surpriseMsg='';
-  if(new Date()>=new Date('2026-10-01') && nbCmdClient===1){
+  if((function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261001;})() && nbCmdClient===1){
     surpriseMsg='\n\n🎁 *Une petite attention t\'attend avec ta commande* — on a hâte que tu la découvres ! 🤩';
   }
   var snapInstructions='';
