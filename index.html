@@ -2091,7 +2091,7 @@ function render() {
         +'</div>'
         +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">'
         +'<div style="display:flex;align-items:center;gap:3px"><input type="number" value="'+(o.total||0)+'" style="width:60px;padding:4px 6px;border:1.5px solid var(--bdr);border-radius:7px;font-size:15px;font-weight:900;color:var(--rd);font-family:inherit;text-align:center;background:var(--lt)" onchange="quickEditTotal(\''+o.id+'\',this.value)"><span style="font-size:15px;font-weight:900;color:var(--rd)">€</span></div>'
-        +'<button onclick="toggleLivGratuite(\''+o.id+'\')" style="background:'+(o.livGratuite?'linear-gradient(135deg,#22C55E,#15803D)':'var(--lt)')+';border:1.5px solid '+(o.livGratuite?'#22C55E':'var(--bdr)')+';border-radius:6px;padding:3px 7px;font-size:9px;font-weight:900;cursor:pointer;font-family:inherit;color:'+(o.livGratuite?'#fff':'var(--k2)')+';white-space:nowrap'+(o.livGratuite?';animation:blink-gratuit 1.5s ease-in-out infinite':'')+'">'+(o.livGratuite?'🚚 GRATUITE ✓':'🚚 Liv. gratuite')+'</button>'
+        
         
         +(function(){
           // ═══ Badge filtre INOX explicite ═══
