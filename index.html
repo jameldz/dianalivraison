@@ -3799,7 +3799,7 @@ function getParrainageData(){
     var sameAddr=false;
     var marrAddr=addrByTel[pClean]||'';
     var fillAddr=(o.addr||'').toLowerCase().replace(/\s+/g,' ').trim();
-    if(marrAddr && fillAddr && marrAddr===fillAddr){sameAddr=true;reasons.push('🏠 Même adresse que marraine');}
+    // Protection même adresse désactivée
 
     // ═══ PROTECTION 3 : Max 1 parrainage/jour ═══
     var tooManyToday=false;
