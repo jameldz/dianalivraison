@@ -198,7 +198,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 </div>
 
 <div class="body">
-<div style="background:linear-gradient(135deg,#7C3AED,#5B21B6);border-radius:0 0 14px 14px;padding:14px 16px;margin-bottom:14px;text-align:center"><div style="font-size:13px;color:#EDE9FE;font-weight:700;line-height:1.7">👯 <b style="color:#FCD34D">Parraine tes amies</b> et gagne <b style="color:#FCD34D;font-size:15px">10€</b> de crédit par amie qui commande !<br>🎁 <b style="color:#fff">Une petite attention t'attend</b> dans chaque commande.</div></div>
+<div style="background:linear-gradient(135deg,#7C3AED,#5B21B6);border-radius:0 0 14px 14px;padding:14px 16px;margin-bottom:14px;text-align:center"><div style="font-size:13px;color:#EDE9FE;font-weight:700;line-height:1.7">👯 <b style="color:#FCD34D">Parraine tes amies</b> et gagne <b style="color:#FCD34D;font-size:15px">10€</b> de crédit par amie qui commande !<br>🎁 <b style="color:#fff">Une petite attention t'attend</b> dans chaque commande.<br>🏆 <b style="color:#FCD34D">Fidélité :</b> ta 11ème commande = <b style="color:#FCD34D;font-size:15px">-20€</b> offerts !</div></div>
 
 
 <!-- MODE LIVRAISON -->
@@ -1797,6 +1797,7 @@ function updateTotal(){
   var reducLabel='';
   var livGratuite=false;
   if(window._fidele11Reduc>0){ reduc+=window._fidele11Reduc; reducLabel='🏆 Récompense fidélité 11ème commande : -'+window._fidele11Reduc+'€'; }
+  else if(window._fidPos>0 && window._fidRest>0){ reducLabel='🏆 Fidélité : commande '+window._fidPos+'/11 — plus que '+window._fidRest+' avant ton bon de -20€ !'; }
   var hasParr=document.getElementById('fParrainTel')&&document.getElementById('fParrainTel').value.trim().length>=8;
   
   if(modeLiv==='livraison' && sub>=150){livGratuite=true;}
@@ -3018,6 +3019,7 @@ function handleSubmit(){
     nbCmdMode=nbCmdClient;
     var is11=nbCmdClient>0&&(nbCmdClient%11===0);
     if(is11){ reduc+=20; window._fidele11Reduc=20; fidele11='-20€ (11ème commande)'; } else { window._fidele11Reduc=0; }
+    window._fidPos=(nbCmdClient%11===0)?11:(nbCmdClient%11); window._fidRest=11-window._fidPos;
     // Livraison gratuite 5ème commande : désactivée
     // Filtre INOX offert si 1ère commande Daylia
   }catch(e){}
@@ -3110,16 +3112,14 @@ function handleSubmit(){
   try{
     var allOrds=cachedAllOrders;
     var telClean2=tel.replace(/\s/g,'').replace(/^0/,'33');
-    var clientOrds2=allOrds.filter(function(o){return (o.tel||'').replace(/\s/g,'').replace(/^0/,'33')===telClean2;});
-    var nbCmdM=clientOrds2.length+1;
-    var restant=5-(nbCmdM%5);
-    if(restant===5) restant=0;
-    var cadeauStr=modeLiv==='place'?'tu as -5€':modeLiv==='envoi'?'les frais de port sont offerts':'la livraison est offerte';
+    var nbPayLiv=allOrds.filter(function(o){return (o.tel||'').replace(/\s/g,'').replace(/^0/,'33')===telClean2 && o.payee && o.livree && !o.fantome && !o.deletedAt;}).length;
+    var nbCmdM=nbPayLiv+1;
+    var posCycle=nbCmdM%11; if(posCycle===0) posCycle=11;
+    var restant=11-posCycle;
     if(restant===0){
-      var cadeauStr2=modeLiv==='place'?'-5€ sur cette commande':modeLiv==='envoi'?'frais de port offerts':'livraison offerte';
-      fideliteMsg='\n\n🎁 C\'est ta '+nbCmdM+'ème commande - '+cadeauStr2+' ! Merci pour ta fidélité ❤️';
-    } else if(restant<=3){
-      fideliteMsg='\n\n🎁 Plus que '+restant+' commande'+(restant>1?'s':'')+' et '+cadeauStr+' ! ('+nbCmdM+'ème commande)';
+      fideliteMsg='\n\n🏆 *C\'est ta '+nbCmdM+'ème commande — -20€ offerts !* Merci pour ta fidélité ❤️';
+    } else {
+      fideliteMsg='\n\n🏆 *Fidélité : commande '+posCycle+'/11* — plus que '+restant+' avant ton bon de *-20€* !';
     }
   }catch(e){}
   var creneauStr = dispoData.length ? dispoData.map(function(d){return d.date+' ('+d.slots.join(', ')+')';}).join(', ') : '';
