@@ -198,7 +198,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 </div>
 
 <div class="body">
-<div style="background:linear-gradient(135deg,#7C3AED,#5B21B6);border-radius:0 0 14px 14px;padding:14px 16px;margin-bottom:14px;text-align:center"><div style="font-size:13px;color:#EDE9FE;font-weight:700;line-height:1.7">👯 <b style="color:#FCD34D">Parraine tes amies</b> et gagne <b style="color:#FCD34D;font-size:15px">10€</b> de crédit par amie qui commande !<br>🎁 <b style="color:#fff">Une petite attention t'attend</b> dans chaque commande.<br>🏆 <b style="color:#FCD34D">Fidélité :</b> ta 11ème commande = <b style="color:#FCD34D;font-size:15px">-20€</b> offerts !</div></div>
+<div style="background:linear-gradient(135deg,#7C3AED,#5B21B6);border-radius:0 0 14px 14px;padding:14px 16px;margin-bottom:14px;text-align:center"><div style="font-size:13px;color:#EDE9FE;font-weight:700;line-height:1.7">👯 <b style="color:#FCD34D">Parraine tes amies</b> et gagne <b style="color:#FCD34D;font-size:15px">10€</b> de crédit par amie qui commande !<br>🎁 <b style="color:#fff">Ce mois-ci, une petite attention t'attend</b> dans chaque commande.<br>🏆 <b style="color:#FCD34D">Fidélité :</b> ta 11ème commande = <b style="color:#FCD34D;font-size:15px">-20€</b> offerts !</div></div>
 
 
 <!-- MODE LIVRAISON -->
@@ -3097,7 +3097,7 @@ function handleSubmit(){
   // Surprise 1ère commande à partir du 1er oct
   var surpriseMsg='';
   if((function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261001;})() && nbCmdClient===1){
-    surpriseMsg='\n\n🎁 *Une petite attention t\'attend avec ta commande* — on a hâte que tu la découvres ! 🤩';
+    surpriseMsg='\n\n🎁 *Ce mois-ci, une petite attention t\'attend avec ta commande* — on a hâte que tu la découvres ! 🤩';
   }
   var snapInstructions='';
   if(modeLiv==='place'){
