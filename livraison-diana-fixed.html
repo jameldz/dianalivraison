@@ -2200,7 +2200,7 @@ function applyLivSlotRestriction(){
       var v = s.getAttribute('data-v') || '';
       var isPlace=(typeof modeLiv!=='undefined'&&modeLiv==='place');
       var _dd=new Date();var _ymd=_dd.getFullYear()*10000+(_dd.getMonth()+1)*100+_dd.getDate();
-      var placeRestrict=isPlace&&_ymd>=20261006;
+      var placeRestrict=isPlace;
       var ok=(!isLiv||(v==='Soir (18h-21h)'||v==='Soirée (21h-00h)'))&&(!placeRestrict||(v==='Après-midi (14h-18h)'||v==='Soir (18h-21h)'));
       if(ok){
         s.classList.remove('liv-slot-restricted');
@@ -2219,11 +2219,15 @@ function applyLivSlotRestriction(){
         s.style.filter = 'grayscale(80%)';
       }
     });
+    var isPlaceR=(typeof modeLiv!=='undefined'&&modeLiv==='place');
+    function _hOf(v){var m=(v||'').match(/^(\d+)h/);return m?parseInt(m[1]):NaN;}
+    function _restrict(el,ok){if(ok){el.style.opacity='';el.style.pointerEvents='';el.style.cursor='';el.style.textDecoration='';}else{el.classList.remove('on');el.style.opacity='0.35';el.style.pointerEvents='none';el.style.cursor='not-allowed';el.style.textDecoration='line-through';}}
+    document.querySelectorAll('#dm30min .slot2').forEach(function(s){var h=_hOf(s.getAttribute('data-v'));_restrict(s,!isPlaceR||(h>=14&&h<20));});
     // Aussi pour dm1 (2h) : garder seulement 18h-20h, 20h-22h, 22h-00h
     document.querySelectorAll('#dm1 .slot2').forEach(function(s){
       var v = s.getAttribute('data-v') || '';
       var allowed2h = ['18h-20h','20h-22h','22h-00h'];
-      var ok = !isLiv || allowed2h.indexOf(v) !== -1;
+      var ok = (!isLiv || allowed2h.indexOf(v) !== -1) && (!isPlaceR || ['14h-16h','16h-18h','18h-20h'].indexOf(v) !== -1);
       if(ok){
         s.style.opacity = '';
         s.style.pointerEvents = '';
@@ -2241,7 +2245,7 @@ function applyLivSlotRestriction(){
     document.querySelectorAll('#dm2 .date-btn').forEach(function(s){
       var v = s.getAttribute('data-v') || '';
       var hr = parseInt((v||'').replace('h',''));
-      var ok = !isLiv || (hr >= 18 && hr <= 23);
+      var ok = (!isLiv || (hr >= 18 && hr <= 23)) && (!isPlaceR || (hr >= 14 && hr <= 19));
       if(ok){
         s.style.opacity = '';
         s.style.pointerEvents = '';
@@ -3094,7 +3098,7 @@ function handleSubmit(){
   }
   var snapInstructions='';
   if(modeLiv==='place'){
-    snapInstructions='\n\n📲 Quand tu es prête, envoie-moi ces 2 messages sur WhatsApp :\n'
+    snapInstructions='\n\n📞 *Appelle-nous sur WhatsApp* (un appel, pas un message) :\n'
       +'\n1️⃣ Avant de partir :\n'
       +'"Bonjour ! Je pars maintenant pour récupérer ma commande. Je serai là dans 10-15 min :)"\n'
       +'\n2️⃣ Quand tu es devant la Caisse Epargne :\n'
