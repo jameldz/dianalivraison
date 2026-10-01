@@ -686,7 +686,6 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 </div>
 
 <!-- PAIEMENT -->
-<div id="cardFidele11" class="card" style="display:none;border:2px solid #7C3AED;margin-bottom:12px"><div class="card-hdr" style="background:linear-gradient(135deg,#7C3AED,#5B21B6)"><h2 style="color:#fff">🎁 Produit offert — Récompense fidélité !</h2></div><div class="card-body"><div style="font-size:13px;color:#5B21B6;font-weight:800;margin-bottom:8px">🏆 C'est ta 11ème commande — choisis ton produit offert !</div><div style="font-size:12px;color:#6D28D9;margin-bottom:12px">Un produit Diana au choix, offert pour te remercier de ta fidélité ❤️</div><label style="display:flex;align-items:center;gap:10px;padding:10px;border:2px solid #DDD6FE;border-radius:10px;cursor:pointer;margin-bottom:6px"><input type="radio" name="fidele11prod" value="GEL"> <span style="font-size:13px;font-weight:700">💊 Gélules Diana <span style="color:#7C3AED">(offert)</span></span></label><label style="display:flex;align-items:center;gap:10px;padding:10px;border:2px solid #DDD6FE;border-radius:10px;cursor:pointer;margin-bottom:6px"><input type="radio" name="fidele11prod" value="THE"> <span style="font-size:13px;font-weight:700">🍵 Thé Diana <span style="color:#7C3AED">(offert)</span></span></label><label style="display:flex;align-items:center;gap:10px;padding:10px;border:2px solid #DDD6FE;border-radius:10px;cursor:pointer"><input type="radio" name="fidele11prod" value="CAF"> <span style="font-size:13px;font-weight:700">☕ Café Diana <span style="color:#7C3AED">(offert)</span></span></label></div></div>
 <div class="card" id="cardPay">
   <div class="card-hdr"><span>💳</span><h2>Mode de paiement</h2></div>
   <div class="card-body">
@@ -1797,6 +1796,7 @@ function updateTotal(){
   var reduc=0;
   var reducLabel='';
   var livGratuite=false;
+  if(window._fidele11Reduc>0){ reduc+=window._fidele11Reduc; reducLabel='🏆 Récompense fidélité 11ème commande : -'+window._fidele11Reduc+'€'; }
   var hasParr=document.getElementById('fParrainTel')&&document.getElementById('fParrainTel').value.trim().length>=8;
   
   if(modeLiv==='livraison' && sub>=150){livGratuite=true;}
@@ -2705,7 +2705,7 @@ function handleSubmit(){
   // Mémorise le timestamp d'acceptation pour preuve juridique
   window._dechargeAcceptedAt = Date.now();
 
-  var fidele11='';(function(){var c11=document.getElementById('cardFidele11');if(!c11||c11.style.display==='none')return;var f11=document.querySelector('input[name="fidele11prod"]:checked');if(f11){var m={GEL:'Gélules Diana',THE:'Thé Diana',CAF:'Café Diana'};fidele11=m[f11.value]||'';}})();
+  var fidele11='';
   // 1. Produits
   var prods=getProds();
   if(!prods.length){document.getElementById('sProd').closest('.card').scrollIntoView({behavior:'smooth',block:'center'});toast('⚠️ Choisis au moins un produit');return;}
@@ -3016,7 +3016,8 @@ function handleSubmit(){
     });
     nbCmdClient=clientOrders.length+1;
     nbCmdMode=nbCmdClient;
-    (function(){var c11=document.getElementById('cardFidele11');if(!c11)return;var is11=((function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261001;})())&&nbCmdClient>0&&(nbCmdClient%11===0);c11.style.display=is11?'block':'none';})();
+    var is11=nbCmdClient>0&&(nbCmdClient%11===0);
+    if(is11){ reduc+=20; window._fidele11Reduc=20; fidele11='-20€ (11ème commande)'; } else { window._fidele11Reduc=0; }
     // Livraison gratuite 5ème commande : désactivée
     // Filtre INOX offert si 1ère commande Daylia
   }catch(e){}
@@ -3052,7 +3053,7 @@ function handleSubmit(){
   // Si paiement Lydia : on inflate le total pour couvrir les frais Lydia (3.28%)
   // Comme ça la cliente paie le bon montant et on reçoit le net attendu
   var total=modePay==='lydia'?Math.round(totalBase*1.0328):totalBase;
-  var fidele11Msg=fidele11?'\n\n🎁 *Produit offert fidélité* : '+fidele11+' — Félicitations pour ta 11ème commande ! ❤️':'';
+  var fidele11Msg=fidele11?'\n\n🏆 *Récompense fidélité : -20€* — Félicitations pour ta 11ème commande ! ❤️':'';
   var dispoStr=dispoData.map(function(d){return d.date+' : '+d.slots.join(', ');}).join('\n');
   var prodsLines=prods.map(function(p){return p.name+(p.qty>1?' x'+p.qty:'')+' — '+p.total+'€';}).join('\n');
   var relaisLabels={point:'Point Relais',locker:'Locker',domicile:'Domicile'};
