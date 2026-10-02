@@ -53,6 +53,10 @@ function computeCagnotte(allOrders, telNorm){
 
   var monVendeur = (mesCommandes[0] && (mesCommandes[0].vendeur||'').toLowerCase().trim()) || '';
 
+  // Gain marraine : 5 € pour les filleules d'avant le 1er oct 2026, 10 € depuis (jamais rétroactif)
+  var PARR_10_DEPUIS = 1790805600000;
+  function orderTs(o){ if(o && o.createdAt) return +o.createdAt; var m=/^(\d{2})(\d{2})(\d{2})/.exec((o&&o.num)||''); return m? Date.UTC(2000+parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10)) : 0; }
+  function gainMarraine(o){ return orderTs(o) >= PARR_10_DEPUIS ? 10 : 5; }
   var creditMarraine = 0, nbFilleules = 0;
   allOrders.forEach(function(o){
     if(!o.parrain || !o.payee || o.fantome || o.parrStatus==='rejected') return;
@@ -62,7 +66,7 @@ function computeCagnotte(allOrders, telNorm){
       if(!fV || (monVendeur && fV!==monVendeur)) return;
     }
     nbFilleules++;
-    creditMarraine += 5;
+    creditMarraine += gainMarraine(o);
   });
 
   var creditFilleule = 0, nbFoisFilleule = 0;
