@@ -1165,7 +1165,7 @@ function clientDejaDaylia(){
     return deja||!!(reg[telC2]||reg[telNoPlus]||(emailC2&&reg[emailC2]));
   }catch(e){return null;}
 }
-function filtreTxt(){var dj=clientDejaDaylia();return dj===true?'ℹ️ Filtre INOX : déjà reçu à ta 1ère commande Daylia — non inclus':'🔩 1 filtre INOX offert à ta 1ère commande Daylia · valeur '+FILTRE_VALEUR+'€';}
+function filtreTxt(){var dj=clientDejaDaylia();return dj===true?'ℹ️ Filtre INOX : déjà reçu à ta 1ère commande Daylia — non inclus':'🔩 1 filtre INOX offert<br><span style="white-space:nowrap">à ta 1ère commande Daylia</span><br><span style="white-space:nowrap">valeur '+FILTRE_VALEUR+'€</span>';}
 function renderPackCards(){
   var box=document.getElementById('packsBox');if(!box)return;
   var h='<div style="font-size:11px;font-weight:900;color:#7C3AED;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">🎁 Nos packs</div>';
@@ -1185,7 +1185,7 @@ function renderPackCards(){
 }
 function updateFiltreInfo(){
   var dj=clientDejaDaylia(),t=filtreTxt();
-  document.querySelectorAll('.packc-filtre[data-filtre]').forEach(function(el){el.textContent=t;el.classList.toggle('deja',dj===true);});
+  document.querySelectorAll('.packc-filtre[data-filtre]').forEach(function(el){el.innerHTML=t;el.classList.toggle('deja',dj===true);});
   var fh=document.getElementById('filHint');if(fh){var hasDay=dTotal()>0;fh.textContent=(dj===true)?'Tu as déjà reçu le tien — tu peux en recommander un ici.':(hasDay?'🎁 Il est offert avec ta 1ère commande Daylia — inutile de l\'acheter.':'🎁 Offert à ta 1ère commande Daylia · ou 10€ seul');fh.style.color=(dj===true)?'#6B7280':'#B45309';}
   var dp=document.getElementById('dayPromo');if(dp){dp.textContent=(dj===true?'ℹ️ Filtre INOX déjà reçu à ta 1ère commande Daylia — non inclus cette fois':'🎁 1 filtre INOX offert à ta 1ère commande Daylia !');dp.style.color=dj===true?'#6B7280':'';}
 }
