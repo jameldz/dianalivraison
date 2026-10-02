@@ -1600,7 +1600,7 @@ function fixEncoding(str) {
 function render() {
   // Filtrer les commandes fantôme (soft-deleted) ET supprimées définitivement des compteurs globaux
   var ordersVisibles = orders.filter(function(o){return !o.fantome && !o.deletedAt;});
-  var _idxTel={}, _idxTelN={}, _idxNom={}, _idxParrain={}, _paidTelN={}, _pvCache={};
+  var _idxTel={}, _idxTelN={}, _idxNom={}, _idxParrain={}, _paidTelN={}, _pvCache={}, _idxEmail={}, _idxTelF={};
   orders.forEach(function(x){
     var t=(x.tel||'').replace(/\s/g,'');
     var tn=t.replace(/^0/,'33').replace(/^\+/,'');
@@ -1611,9 +1611,12 @@ function render() {
     if(n) (_idxNom[n]=_idxNom[n]||[]).push(x);
     if(p) (_idxParrain[p]=_idxParrain[p]||[]).push(x);
     if(x.payee) _paidTelN[tn]=true;
+    var e=(x.email||'').toLowerCase().trim(); if(e) (_idxEmail[e]=_idxEmail[e]||[]).push(x);
+    var tf=t.replace(/^\+33/,'33').replace(/^0033/,'33').replace(/^0/,'33'); if(tf) (_idxTelF[tf]=_idxTelF[tf]||[]).push(x);
   });
   function _pv(x){ if(_pvCache[x.id]===undefined) _pvCache[x.id]=isParrainageValid(x); return _pvCache[x.id]; }
-  function _candTelNom(t,n){ var seen={},out=[]; (_idxTel[t]||[]).concat(n?(_idxNom[n]||[]):[]).forEach(function(x){ if(!seen[x.id]){seen[x.id]=1;out.push(x);} }); return out; }
+  function _candTelNom(t,n){ var seen={},out=[]; (t?(_idxTel[t]||[]):[]).concat(n?(_idxNom[n]||[]):[]).forEach(function(x){ if(!seen[x.id]){seen[x.id]=1;out.push(x);} }); return out; }
+  function _candTelFEmail(tf,e){ var seen={},out=[]; (tf?(_idxTelF[tf]||[]):[]).concat(e?(_idxEmail[e]||[]):[]).forEach(function(x){ if(!seen[x.id]){seen[x.id]=1;out.push(x);} }); return out; }
   var total   = ordersVisibles.length;
   var livrees = ordersVisibles.filter(function(o){return o.livree;}).length;
   var ca      = ordersVisibles.reduce(function(s,o){return s+(parseFloat(o.total)||0);},0);
@@ -1868,7 +1871,7 @@ function render() {
       html += '<div class="date-sep" style="'+(groupStyle?groupStyle:'')+'">'+dateKey+'<span style="background:rgba(255,255,255,0.3);border-radius:12px;padding:2px 10px;font-size:11px;font-weight:900;margin-left:8px">'+count+'</span></div>';
     }
     grouped[dateKey].forEach(function(o){
-      var recur   = isRecurrent(o);
+      var recur   = (function(){ var _t=(o.tel||'').replace(/\s/g,''), _n=(o.nom||'').toLowerCase().trim(); return _candTelNom(_t,_n).some(function(x){ return x.id!==o.id && ((_t && (x.tel||'').replace(/\s/g,'')===_t) || (_n && (x.nom||'').toLowerCase().trim()===_n)); }); })();
       var slots   = o.slot ? o.slot.split(/\s*\|\s*/).map(function(s){return s.trim();}).filter(Boolean) : [];
       var displaySlot = o.pickedSlot || (slots.length===1?slots[0]:'');
       var editSlotBtn = '<button onclick="editSlot(\''+o.id+'\')" style="background:none;border:none;font-size:13px;cursor:pointer;margin-left:4px" title="Modifier">✏️</button>';
@@ -2084,8 +2087,9 @@ function render() {
           var pT=(o.parrain||'').replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
           var marraineConnue=false;
           var marraineVendeur='';
-          for(var ii=0;ii<orders.length;ii++){
-            var oxx=orders[ii];
+          var _cands=_idxTelN[pT]||[];
+          for(var ii=0;ii<_cands.length;ii++){
+            var oxx=_cands[ii];
             if(!oxx.tel||oxx.id===o.id)continue;
             var oxxT=(oxx.tel||'').replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
             if(oxxT===pT){marraineConnue=true;marraineVendeur=(oxx.vendeur||'').toLowerCase();break;}
@@ -2119,8 +2123,9 @@ function render() {
           // 3) Fallback : registre filtreOffertClients en localStorage (historique legacy)
           var dejaFiltre = null;
           var dejaFiltrePrev = null;
-          for(var ii=0; ii<orders.length; ii++){
-            var ox = orders[ii];
+          var _candsF=_candTelFEmail(oTelClean,oEmailLow);
+          for(var ii=0; ii<_candsF.length; ii++){
+            var ox = _candsF[ii];
             if(ox.id===o.id) continue;
             if(ox.fantome||ox.deletedAt) continue;
             if(!ox.payee) continue;
