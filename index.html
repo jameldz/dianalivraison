@@ -2564,6 +2564,7 @@ function calcOrderWeight(prodsStr){
     var qty=extractQty(pl);
     if(pl.indexOf('café')!==-1) total+=POIDS_PRODS.cafe*qty;
     else if(pl.indexOf('thé diana')!==-1) total+=POIDS_PRODS.the*qty;
+    else if(pl.indexOf('filtre inox')!==-1) total+=40*qty;
     else if(pl.indexOf('gélules')!==-1) total+=POIDS_PRODS.gel*qty;
     else if(pl.indexOf('daylia')!==-1){
       // Ancien format "Thé Daylia x3" sans variantes détaillées
@@ -5389,14 +5390,21 @@ function calcBenef(o) {
 
   // ═══ MARGE RÉELLE = total réellement payé − coût d'achat (PRIX_ACHAT) ═══
   // Remplace les marges théoriques fixes : tient compte des packs, crédits parrainage, bons fidélité, frais.
-  var PRIX_ACHAT={diana:13, mini:6.5, daylia:5, vert:15, iron:COUT_IRON_MAGIC};
-  var cout=dianaCount*PRIX_ACHAT.diana + miniCount*PRIX_ACHAT.mini + dayliaQty*PRIX_ACHAT.daylia + vertCount*PRIX_ACHAT.vert + ironCount*PRIX_ACHAT.iron;
+  // ═══ FILTRE INOX : vendu 10€ seul, ou offert (coût quand même) ═══
+  var filCount=0; var filRe=/(\d+)\s*[×x]\s*filtre\s*inox/gi; var fm;
+  while((fm=filRe.exec(prodsNorm))!==null) filCount+=parseInt(fm[1]);
+  if(filCount===0 && /filtre\s*inox/.test(prodsNorm)) filCount=1;
+  var filOfferts=o.filtreInox?1:0;
+  var PRIX_ACHAT={diana:13, mini:6.5, daylia:5, vert:15, iron:COUT_IRON_MAGIC, filtre:COUT_FILTRE_INOX};
+  var cout=dianaCount*PRIX_ACHAT.diana + miniCount*PRIX_ACHAT.mini + dayliaQty*PRIX_ACHAT.daylia + vertCount*PRIX_ACHAT.vert + ironCount*PRIX_ACHAT.iron + (filCount+filOfferts)*PRIX_ACHAT.filtre;
   var totalPaye=parseFloat(o.total);
   if(!isNaN(totalPaye) && totalPaye>0) return Math.round((totalPaye-cout)*100)/100;
   return b; // secours si total absent : ancien calcul théorique
 }
 // Prix d'achat Iron Magic — À RENSEIGNER (0 = non pris en compte, la marge Iron Magic est alors surestimée)
 var COUT_IRON_MAGIC=0;
+// Prix d'achat du filtre INOX (vendu 10€ ou offert à la 1ère commande Daylia) — À RENSEIGNER
+var COUT_FILTRE_INOX=0;
 
 function renderStats() {
   var filtered = filterByPeriod(sPeriod);
