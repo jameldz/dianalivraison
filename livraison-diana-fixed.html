@@ -54,12 +54,21 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 .achg{background:none;border:none;color:var(--gn);cursor:pointer;font-size:11px;font-weight:700;margin-left:auto;text-decoration:underline;font-family:inherit;}
 .prod{border:1.5px solid var(--bdr);border-radius:11px;padding:12px 13px;background:var(--lt);margin-bottom:9px;animation:parrPulse 2.5s ease-in-out infinite;}
 .prod.on{animation:none;border-color:var(--rd);background:var(--rs);}
-.packc{border:2px solid #C4B5FD;border-radius:11px;padding:11px 13px;background:linear-gradient(135deg,#F5F3FF,#EDE9FE);margin-bottom:8px;cursor:pointer;transition:all .2s}
-.packc.on{border-color:#7C3AED;background:linear-gradient(135deg,#EDE9FE,#DDD6FE);box-shadow:0 4px 14px rgba(124,58,237,.18)}
-.packc-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.packc-name{font-weight:900;font-size:14px;color:#4C1D95}
-.packc-price{font-weight:900;font-size:17px;color:#7C3AED;white-space:nowrap}
-.packc-desc{font-size:12px;color:#5B21B6;margin-top:4px;line-height:1.4}
+.packc{display:flex;gap:11px;align-items:stretch;border:2px solid #E9D5FF;border-radius:13px;padding:10px;background:#fff;margin-bottom:9px;cursor:pointer;transition:all .2s;position:relative}
+.packc.on{border-color:#7C3AED;background:linear-gradient(135deg,#F5F3FF,#EDE9FE);box-shadow:0 4px 16px rgba(124,58,237,.18)}
+.packc-img{width:88px;height:88px;border-radius:10px;object-fit:cover;flex-shrink:0;background:#FFF6F9;border:1px solid #F3E8FF}
+.packc-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:3px}
+.packc-name{font-weight:900;font-size:14px;color:#4C1D95;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.packc-badge{background:linear-gradient(135deg,#7C3AED,#5B21B6);color:#fff;font-size:9px;font-weight:900;padding:2px 7px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
+.packc-desc{font-size:11.5px;color:#5B21B6;line-height:1.35}
+.packc-priceline{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;margin-top:2px}
+.packc-price{font-weight:900;font-size:19px;color:#7C3AED}
+.packc-old{font-size:12.5px;color:#9CA3AF;text-decoration:line-through;font-weight:700}
+.packc-save{background:#DCFCE7;color:#166534;font-size:10px;font-weight:900;padding:2px 7px;border-radius:20px;white-space:nowrap}
+.packc-accroche{font-size:11px;font-weight:800;color:#7C3AED}
+.packc-filtre{font-size:10.5px;font-weight:800;color:#B45309;background:#FFF7ED;border:1px solid #FDBA74;border-radius:7px;padding:3px 7px;margin-top:2px;display:inline-block}
+.packc-filtre.deja{color:#6B7280;background:#F3F4F6;border-color:#D1D5DB}
+.packc.on .packc-img{box-shadow:0 3px 10px rgba(124,58,237,.25)}
 .prod:last-child{margin-bottom:0;}
 .prod-top{display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none;}
 .prod-ico{font-size:24px;flex-shrink:0;}
@@ -454,18 +463,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 <div class="card" id="cardProd">
   <div class="card-hdr"><span class="step" id="sProd">4</span><h2>Que veux-tu commander ?</h2></div>
   <div class="card-body">
-    <div id="packsBox" style="margin-bottom:12px">
-      <div style="font-size:11px;font-weight:900;color:#7C3AED;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px">🎁 Packs Diana + Daylia — filtre INOX offert</div>
-      <div class="packc" id="pack1m" onclick="choosePack('1m')">
-        <div class="packc-top"><div class="packc-name">Pack 1 mois</div><div class="packc-price">135€</div></div>
-        <div class="packc-desc">1 cure Diana au choix + 3 thés Daylia + <b>filtre INOX offert</b></div>
-      </div>
-      <div class="packc" id="pack3m" onclick="choosePack('3m')">
-        <div class="packc-top"><div class="packc-name">Pack 3 mois</div><div class="packc-price">405€</div></div>
-        <div class="packc-desc">3 cures Diana (toute combinaison) + 9 thés Daylia + <b>filtre INOX offert</b></div>
-      </div>
-      <div id="packStatus" style="display:none;margin-top:4px"></div>
-    </div>
+    <div id="packsBox" style="margin-bottom:12px"></div>
     <div class="prod" id="pGEL">
       <div class="prod-top" onclick="togProd('GEL')"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAB4AGsDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD6JB4pRTQeBS5ryT6Md3p1MzTgRg5NCEOFOAqNJIz0kU/Q1MoLDjB/GmkyHOK6iYpwFSCJz0XNPWCUj/Vt+Ap2YueHchI9qQipzBKBzE4/CmsjDqpH4UajUk+pA3Fcf4tvDNdpaI/yr8zf0rqNVuFtbSSZjgKM1wsZaeWS4blnYk1xYyrywsupvTXUsafbtNcRQR8ZPJHauzRQqKq9AMCsfw1apb2z3so27+F9lHf8aZP4kjSVljtpJFBwGHQ1nh+WjDml1G03sa+aQtTXbFVZ5sDrXc2QkWXmVRyaqXV/H5bRhhlhgVk6jfFVPzVz1vqDza3BCG4LHP5Gs3PWxfJ7rZ1ljIN+cN+Cmtu0lUAfLJ/3wf8ACsXT1/22/T/Ct21Q7R87fkP8K7IXseDUauStq1jbybLhpUOMg+U2D+lWYde0k9bph9Yn/wAKI4x3Zj+A/wAKsxIB3P5CtVzGfuk0d/aTR7oZyy+u0j+lNa4iPSVT+NPy4XAc4+lRvu/vA/VabuJW6HPeOIHvNHaKAgsT1FcZ4e0PUnl/0yQxW6nnaeW/wr0a9QHGVTr1A5rlfGOoyafprmAfOeBXm4mlGUuaXQ93AyfslFFXXNQ81vsFodsMeA5X/wBBFZ4mgUbSg49KoaPe/bALeCMtKx6j+tdVB4fg8lfNJL4+bmvL9nUxEm9jqlaOjNGVqzL2TANXZ24rIv34NerJmcUYWsTkK3NY2gT2cWrtdXt1HAkSkqXkCBieMZPtmrmtyfK3NYEWi2et+bFeedsiXepjYLz054NYL4kdMYxcWpOyPQ9P8S+GlOG1nTwfe8Wt228SeHCABrVh/wCBa14xpvgrR5LiUL9qI8wrGPN/D09a9Asvhn4bVFDfbSwABPn9T+VelA4cVg8FRfvzlr5I7iDXtDYDbq9if+3pauw6tpLEbdTsz9LlP8a8j8X2vw18G3+mWOv32sW1xqbFLJYoXmEzggbQVQ/Nlhx7itjw34f8A6/c3tnper3xvbBgt5aTfuZ7fPTfG6BgD2OMH1rdJ2ucTp4D/n5L7v8Agnpq31i/3L63P0mQ04SxP92dG+jA/wAq4k/DXQpEDx315tI4KlCD+OKztW+G2kWlrJO2q6lhFLbIoFkkIHXao5P4UmNUME/+Xz/8B/4J394pKhsjA9qxNU0+K9XZKMrXN+D/AAolnPY65a6tqMlvIrEQXUBiYgggZXdx612hrkqJSZ2QhCkrU5cy9LGXpWk2mn58mJVY9TitHA9KU0lQlYptvcybg8c1i6geDWvc9DWJfng1nI0icxrTcEVB4dO17ts9ICcZ64NO1k9ai0f5bDVH5ytv6/WsY/EjoteNvQ2fBUfm3NsSP+mh/n/M16PbdBXB+AY+S+PuxKPzP/1qt+OfFGseHrywi0zSRqKTwSySIEcvlZIlAUjgfK7tz2Q9OtenTVzxs1neu12PPv2phn4g/CVQOuun/wBGQVD8ZNL1TXP2qdE0rw1ctbX02gsNRlTokO6QjzPb7mM9yvtWj4i8R+DPF+p6Zd+J/Aus3lzpxXybxJ5YVt2Oxi6BSMfORz1G3qcVs6X4u0XwtNDq+j+C7jZq9hFf38paSbUXzJLGQ7vksEEQYgkYU9BxnadNTg4S2aseRKKkmmeq+DrPUdO8M2Nhqz2z3VvGIi1uMKVHAOPXHXHFWdT0zT9TCLfWyT+WcoSSCufQgg/hXBp8W7NWmS68N6tE0UrKVQpJhB/GSDgjGSduRjb13V2l7czQ3U3ldfLWUELuyoByPxI6+9KMPZxUexpSp6cq6EVtZW1japFaGUxNK0n7yVnIJ7AsSccdKkNIm4WlqHBDFSxHpnn+tBrmqP3j2MOrQsBPpSYopM1mbmLdHg1iagTg1tXXQ1h6ieDWMtjaJyus8k0zS+dM1Re5g/xpdX+8al0GMPZ347lVX881lD4zovZL5fmdJ8PiDFLj+4n9a7i1OGXOSuQSAeteffDeTl07+WB+K11d/YarPdRzafq5s0wokQx7wQCTwD0Jzg/TvXqQPDzSPLiZHL6lB8VdK0OJ9Injvb2KS4kvpGnEzXQLsYvKjYYQ7WUbQQBt79as3Fv8ZpLaS3N7o8iSoULxssbhWAHpwwG75hjkjgba6u2s/EK3UbHWbdoNwaRTbDLDkED07fjmnWun+J42Tfrlu6CNUIMJJJHVs46n/OK3TPMYfD6LxTbaEIPFk0D3sREcZgIKiNVAB3ZyxOMknBzn2q3rDD7fEpz8yKgPorSqH/TaPzqtc2PiYyyNb65bojSFlV4S2F549uwwPTPPSrN8rGdhLhmFiRnGAW3jn8wDSkbUdJE94f3sf/AqhNS3h/fRg9cNUJrjqbnqYb+GgNNxSmkyKg3MS56GsPUehrbuulYepZ5rGRtE5TVj81WvDQzbXn1T+tVNV+/V3wyM2d2f9tB/Os4fEbT+AueDm+y6xcxngLMP++WH+NelQdK81tE8vXlPRbiEj/gSn/AmvQ9Ll862Rz94DDfUV6UNjy81XNJVO6NWI8VYU8VzN94jax1Kez/sPVrlYow/nwQ7kbO3gH1G7n6VXl8a+WePC3iRkyQH+x9cYzgZz34yADWyR4515NZ+q/LPaycYZjEfxwR+q1dVgyhgeCARUF5H5qxDGdkyP+RpF03aVyG8/wCPlP8Adb+lRGpLs/6Qn+6f51GTXJP4j18P/DQlNPWgk0mak2Me56VhakOpreuRwaxb9Sc5rGRtE4/Vh89WfCup29hLNFc/KkuCGxkAj1pNUhJY8VmNCw7VjfldzZxU48rPQLXUtKZlYm3kI5BypIrXtdW09R8mF9dpryYw56rn8KXyfTI+lbxxMl0OKeXxl9o9nh1ix/57Ef8AAjVlNVsz/wAt/wDx6vEFhcdHf/vo1PFDMTxJJ/30av62+xk8rj/Me1/2pZf89x/31QdUsugmB/4FXkthZSvIuWY89ya7fQrfyo14qo4ly6EPLox+0dCZkmO+MH0ye9MY0i9BS0N3dzaEFCNkITSUGimWZ065FZV5FnNFFZM0iY95bBieKoSWXtRRWTRqmRGy56U9LH2ooqbDbZMlh0+WrltpwyOKKKpIlyZr2NiFYHFbtrEEUUUVtFGUmWqKKKsgQ0UUUwP/2Q==" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0"><div style="flex:1;margin-left:10px"><div class="prod-name">Gélules Diana <button class="btn-info" onclick="event.stopPropagation();openFiche('GEL')" style="background:var(--rs);border:1px solid var(--bdr);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--rd);cursor:pointer;font-family:inherit;margin-left:6px">ℹ️ Infos</button></div><div class="prod-price">75 € / unité</div></div><div class="chk">✓</div></div>
       <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('GEL',-1)">−</button><input class="qval" id="qGEL" value="1" readonly><button class="qbtn" onclick="chQ('GEL',1)">+</button></div><span class="qtot" id="tGEL">75€</span></div>
@@ -482,7 +480,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
     <div class="prod" id="pDAY">
       <div class="prod-top" onclick="togDaylia()"><img src="data:image/jpeg;base64,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" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0"><div style="flex:1;margin-left:10px"><div class="prod-name">Thé Daylia <button class="btn-info" onclick="event.stopPropagation();openFiche('DAY')" style="background:#E8F5E9;border:1px solid #A5D6A7;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:#2E7D32;cursor:pointer;font-family:inherit;margin-left:6px">ℹ️ Infos</button></div><div class="prod-price">1→25€ · 2→45€ · 3→60€ · 4+→20€/thé</div></div><div class="chk">✓</div></div>
       <div id="dayPanel" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr)">
-        <div class="day-promo">🎁 Filtre offert à ta 1ère commande Daylia !</div>
+        <div class="day-promo" id="dayPromo">🎁 Filtre INOX offert à ta 1ère commande Daylia !</div>
         <div class="day-grid" id="dayGrid"></div>
         <div class="day-recap" id="dayRecap"></div>
       </div>
@@ -1131,10 +1129,58 @@ var DAYLIA = [
   {id:'GU', name:'🌟 Skin Glow',   ico:'', desc:'Spécialiste rétention d\'eau & dégonflement — draine, purifie, riche en minéraux et vitamines, active le collagène, fermeté de la peau, effet lift, anti-âge, affine la jawline & réduit le double menton, régule les hormones'}
 ];
 var dQty = {DN:0,SD:0,ST:0,PM:0,GU:0};
-var PACKS={'1m':{name:'Pack 1 mois',diana:1,daylia:3,price:135},'3m':{name:'Pack 3 mois',diana:3,daylia:9,price:405}};
+// ═══ PACKS — UN SEUL ENDROIT POUR CHANGER LES PRIX ═══
+// price = prix du pack. Le prix barré (somme des produits séparés), l'économie et la remise se calculent tout seuls.
+// Pour supprimer une remise : remettre price = prix séparé → le barré disparaît.
+var PACKS={
+  duo:{name:'Duo Diana',diana:2,daylia:0,price:145,img:'img/pack-duo.webp',badge:'⭐ Le plus choisi',accroche:'72,50€ la cure',desc:'2 cures Diana au choix — les mêmes ou différentes'},
+  trio:{name:'Trio Diana',diana:3,daylia:0,price:210,img:'img/pack-trio.webp',badge:'',accroche:'70€ la cure',desc:'3 cures Diana, toute combinaison'},
+  '1m':{name:'Pack 1 mois',diana:1,daylia:3,price:130,img:'img/pack-1mois.webp',badge:'',accroche:'',desc:'1 cure Diana au choix + 3 thés Daylia'},
+  '3m':{name:'Pack 3 mois',diana:3,daylia:9,price:360,img:'img/pack-3mois.webp',badge:'💎 Meilleure valeur',accroche:'120€ le mois',desc:'3 cures Diana (toute combinaison) + 9 thés Daylia'}
+};
+var FILTRE_VALEUR=10;
 var curPack=null;
+function _dayliaTier(n){return n<=0?0:(n===1?25:n===2?45:n===3?60:60+(n-3)*20);}
+function _packSep(p){return p.diana*75+_dayliaTier(p.daylia);}                       // prix si acheté séparément (barré)
+function _packEco(p){return Math.max(0,_packSep(p)-p.price);}                          // économie totale affichée
+function _packRemise(p){var s=getPrixDiana(p.diana)*p.diana+(p.diana>0&&p.daylia>0?p.daylia*20:_dayliaTier(p.daylia));return Math.max(0,Math.round((s-p.price)*100)/100);} // remise "ligne pack" après dégressif
 function _packCounts(){var dn=0;Object.keys(PRODS).forEach(function(k){if(document.getElementById('p'+k).classList.contains('on'))dn+=parseInt(document.getElementById('q'+k).value)||1;});return {diana:dn,daylia:dTotal()};}
-function _packOk(){if(!curPack)return false;var c=_packCounts(),p=PACKS[curPack];return c.diana===p.diana&&c.daylia===p.daylia;}
+function _packOk(){if(!curPack)return false;var c=_packCounts(),p=PACKS[curPack];return c.diana===p.diana&&(p.daylia===0?true:c.daylia===p.daylia);}
+function clientDejaDaylia(){
+  try{
+    var tel=(document.getElementById('fTel')||{}).value||'';var email=(document.getElementById('fEmail')||{}).value||'';
+    var nt=function(t){return (t||'').replace(/\s/g,'').replace(/^\+33/,'33').replace(/^0033/,'33').replace(/^0/,'33');};
+    var telC2=nt(tel),emailC2=email.toLowerCase().trim();
+    if(telC2.length<9&&!emailC2)return null;
+    var deja=(cachedAllOrders||[]).some(function(o){if(o.fantome||o.deletedAt)return false;var oTel=nt(o.tel),oEmail=(o.email||'').toLowerCase().trim();var same=(telC2&&oTel===telC2)||(emailC2&&oEmail===emailC2);return same&&(o.prods||'').toLowerCase().indexOf('daylia')!==-1;});
+    var reg={};try{reg=JSON.parse(localStorage.getItem('filtreOffertClients')||'{}');}catch(e){}
+    var telNoPlus=tel.replace(/\s/g,'');
+    return deja||!!(reg[telC2]||reg[telNoPlus]||(emailC2&&reg[emailC2]));
+  }catch(e){return null;}
+}
+function filtreTxt(){var dj=clientDejaDaylia();return dj===true?'ℹ️ Filtre INOX : déjà reçu à ta 1ère commande Daylia — non inclus':'🔩 Filtre INOX offert à ta 1ère commande Daylia · valeur '+FILTRE_VALEUR+'€';}
+function renderPackCards(){
+  var box=document.getElementById('packsBox');if(!box)return;
+  var h='<div style="font-size:11px;font-weight:900;color:#7C3AED;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">🎁 Nos packs — tarifs dégressifs</div>';
+  Object.keys(PACKS).forEach(function(id){var p=PACKS[id],sep=_packSep(p),eco=_packEco(p);
+    h+='<div class="packc'+(curPack===id?' on':'')+'" id="pack_'+id+'" onclick="choosePack(\''+id+'\')">'
+      +'<img class="packc-img" src="'+p.img+'" alt="'+p.name+'" loading="lazy">'
+      +'<div class="packc-body">'
+      +'<div class="packc-name">'+p.name+(p.badge?'<span class="packc-badge">'+p.badge+'</span>':'')+'</div>'
+      +'<div class="packc-desc">'+p.desc+'</div>'
+      +'<div class="packc-priceline"><span class="packc-price">'+fmtEur(p.price)+'€</span>'+(eco>0?'<s class="packc-old">'+fmtEur(sep)+'€</s><span class="packc-save">Tu économises '+fmtEur(eco)+'€</span>':'')+'</div>'
+      +(p.accroche?'<div class="packc-accroche">'+p.accroche+'</div>':'')
+      +(p.daylia>0?'<div class="packc-filtre" data-filtre="1">'+filtreTxt()+'</div>':'')
+      +'</div></div>';
+  });
+  h+='<div id="packStatus" style="display:none;margin-top:4px"></div>';
+  box.innerHTML=h;updateFiltreInfo();
+}
+function updateFiltreInfo(){
+  var dj=clientDejaDaylia(),t=filtreTxt();
+  document.querySelectorAll('.packc-filtre[data-filtre]').forEach(function(el){el.textContent=t;el.classList.toggle('deja',dj===true);});
+  var dp=document.getElementById('dayPromo');if(dp){dp.textContent=(dj===true?'ℹ️ Filtre INOX déjà reçu à ta 1ère commande Daylia — non inclus cette fois':'🎁 Filtre INOX offert à ta 1ère commande Daylia !');dp.style.color=dj===true?'#6B7280':'';}
+}
 function _refreshDayliaUI(){Object.keys(dQty).forEach(function(k){var dv=document.getElementById('dv'+k);if(dv)dv.textContent=dQty[k];var di=document.getElementById('di'+k);if(di)di.classList.toggle('on',dQty[k]>0);});var n=dTotal();document.getElementById('pDAY').classList.toggle('on',n>0);document.getElementById('dayPanel').style.display=n>0?'block':'none';}
 function choosePack(id){
   if(curPack===id){cancelPack();return;}
@@ -1142,20 +1188,29 @@ function choosePack(id){
   Object.keys(PRODS).forEach(function(k){document.getElementById('p'+k).classList.remove('on');document.getElementById('q'+k).value=1;});
   document.getElementById('pGEL').classList.add('on');document.getElementById('qGEL').value=p.diana;
   Object.keys(dQty).forEach(function(k){dQty[k]=0;});
-  var per=p.daylia/3;dQty.ST=per;dQty.PM=per;dQty.DN=per;
+  if(p.daylia>0){var per=Math.floor(p.daylia/3),rest=p.daylia-per*3;dQty.ST=per+(rest>0?1:0);dQty.PM=per+(rest>1?1:0);dQty.DN=per;}
   _refreshDayliaUI();
-  document.getElementById('pack1m').classList.toggle('on',id==='1m');document.getElementById('pack3m').classList.toggle('on',id==='3m');
+  Object.keys(PACKS).forEach(function(k){var el=document.getElementById('pack_'+k);if(el)el.classList.toggle('on',k===id);});
   chQ('GEL',0);updateDayliaRecap();updatePackStatus();
   try{document.getElementById('pGEL').scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
 }
-function cancelPack(){curPack=null;document.getElementById('pack1m').classList.remove('on');document.getElementById('pack3m').classList.remove('on');updatePackStatus();}
+function cancelPack(){curPack=null;Object.keys(PACKS).forEach(function(k){var el=document.getElementById('pack_'+k);if(el)el.classList.remove('on');});updatePackStatus();}
 function updatePackStatus(){
   var el=document.getElementById('packStatus');if(!el)return;
   if(!curPack){el.style.display='none';return;}
   var p=PACKS[curPack],c=_packCounts();el.style.display='block';
-  if(_packOk())el.innerHTML='<div style="background:#DCFCE7;border:1.5px solid #16A34A;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:800;color:#166534;line-height:1.45">✅ '+p.name+' complet : '+c.diana+' Diana + '+c.daylia+' Daylia — filtre INOX offert 🎁 <a href="#" onclick="event.preventDefault();cancelPack()" style="color:#166534;font-weight:600;margin-left:6px;text-decoration:underline">annuler</a></div>';
-  else el.innerHTML='<div style="background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:800;color:#92400E;line-height:1.45">⚠️ '+p.name+' = '+p.diana+' Diana + '+p.daylia+' Daylia. Tu as '+c.diana+' Diana + '+c.daylia+' Daylia — ajuste tes quantités ci-dessous. <a href="#" onclick="event.preventDefault();cancelPack()" style="color:#92400E;font-weight:600;margin-left:6px;text-decoration:underline">annuler le pack</a></div>';
+  var ann='<a href="#" onclick="event.preventDefault();cancelPack()" style="color:inherit;font-weight:600;margin-left:6px;text-decoration:underline">annuler le pack</a>';
+  if(_packOk()){
+    var eco=_packEco(p),dj=clientDejaDaylia();
+    var ftx=p.daylia>0?(dj===true?'<br><span style="color:#6B7280;font-weight:700">ℹ️ Tu as déjà reçu ton filtre INOX à ta 1ère commande Daylia — il n\'est pas inclus cette fois.</span>':'<br><span style="font-weight:700">🔩 Filtre INOX offert si c\'est ta 1ère commande Daylia</span>'):'';
+    el.innerHTML='<div style="background:#DCFCE7;border:1.5px solid #16A34A;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:800;color:#166534;line-height:1.5">✅ '+p.name+' : '+c.diana+' Diana'+(p.daylia?' + '+c.daylia+' Daylia':'')+(eco>0?' — tu économises '+fmtEur(eco)+'€':'')+(p.accroche?' · '+p.accroche:'')+ftx+ann+'</div>';
+  } else {
+    el.innerHTML='<div style="background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:800;color:#92400E;line-height:1.5">⚠️ '+p.name+' = '+p.diana+' Diana'+(p.daylia?' + '+p.daylia+' Daylia':'')+'. Tu as '+c.diana+' Diana + '+c.daylia+' Daylia — ajuste tes quantités ci-dessous.'+ann+'</div>';
+  }
+  updateFiltreInfo();
 }
+document.addEventListener('DOMContentLoaded',renderPackCards);
+
 var modeLiv = 'livraison';
 var modePay = 'especes';
 var modeTransport = 'mondial';
@@ -1728,7 +1783,7 @@ function togProd(id){
   Object.keys(PRODS).forEach(function(k){
     if(document.getElementById('p'+k).classList.contains('on')){
       var q=parseInt(document.getElementById('q'+k).value)||1;
-      document.getElementById('t'+k).textContent=(prix*q)+'€';
+      document.getElementById('t'+k).textContent=fmtEur(prix*q)+'€';
     } else {
       document.getElementById('t'+k).textContent='75€';
     }
@@ -1765,7 +1820,7 @@ function chQ(id,d){
   Object.keys(PRODS).forEach(function(k){
     if(document.getElementById('p'+k).classList.contains('on')){
       var q=parseInt(document.getElementById('q'+k).value)||1;
-      document.getElementById('t'+k).textContent=(prix*q)+'€';
+      document.getElementById('t'+k).textContent=fmtEur(prix*q)+'€';
     }
   });
   // Mini-Cures à prix fixe 30€/unité, pas concernées par le tarif Diana
@@ -1778,7 +1833,10 @@ function chQ(id,d){
     }
   });
 }
+function fmtEur(v){v=Math.round(v*100)/100;return Number.isInteger(v)?String(v):v.toFixed(2).replace('.',',');}
 function getPrixDiana(qtyTotale){
+  if(qtyTotale>=3) return 70;
+  if(qtyTotale===2) return 72.5;
   return 75;
 }
 function getPrixDaylia(qtyTotale){
@@ -1796,7 +1854,7 @@ function getProds(){
   Object.keys(PRODS).forEach(function(id){
     if(document.getElementById('p'+id).classList.contains('on')){
       var q=parseInt(document.getElementById('q'+id).value)||1;
-      list.push({name:PRODS[id].name,ico:PRODS[id].ico,price:prixDiana,qty:q,total:prixDiana*q});
+      list.push({name:PRODS[id].name,ico:PRODS[id].ico,price:prixDiana,qty:q,total:prixDiana*q,sub:(prixDiana<75?fmtEur(prixDiana)+'€ la cure':'')});
     }
   });
   // Mini-Cures Découverte à 30€/unité (prix fixe, indépendant du volume Diana)
@@ -1841,6 +1899,7 @@ function updateTotal(){
   var livGratuite=false;
   if(window._fidele11Reduc>0){ reduc+=window._fidele11Reduc; reducLabel='🏆 Récompense fidélité 11ème commande : -'+window._fidele11Reduc+'€'; }
   else if(window._fidPos>0 && window._fidRest>0){ reducLabel='🏆 Fidélité : commande '+window._fidPos+'/11 — plus que '+window._fidRest+' avant ton bon de -20€ !'; }
+  if(typeof curPack!=='undefined' && curPack && _packOk()){ var _pp=PACKS[curPack],_pr=_packRemise(_pp),_pe=_packEco(_pp); reduc+=_pr; if(_pe>0) reducLabel=(reducLabel?reducLabel+' · ':'')+'🎁 '+_pp.name+' : tu économises '+fmtEur(_pe)+'€'+(_pp.accroche?' ('+_pp.accroche+')':''); }
   var hasParr=document.getElementById('fParrainTel')&&document.getElementById('fParrainTel').value.trim().length>=8;
   
   if(modeLiv==='livraison' && sub>=150){livGratuite=true;}
@@ -1865,7 +1924,7 @@ function updateTotal(){
   // Crédit cagnotte appliqué par la cliente
   var creditApplied = parseFloat(window._cagnotteApplied||0);
   var creditLine = creditApplied>0 ? '<div class="tline"><span class="dim">💰 Crédit cagnotte</span><span style="color:#15803D;font-weight:900">-'+creditApplied.toFixed(2)+' €</span></div>' : '';
-  document.getElementById('totalLines').innerHTML=badges+prods.map(function(p){return '<div class="tline"><span class="dim">'+p.ico+' '+p.name+(p.qty>1?' ×'+p.qty:'')+'</span><span>'+p.total+' €</span></div>';}).join('')+(reduc?'<div class="tline"><span class="dim">🎁 Réduction</span><span style="color:#22C55E;font-weight:900">-'+reduc.toFixed(2)+' €</span></div>':'')+creditLine;
+  document.getElementById('totalLines').innerHTML=badges+prods.map(function(p){return '<div class="tline"><span class="dim">'+p.ico+' '+p.name+(p.qty>1?' ×'+p.qty:'')+(p.sub?' <span style="color:#7C3AED;font-weight:800">· '+p.sub+'</span>':'')+'</span><span>'+fmtEur(p.total)+' €</span></div>';}).join('')+(reduc?'<div class="tline"><span class="dim">🎁 Réduction</span><span style="color:#22C55E;font-weight:900">-'+reduc.toFixed(2)+' €</span></div>':'')+creditLine;
   var finalAvantCredit = sub+frais-reduc;
   var creditEffectif = Math.min(creditApplied, finalAvantCredit);
   window._cagnotteCreditEffectif = creditEffectif;
@@ -2083,6 +2142,7 @@ async function checkCagnotteDispo(){
     } catch(e){
       console.warn('checkCagnotteDispo error',e);
     }
+    try{updatePackStatus();updateFiltreInfo();}catch(e2){}
   }, 600);
 }
 
@@ -3071,32 +3131,10 @@ function handleSubmit(){
   var filtreInox=false;
   var packTag='';
   if(curPack){
-    if(_packOk()){ filtreInox=true; packTag=PACKS[curPack].name; }
+    if(_packOk()){ packTag=PACKS[curPack].name; reduc+=_packRemise(PACKS[curPack]); }
     else { if(!confirm('Ton panier ne correspond pas au '+PACKS[curPack].name+' ('+PACKS[curPack].diana+' Diana + '+PACKS[curPack].daylia+' Daylia). Continuer sans le pack ?')) return; cancelPack(); }
   }
-  if(hasDayliaCmd){
-    try{
-      // Normalisation robuste : gère +33, 0033, 0, avec/sans espaces
-      var normTelFn = function(t){return (t||'').replace(/\s/g,'').replace(/^\+33/,'33').replace(/^0033/,'33').replace(/^0/,'33');};
-      var telC2 = normTelFn(tel);
-      var emailC2 = (email||'').toLowerCase().trim();
-      var dayliaDejaCmd=cachedAllOrders.some(function(o){
-        if(o.fantome || o.deletedAt) return false;
-        var oTel = normTelFn(o.tel);
-        var oEmail = (o.email||'').toLowerCase().trim();
-        var sameClient = (telC2 && oTel===telC2) || (emailC2 && oEmail===emailC2);
-        return sameClient && (o.prods||'').toLowerCase().indexOf('daylia')!==-1;
-      });
-      // Vérifier aussi le registre legacy filtreOffertClients
-      var dansRegistre = false;
-      try {
-        var reg = JSON.parse(localStorage.getItem('filtreOffertClients')||'{}');
-        var telNoPlus = (tel||'').replace(/\s/g,'');
-        dansRegistre = !!(reg[telC2] || reg[telNoPlus] || (emailC2 && reg[emailC2]));
-      } catch(eR){}
-      if(!dayliaDejaCmd && !dansRegistre) filtreInox=true;
-    }catch(e){}
-  }
+  if(hasDayliaCmd && clientDejaDaylia()!==true) filtreInox=true;
   // Application du crédit cagnotte choisi par la cliente
   var creditPanier = parseFloat(window._cagnotteApplied||0);
   var creditEffective = Math.min(creditPanier, sub+frais-reduc);
@@ -3106,7 +3144,7 @@ function handleSubmit(){
   var total=modePay==='lydia'?Math.round(totalBase*1.0328):totalBase;
   var fidele11Msg=fidele11?'\n\n🏆 *Récompense fidélité : -20€* — Félicitations pour ta 11ème commande ! ❤️':'';
   var dispoStr=dispoData.map(function(d){return d.date+' : '+d.slots.join(', ');}).join('\n');
-  var prodsLines=prods.map(function(p){return p.name+(p.qty>1?' x'+p.qty:'')+' — '+p.total+'€';}).join('\n');
+  var prodsLines=prods.map(function(p){return p.name+(p.qty>1?' x'+p.qty:'')+' — '+fmtEur(p.total)+'€'+(p.sub?' ('+p.sub+')':'');}).join('\n');
   var relaisLabels={point:'Point Relais',locker:'Locker',domicile:'Domicile'};
   var relaisAddr=document.getElementById('fRelaisEmail')?document.getElementById('fRelaisEmail').value.trim():'';
   var transportStr;
@@ -3144,7 +3182,9 @@ function handleSubmit(){
     livraisonStr = earliest || dispoData[0].date;
   }
   // Surprise 1ère commande à partir du 1er oct
-  var packMsg=packTag?'\n\n🎁 *'+packTag+'* — ton filtre INOX est offert avec cette commande !':'';
+  var packMsg='';
+  if(packTag){ var _wp=PACKS[curPack],_we=_packEco(_wp); packMsg='\n\n🎁 *'+packTag+'*'+(_we>0?' — tu économises '+fmtEur(_we)+'€':'')+(_wp.accroche?' ('+_wp.accroche+')':''); }
+  if(hasDayliaCmd){ packMsg+=filtreInox?'\n🔩 *Filtre INOX offert* — c\'est ta 1ère commande Daylia 🎁':'\nℹ️ Filtre INOX : déjà reçu à ta 1ère commande Daylia, non inclus cette fois.'; }
   var surpriseMsg='';
   if((function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261001;})() && nbCmdClient===1){
     surpriseMsg='\n\n🎁 *Ce mois-ci, une petite attention t\'attend avec ta commande* — on a hâte que tu la découvres ! 🤩';
