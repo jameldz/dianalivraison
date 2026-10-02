@@ -54,6 +54,12 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 .achg{background:none;border:none;color:var(--gn);cursor:pointer;font-size:11px;font-weight:700;margin-left:auto;text-decoration:underline;font-family:inherit;}
 .prod{border:1.5px solid var(--bdr);border-radius:11px;padding:12px 13px;background:var(--lt);margin-bottom:9px;animation:parrPulse 2.5s ease-in-out infinite;}
 .prod.on{animation:none;border-color:var(--rd);background:var(--rs);}
+.packc{border:2px solid #C4B5FD;border-radius:11px;padding:11px 13px;background:linear-gradient(135deg,#F5F3FF,#EDE9FE);margin-bottom:8px;cursor:pointer;transition:all .2s}
+.packc.on{border-color:#7C3AED;background:linear-gradient(135deg,#EDE9FE,#DDD6FE);box-shadow:0 4px 14px rgba(124,58,237,.18)}
+.packc-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.packc-name{font-weight:900;font-size:14px;color:#4C1D95}
+.packc-price{font-weight:900;font-size:17px;color:#7C3AED;white-space:nowrap}
+.packc-desc{font-size:12px;color:#5B21B6;margin-top:4px;line-height:1.4}
 .prod:last-child{margin-bottom:0;}
 .prod-top{display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none;}
 .prod-ico{font-size:24px;flex-shrink:0;}
@@ -448,6 +454,18 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 <div class="card" id="cardProd">
   <div class="card-hdr"><span class="step" id="sProd">4</span><h2>Que veux-tu commander ?</h2></div>
   <div class="card-body">
+    <div id="packsBox" style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:900;color:#7C3AED;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px">🎁 Packs Diana + Daylia — filtre INOX offert</div>
+      <div class="packc" id="pack1m" onclick="choosePack('1m')">
+        <div class="packc-top"><div class="packc-name">Pack 1 mois</div><div class="packc-price">135€</div></div>
+        <div class="packc-desc">1 cure Diana au choix + 3 thés Daylia + <b>filtre INOX offert</b></div>
+      </div>
+      <div class="packc" id="pack3m" onclick="choosePack('3m')">
+        <div class="packc-top"><div class="packc-name">Pack 3 mois</div><div class="packc-price">405€</div></div>
+        <div class="packc-desc">3 cures Diana (toute combinaison) + 9 thés Daylia + <b>filtre INOX offert</b></div>
+      </div>
+      <div id="packStatus" style="display:none;margin-top:4px"></div>
+    </div>
     <div class="prod" id="pGEL">
       <div class="prod-top" onclick="togProd('GEL')"><img src="data:image/jpeg;base64,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" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0"><div style="flex:1;margin-left:10px"><div class="prod-name">Gélules Diana <button class="btn-info" onclick="event.stopPropagation();openFiche('GEL')" style="background:var(--rs);border:1px solid var(--bdr);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--rd);cursor:pointer;font-family:inherit;margin-left:6px">ℹ️ Infos</button></div><div class="prod-price">75 € / unité</div></div><div class="chk">✓</div></div>
       <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('GEL',-1)">−</button><input class="qval" id="qGEL" value="1" readonly><button class="qbtn" onclick="chQ('GEL',1)">+</button></div><span class="qtot" id="tGEL">75€</span></div>
@@ -1113,6 +1131,31 @@ var DAYLIA = [
   {id:'GU', name:'🌟 Skin Glow',   ico:'', desc:'Spécialiste rétention d\'eau & dégonflement — draine, purifie, riche en minéraux et vitamines, active le collagène, fermeté de la peau, effet lift, anti-âge, affine la jawline & réduit le double menton, régule les hormones'}
 ];
 var dQty = {DN:0,SD:0,ST:0,PM:0,GU:0};
+var PACKS={'1m':{name:'Pack 1 mois',diana:1,daylia:3,price:135},'3m':{name:'Pack 3 mois',diana:3,daylia:9,price:405}};
+var curPack=null;
+function _packCounts(){var dn=0;Object.keys(PRODS).forEach(function(k){if(document.getElementById('p'+k).classList.contains('on'))dn+=parseInt(document.getElementById('q'+k).value)||1;});return {diana:dn,daylia:dTotal()};}
+function _packOk(){if(!curPack)return false;var c=_packCounts(),p=PACKS[curPack];return c.diana===p.diana&&c.daylia===p.daylia;}
+function _refreshDayliaUI(){Object.keys(dQty).forEach(function(k){var dv=document.getElementById('dv'+k);if(dv)dv.textContent=dQty[k];var di=document.getElementById('di'+k);if(di)di.classList.toggle('on',dQty[k]>0);});var n=dTotal();document.getElementById('pDAY').classList.toggle('on',n>0);document.getElementById('dayPanel').style.display=n>0?'block':'none';}
+function choosePack(id){
+  if(curPack===id){cancelPack();return;}
+  curPack=id;var p=PACKS[id];
+  Object.keys(PRODS).forEach(function(k){document.getElementById('p'+k).classList.remove('on');document.getElementById('q'+k).value=1;});
+  document.getElementById('pGEL').classList.add('on');document.getElementById('qGEL').value=p.diana;
+  Object.keys(dQty).forEach(function(k){dQty[k]=0;});
+  var per=p.daylia/3;dQty.ST=per;dQty.PM=per;dQty.DN=per;
+  _refreshDayliaUI();
+  document.getElementById('pack1m').classList.toggle('on',id==='1m');document.getElementById('pack3m').classList.toggle('on',id==='3m');
+  chQ('GEL',0);updateDayliaRecap();updatePackStatus();
+  try{document.getElementById('pGEL').scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
+}
+function cancelPack(){curPack=null;document.getElementById('pack1m').classList.remove('on');document.getElementById('pack3m').classList.remove('on');updatePackStatus();}
+function updatePackStatus(){
+  var el=document.getElementById('packStatus');if(!el)return;
+  if(!curPack){el.style.display='none';return;}
+  var p=PACKS[curPack],c=_packCounts();el.style.display='block';
+  if(_packOk())el.innerHTML='<div style="background:#DCFCE7;border:1.5px solid #16A34A;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:800;color:#166534;line-height:1.45">✅ '+p.name+' complet : '+c.diana+' Diana + '+c.daylia+' Daylia — filtre INOX offert 🎁 <a href="#" onclick="event.preventDefault();cancelPack()" style="color:#166534;font-weight:600;margin-left:6px;text-decoration:underline">annuler</a></div>';
+  else el.innerHTML='<div style="background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:800;color:#92400E;line-height:1.45">⚠️ '+p.name+' = '+p.diana+' Diana + '+p.daylia+' Daylia. Tu as '+c.diana+' Diana + '+c.daylia+' Daylia — ajuste tes quantités ci-dessous. <a href="#" onclick="event.preventDefault();cancelPack()" style="color:#92400E;font-weight:600;margin-left:6px;text-decoration:underline">annuler le pack</a></div>';
+}
 var modeLiv = 'livraison';
 var modePay = 'especes';
 var modeTransport = 'mondial';
@@ -1848,6 +1891,7 @@ function updateTotal(){
   }
   updateFraisEnvoi();
   updatePayLinks();
+  try{updatePackStatus();}catch(e){}
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3025,6 +3069,11 @@ function handleSubmit(){
   }catch(e){}
   var hasDayliaCmd=dTotal()>0;
   var filtreInox=false;
+  var packTag='';
+  if(curPack){
+    if(_packOk()){ filtreInox=true; packTag=PACKS[curPack].name; }
+    else { if(!confirm('Ton panier ne correspond pas au '+PACKS[curPack].name+' ('+PACKS[curPack].diana+' Diana + '+PACKS[curPack].daylia+' Daylia). Continuer sans le pack ?')) return; cancelPack(); }
+  }
   if(hasDayliaCmd){
     try{
       // Normalisation robuste : gère +33, 0033, 0, avec/sans espaces
@@ -3095,6 +3144,7 @@ function handleSubmit(){
     livraisonStr = earliest || dispoData[0].date;
   }
   // Surprise 1ère commande à partir du 1er oct
+  var packMsg=packTag?'\n\n🎁 *'+packTag+'* — ton filtre INOX est offert avec cette commande !':'';
   var surpriseMsg='';
   if((function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261001;})() && nbCmdClient===1){
     surpriseMsg='\n\n🎁 *Ce mois-ci, une petite attention t\'attend avec ta commande* — on a hâte que tu la découvres ! 🤩';
@@ -3155,14 +3205,14 @@ function handleSubmit(){
       +paySection
       +'\n\n📦 Dès que ton paiement est reçu, tu recevras un mail à ton adresse ('+email+') avec le lien pour choisir ton point Mondial Relay.'
       +'\n👉 Merci de me renvoyer un message une fois ton point choisi 🙏';
-    confirmMsg=shortConfirm+fideliteMsg+fidele11Msg+surpriseMsg;
+    confirmMsg=shortConfirm+packMsg+fideliteMsg+fidele11Msg+surpriseMsg;
   } else if(modeLiv==='place'){
     shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 '+total.toFixed(2)+'€'
       
       +(rdvStr?'\n📅 '+rdvStr:'')
       +'\n📍 Caisse d\'Epargne, Place Saint Eugène 13007'
       +'\n\n💵 Paiement en espèces sur place. À bientôt !';
-    confirmMsg=shortConfirm+fideliteMsg+fidele11Msg+surpriseMsg+snapInstructions;
+    confirmMsg=shortConfirm+packMsg+fideliteMsg+fidele11Msg+surpriseMsg+snapInstructions;
   } else {
     shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 '+total.toFixed(2)+'€'
       
@@ -3215,7 +3265,7 @@ function handleSubmit(){
   // (sinon le total est réduit mais on perd la trace → stats fausses + cagnotte réutilisable)
   var creditAppliedFinal = parseFloat(window._cagnotteCreditEffectif||window._cagnotteApplied||0);
   var oData={
-    fidele11:fidele11,id:Date.now().toString(),num,nom,snap,tel,email,addr:oAddr,prods:prods.map(function(p){return (p.qty||1)+'× '+p.name;}).join(', '),slot:dispoStr,total,filtre:filtre,modeLiv:modeLiv,modeRelais:modeRelais,modePay:modePay,vendeur:vendeur?vendeur.nom:'',parrain:parrain,parrainTel:parrainTel,parrainSnap:parrainSnap,parrainEmail:parrainEmail,genre:genre,parrGenre:parrGenre,nbCmd:nbCmdClient,livGratuite:remiseFidel||(modeLiv==='livraison'&&sub>=150),reduc:reduc,filtreInox:filtreInox,creditApplied:creditAppliedFinal,dechargeAccepted:true,dechargeAcceptedAt:(window._dechargeAcceptedAt||Date.now()),dechargeNoCompl:true,dechargeNoAmaigr:true,dechargeMajeur:true,domTom:(typeof isDomTom!=='undefined'&&isDomTom)||false};
+    fidele11:fidele11,id:Date.now().toString(),num,nom,snap,tel,email,addr:oAddr,prods:prods.map(function(p){return (p.qty||1)+'× '+p.name;}).join(', ')+(packTag?' ['+packTag+']':''),pack:packTag,slot:dispoStr,total,filtre:filtre,modeLiv:modeLiv,modeRelais:modeRelais,modePay:modePay,vendeur:vendeur?vendeur.nom:'',parrain:parrain,parrainTel:parrainTel,parrainSnap:parrainSnap,parrainEmail:parrainEmail,genre:genre,parrGenre:parrGenre,nbCmd:nbCmdClient,livGratuite:remiseFidel||(modeLiv==='livraison'&&sub>=150),reduc:reduc,filtreInox:filtreInox,creditApplied:creditAppliedFinal,dechargeAccepted:true,dechargeAcceptedAt:(window._dechargeAcceptedAt||Date.now()),dechargeNoCompl:true,dechargeNoAmaigr:true,dechargeMajeur:true,domTom:(typeof isDomTom!=='undefined'&&isDomTom)||false};
 
   // ═══ PUSH DIRECT AU CLOUD + RETRY AUTOMATIQUE + LOG ═══
   // 1. Ajoute la commande à la queue locale (filet anti-perte définitif)
