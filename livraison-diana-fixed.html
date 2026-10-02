@@ -56,7 +56,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 .prod.on{animation:none;border-color:var(--rd);background:var(--rs);}
 .packc{display:flex;gap:11px;align-items:stretch;border:2px solid #E9D5FF;border-radius:13px;padding:10px;background:#fff;margin-bottom:9px;cursor:pointer;transition:all .2s;position:relative}
 .packc.on{border-color:#7C3AED;background:linear-gradient(135deg,#F5F3FF,#EDE9FE);box-shadow:0 4px 16px rgba(124,58,237,.18)}
-.packc-img{width:88px;height:88px;border-radius:10px;object-fit:cover;flex-shrink:0;background:#FFF6F9;border:1px solid #F3E8FF}
+.packc-img{width:88px;height:88px;border-radius:10px;object-fit:cover;flex-shrink:0;background:#fff;border:1px solid #F3E8FF}
 .packc-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:3px}
 .packc-name{font-weight:900;font-size:14px;color:#4C1D95;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .packc-badge{background:linear-gradient(135deg,#7C3AED,#5B21B6);color:#fff;font-size:9px;font-weight:900;padding:2px 7px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
@@ -339,7 +339,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
     </div>
     <div class="field">
       <label>Téléphone *</label>
-      <input id="fTel" type="tel" placeholder="06 xx xx xx xx" autocomplete="tel" oninput="clearErr(this);checkCagnotteDispo()" onblur="checkCagnotteDispo()">
+      <input id="fTel" type="tel" placeholder="06 xx xx xx xx" autocomplete="tel" oninput="clearErr(this);checkCagnotteDispo();checkParrainFraude()" onblur="checkCagnotteDispo();checkParrainFraude()">
       <div class="err-msg" id="err-fTel">⚠️ Remplis ton numéro de téléphone</div>
       <!-- Bandeau crédit dispo (auto-affiché si la cliente a un crédit cagnotte) -->
       <div id="cagnotteBanner" style="display:none;margin-top:10px;background:linear-gradient(135deg,#E8F5E9,#A5D6A7);border:2.5px solid #22C55E;border-radius:12px;padding:14px 16px;animation:cagnottePulse 2s ease-in-out infinite">
@@ -382,8 +382,9 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
         <button id="pGenreF" onclick="setParrGenre('f')" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid var(--rd);background:var(--rs);font-size:13px;font-weight:800;color:var(--rd);cursor:pointer;font-family:inherit">👩 Marraine</button>
         <button id="pGenreM" onclick="setParrGenre('m')" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--lt);font-size:13px;font-weight:700;color:var(--k2);cursor:pointer;font-family:inherit">👨 Parrain</button>
       </div>
-      <input id="fParrainTel" type="tel" placeholder="📞 Son numéro (obligatoire)" style="margin-bottom:6px" oninput="updateTotal()">
-      <input id="fParrainSnap" type="text" placeholder="👻 Son pseudo Snap" style="margin-bottom:6px">
+      <input id="fParrainTel" type="tel" placeholder="📞 Son numéro (obligatoire)" style="margin-bottom:6px" oninput="updateTotal();checkParrainFraude()">
+      <input id="fParrainSnap" type="text" placeholder="👻 Son pseudo Snap" style="margin-bottom:6px" oninput="checkParrainFraude()">
+      <div id="parrFraudMsg" style="display:none;font-size:12px;font-weight:800;color:#B91C1C;background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:8px;padding:8px 10px;margin-bottom:6px"></div>
       <input id="fParrainEmail" type="email" placeholder="📧 Ou son email (si pas de Snap)">
       <input id="fParrain" type="hidden">
       <div style="font-size:10px;color:var(--k2);font-weight:700;margin-top:4px;background:var(--lt);border-radius:6px;padding:5px 8px">📌 Numéro obligatoire + Snap ou email</div>
@@ -487,7 +488,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
     </div>
     <div class="prod" id="pFIL">
       <div class="prod-top" onclick="togProd('FIL')">
-        <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#CBD5E1,#64748B);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🔩</div>
+        <img src="data:image/webp;base64,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" alt="Filtre INOX" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#fff;border:1px solid #E5E7EB">
         <div style="flex:1;margin-left:10px"><div class="prod-name">Filtre INOX</div><div class="prod-price">10 € · infuseur inox pour tes thés Daylia</div><div id="filHint" style="font-size:10.5px;color:#B45309;font-weight:700;margin-top:3px">🎁 Offert à ta 1ère commande Daylia</div></div>
         <div class="chk">✓</div>
       </div>
@@ -2103,6 +2104,8 @@ async function checkCagnotteDispo(){
         creditUsed = _cg.creditUsed||0;
         creditDispo = _cg.creditDispo||0;
       } else {
+        var PARR_10_DEPUIS = 1790805600000; // 1er oct 2026 : 5 € avant, 10 € depuis
+        var gainMarraine = function(o){ var ts=(o&&o.createdAt)?+o.createdAt:0; return ts >= PARR_10_DEPUIS ? 10 : 5; };
         var creditMarraine = 0;
         allOrders.forEach(function(o){
           if(!o.parrain || !o.payee || o.fantome || o.parrStatus==='rejected') return;
@@ -2112,7 +2115,7 @@ async function checkCagnotteDispo(){
             if(!fV || (monVendeur && fV!==monVendeur)) return;
           }
           nbFilleules++;
-          creditMarraine += 5;
+          creditMarraine += gainMarraine(o);
         });
         var creditFilleule = 0;
         mesCommandes.forEach(function(o){
@@ -3106,6 +3109,18 @@ function handleSubmit(){
     }
     return;
   }
+  var _ft=parrainStarted?parrainFraudeType():'';
+  if(_ft==='self-tel'||_ft==='self-snap'){
+    checkParrainFraude(); showErr('fParrainTel');
+    alert('🚫 Autoparrainage impossible : tu ne peux pas être ta propre marraine.\n\nMets les coordonnées de la personne qui t\'a fait connaître Diana, ou efface le parrainage.');
+    document.getElementById('fParrainTel').focus();
+    return;
+  }
+  if(_ft==='deja'){
+    checkParrainFraude();
+    if(!confirm('ℹ️ Tu as déjà été parrainée sur une commande précédente : un parrainage ne compte qu\'une seule fois, celui-ci ne sera pas comptabilisé.\n\nClique OK pour continuer sans parrainage, ou Annuler pour revenir.')) return;
+    clearParrainage(); parrainTel=''; parrainSnap=''; parrainEmail=''; parrainStarted=false;
+  }
   var parrain=parrainTel?parrainTel:'';
   var parrainContact=parrainSnap||parrainEmail;
   var parrainFull='';
@@ -3476,7 +3491,30 @@ function copierMsgLivreur(){
   navigator.clipboard.writeText(lastMsg).then(function(){toast('📋 Message livreur copié !');}).catch(function(){toast(lastMsg.slice(0,50)+'…');});
 }
 
+// ═══ Anti-triche visible : autoparrainage et parrainage déjà utilisé, dit à la cliente au moment où elle remplit ═══
+function parrainFraudeType(){
+  var pt=_normTel((document.getElementById('fParrainTel')||{}).value||'');
+  var ct=_normTel((document.getElementById('fTel')||{}).value||'');
+  var ps=((document.getElementById('fParrainSnap')||{}).value||'').trim().toLowerCase().replace(/^@/,'');
+  var cs=((document.getElementById('fSnap')||{}).value||'').trim().toLowerCase().replace(/^@/,'');
+  if(pt && ct && pt.length>=9 && pt===ct) return 'self-tel';
+  if(ps && cs && ps.length>=3 && ps===cs) return 'self-snap';
+  if(ct && ct.length>=9 && pt){
+    var mine=(cachedAllOrders||[]).filter(function(o){return o && !o.fantome && _normTel(o.tel)===ct && o.parrain && o.parrStatus!=='rejected';});
+    if(mine.length>0) return 'deja';
+  }
+  return '';
+}
+function checkParrainFraude(){
+  var fm=document.getElementById('parrFraudMsg'); if(!fm) return;
+  var t=parrainFraudeType();
+  if(t==='self-tel') fm.innerHTML='🚫 <b>Autoparrainage impossible</b> : c\'est ton propre numéro. Mets le numéro de la personne qui t\'a fait connaître Diana.';
+  else if(t==='self-snap') fm.innerHTML='🚫 <b>Autoparrainage impossible</b> : c\'est ton propre Snap. Mets le Snap de la personne qui t\'a fait connaître Diana.';
+  else if(t==='deja') fm.innerHTML='ℹ️ Tu as <b>déjà été parrainée</b> sur une commande précédente — un parrainage ne compte qu\'une seule fois, celui-ci ne sera pas comptabilisé.';
+  fm.style.display=t?'block':'none';
+}
 function clearParrainage(){
+  if(typeof checkParrainFraude==='function'){ var fm=document.getElementById('parrFraudMsg'); if(fm) fm.style.display='none'; }
   document.getElementById('fParrainTel').value='';
   document.getElementById('fParrainSnap').value='';
   if(document.getElementById('fParrainEmail')) document.getElementById('fParrainEmail').value='';

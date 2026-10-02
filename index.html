@@ -2008,14 +2008,14 @@ function render() {
         // → il faut au moins 1 commande payée précédente
         var canUseCredit=(nbPaidBefore>=1);
         if(canUseCredit){
-          // Crédit en tant que MARRAINE : +5€ par filleule validée+payée (créée AVANT cette commande)
+          // Crédit en tant que MARRAINE : +5€ (filleule d'avant oct 2026) ou +10€ (depuis) par filleule validée+payée (créée AVANT cette commande)
           (_idxParrain[telClean]||[]).forEach(function(x){
             if(!x.parrain || !x.payee || x.parrStatus==='rejected') return;
             if(_pv(x)!==true) return; // ❌ Parrainage non valide (vendeurs différents ou marraine inconnue)
             var pClean=(x.parrain||'').replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
             if(pClean===telClean && (x.createdAt||0) < (o.createdAt||0)){
               nbFilleulesValid++;
-              creditAsMarraine+=5;
+              creditAsMarraine+=gainMarraine(x);
             }
           });
           // Crédit en tant que FILLEULE : +5€ par commande où elle était filleule
@@ -2297,17 +2297,17 @@ async function tog(id, field) {
       var nbFilleules=0;var cagnotte=0;
       orders.forEach(function(ox){
         if(!ox.parrain||!ox.payee) return;
-        if(cleanTel(ox.parrain)===parrTel && isParrainageValid(ox)===true){nbFilleules++;cagnotte+=10;}
+        if(cleanTel(ox.parrain)===parrTel && isParrainageValid(ox)===true){nbFilleules++;cagnotte+=gainMarraine(ox);}
       });
       // Garde-fou supplémentaire : si comptage = 0, n'envoie pas le message (incohérent)
       if(nbFilleules===0){
         toast('⚠️ Parrainage non validé pour '+marrLabel.split(' ')[0]+' (vendeur différent ou marraine sans commande)');
       } else {
-      var msgM='🎁 Bonne nouvelle '+marrLabel.split(' ')[0]+' !\n\n'+prenom+' vient de payer sa commande ✅\nTu gagnes *+'+10+'€* sur ta cagnotte !\n\n💰 Ta cagnotte : *'+cagnotte+'€* ('+nbFilleules+' filleule'+(nbFilleules>1?'s':'')+' payée'+(nbFilleules>1?'s':'')+')\n';
+      var msgM='🎁 Bonne nouvelle '+marrLabel.split(' ')[0]+' !\n\n'+prenom+' vient de payer sa commande ✅\nTu gagnes *+'+gainMarraine(o)+'€* sur ta cagnotte !\n\n💰 Ta cagnotte : *'+cagnotte+'€* ('+nbFilleules+' filleule'+(nbFilleules>1?'s':'')+' payée'+(nbFilleules>1?'s':'')+')\n';
       if(nbFilleules<20) msgM+='\n🎁 Encore '+(20-nbFilleules)+' filleule'+(20-nbFilleules>1?'s':'')+' pour ta Smartbox Bien-être !\n';
       else if(nbFilleules<30) msgM+='\n🎁 Smartbox débloquée !\n💎 Encore '+(30-nbFilleules)+' filleule'+(30-nbFilleules>1?'s':'')+' pour ta Box Prestige VIP !\n';
       else msgM+='\n💎 Box Prestige VIP débloquée ! Contacte-moi pour la récupérer !\n';
-      msgM+='\n👉 Continue à partager - 5€ par personne qui commande 🚀';
+      msgM+='\n👉 Continue à partager - 10€ par personne qui commande 🚀';
       msgM+='\n\n⚠️ Le crédit est utilisable à condition que toi et ta filleule ayez chacune passé au moins une commande via le formulaire Diana Detox *avec la même vendeuse*.';
       msgM+='\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
       queueMessage(parrTel, msgM, marrLabel.split(' ')[0], 'Notifier la marraine ('+marrLabel+')');
@@ -2322,7 +2322,7 @@ async function tog(id, field) {
       var vendeurParam=(o.vendeur||'').toLowerCase();
       var snapParamT=o.snap?'&parrsnap='+encodeURIComponent(o.snap):'';
       var parrainageLink='https://dianalivraison.vercel.app/livraison-diana-fixed.html?parr='+telFilleuleClean+snapParamT+(vendeurParam?'&v='+vendeurParam:'');
-      var msgFilleule='🎉 Bonne nouvelle '+prenom+' !\n\nMerci pour ta commande ✅\nTu as gagné *5€ de crédit* grâce à ton parrainage !\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n⚠️ Condition : ta marraine et toi devez chacune avoir passé au moins une commande via le formulaire Diana Detox *avec la même vendeuse*.\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque personne qui commande avec ton lien, tu gagnes *+5€* de crédit, et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖\u200d♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+parrainageLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
+      var msgFilleule='🎉 Bonne nouvelle '+prenom+' !\n\nMerci pour ta commande ✅\nTu as gagné *5€ de crédit* grâce à ton parrainage !\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n⚠️ Condition : ta marraine et toi devez chacune avoir passé au moins une commande via le formulaire Diana Detox *avec la même vendeuse*.\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque personne qui commande avec ton lien, tu gagnes *+10€* de crédit, et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖\u200d♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+parrainageLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
       queueMessage(o.tel, msgFilleule, prenom, 'Crédit filleule pour '+prenom);
       } else {
         // Parrainage non valide : on alerte l'user au lieu de promettre 5€ à la cliente
@@ -2618,6 +2618,10 @@ function cleanTel(t){
 // sont chez le MÊME vendeur. Sinon → pas de crédit.
 // Renvoie : true (validé) | false (rejeté) | null (marraine inconnue, à vérifier)
 // ═══════════════════════════════════════════════════════
+// ═══ Gain marraine par filleule : 5 € pour les commandes filleules d'AVANT le 1er oct 2026, 10 € depuis (jamais rétroactif) ═══
+var PARR_10_DEPUIS = 1790805600000; // 2026-10-01 00:00 Paris
+function orderTs(o){ if(o && o.createdAt) return +o.createdAt; var m=/^(\d{2})(\d{2})(\d{2})/.exec((o&&o.num)||''); return m? Date.UTC(2000+parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10)) : 0; }
+function gainMarraine(filleuleOrder){ return orderTs(filleuleOrder) >= PARR_10_DEPUIS ? 10 : 5; }
 function isParrainageValid(filleuleOrder){
   if(!filleuleOrder || !filleuleOrder.parrain) return false;
   if(filleuleOrder.parrStatus==='rejected') return false;
@@ -3347,8 +3351,8 @@ function renderBusinessStats(){
   var caFilleules=sumCA(filleulesPayees);
   // Bénéfice RÉEL des commandes filleules (marge produits)
   var benefFilleules=filleulesPayees.reduce(function(s,o){return s+calcBenef(o);},0);
-  // Crédits donnés : 5€ marraine + 5€ filleule par parrainage validé
-  var creditDonneTotal=nbFilleulesPayees*10;
+  // Crédits donnés : marraine 5€ (avant oct 2026) ou 10€ (depuis) + 5€ filleule par parrainage validé
+  var creditDonneTotal=filleulesPayees.reduce(function(s,o){return s+gainMarraine(o)+5;},0);
   // Crédits réellement utilisés (déduits des commandes)
   var creditUtilise=paid.reduce(function(s,o){return s+(parseFloat(o.creditApplied)||0);},0);
   // ROI réel = bénéfice produits filleules - crédits utilisés
@@ -3802,17 +3806,9 @@ function getParrainageData(){
     // Déjà comptée ?
     if(marraines[pClean].filleules.find(function(f){return f.fId===fId;})) return;
 
-    // ═══ PROTECTION 1 : Filleule nouvelle cliente uniquement ═══
+    // ═══ PROTECTION 1 (retirée le 02/10/2026) : une cliente déjà connue PEUT être parrainée si elle ne l'a jamais été — le "une seule fois" est garanti par la protection 13 ═══
     var isNewClient=true;
     var reasons=[];
-    if(fTel && allClientTels[fTel]){
-      var olderOrders=allClientTels[fTel].filter(function(d){return d<(o.createdAt||0);});
-      if(olderOrders.length>0){isNewClient=false;reasons.push('⚠️ Déjà cliente avant');}
-    }
-    if(isNewClient && fSnap && allClientSnaps[fSnap]){
-      var olderSnap=allClientSnaps[fSnap].filter(function(d){return d<(o.createdAt||0);});
-      if(olderSnap.length>0){isNewClient=false;reasons.push('⚠️ Snap déjà connu');}
-    }
 
     // ═══ PROTECTION 2 : Bloquer si même adresse ═══
     var sameAddr=false;
@@ -4154,7 +4150,7 @@ function renderParrainage(){
           var fVendParam=fOrder&&fOrder.vendeur?'&v='+fOrder.vendeur.toLowerCase():'';
           var fSnapParam=f.snap?'&parrsnap='+encodeURIComponent(f.snap):'';
           var fParrainageLink='https://dianalivraison.vercel.app/livraison-diana-fixed.html?parr='+telCleanF+fSnapParam+fVendParam;
-          var msgF='🎉 Salut '+prenomF+' !\n\nMerci pour ta commande chez Diana Detox ✅\n\nTu as gagné *5€ de crédit* grâce à ton parrainage 🎁\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque personne qui commande avec ton lien, tu gagnes *+5€* de crédit, et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖‍♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+fParrainageLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+fSnapSig;
+          var msgF='🎉 Salut '+prenomF+' !\n\nMerci pour ta commande chez Diana Detox ✅\n\nTu as gagné *5€ de crédit* grâce à ton parrainage 🎁\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque personne qui commande avec ton lien, tu gagnes *+10€* de crédit, et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖‍♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+fParrainageLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+fSnapSig;
           var encF=encodeURIComponent(msgF);
           if(telCleanF && /^\d{8,}$/.test(telCleanF)){
             var telSmsF='+'+telCleanF;
@@ -4542,7 +4538,7 @@ function notifyFilleule(orderId){
   var vendParam=o.vendeur?'&v='+o.vendeur.toLowerCase():'';
   var snapParam=o.snap?'&parrsnap='+encodeURIComponent(o.snap):'';
   var parrLink='https://dianalivraison.vercel.app/livraison-diana-fixed.html?parr='+telFilleule+snapParam+vendParam;
-  var msg='🎉 Salut '+prenom+' !\n\nMerci pour ta commande chez Diana Detox ✅\n\nTu as gagné *5€ de crédit* grâce à ton parrainage 🎁\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque personne qui commande avec ton lien, tu gagnes *+5€* de crédit, et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖‍♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+parrLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
+  var msg='🎉 Salut '+prenom+' !\n\nMerci pour ta commande chez Diana Detox ✅\n\nTu as gagné *5€ de crédit* grâce à ton parrainage 🎁\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque personne qui commande avec ton lien, tu gagnes *+10€* de crédit, et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖‍♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+parrLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
   openMsgApp(o.tel||'', msg, prenom);
 }
 
@@ -4581,7 +4577,7 @@ async function useCredit(key){
   var cagnotte=0;
   orders.forEach(function(ox){
     if(!ox.parrain||!ox.payee) return;
-    if(cleanTel(ox.parrain)===marraineTel && isParrainageValid(ox)===true){cagnotte+=10;}
+    if(cleanTel(ox.parrain)===marraineTel && isParrainageValid(ox)===true){cagnotte+=gainMarraine(ox);}
   });
   var used=(clients[key]&&clients[key].creditUsed)||0;
   var dispo=cagnotte-used;
@@ -6424,7 +6420,7 @@ function renderClientes(){
     // Vérifie que la marraine a au moins 1 commande payée
     var marraineHasPaid = marraineKey && map[marraineKey].paidCount>0;
     if(marraineHasPaid && marraineKey){
-      map[marraineKey].cagnotte += 5;
+      map[marraineKey].cagnotte += gainMarraine(o);
       map[marraineKey].cagnotteSrc.filleulesParrainees++;
     }
     if(marraineHasPaid && filleuleKey){
