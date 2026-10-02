@@ -485,6 +485,14 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
         <div class="day-recap" id="dayRecap"></div>
       </div>
     </div>
+    <div class="prod" id="pFIL">
+      <div class="prod-top" onclick="togProd('FIL')">
+        <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#CBD5E1,#64748B);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🔩</div>
+        <div style="flex:1;margin-left:10px"><div class="prod-name">Filtre INOX</div><div class="prod-price">10 € · infuseur inox pour tes thés Daylia</div><div id="filHint" style="font-size:10.5px;color:#B45309;font-weight:700;margin-top:3px">🎁 Offert à ta 1ère commande Daylia</div></div>
+        <div class="chk">✓</div>
+      </div>
+      <div class="prod-qty"><span class="qlbl">Quantité :</span><div class="qctrl"><button class="qbtn" onclick="chQ('FIL',-1)">−</button><input class="qval" id="qFIL" value="1" readonly><button class="qbtn" onclick="chQ('FIL',1)">+</button></div><span class="qtot" id="tFIL">10€</span></div>
+    </div>
     <!-- MINI-CURES DÉCOUVERTE 7 JOURS -->
     <div style="margin:14px 0 8px;padding:10px 12px;background:linear-gradient(135deg,#FFF3E0,#FFE0B2);border:2px solid #F59E0B;border-radius:12px;text-align:center">
       <div style="font-size:14px;font-weight:900;color:#E65100;margin-bottom:3px">🌟 Mini-Cure Découverte 15 jours</div>
@@ -1116,10 +1124,10 @@ function setParrGenre(g){
 var addrOk = false;
 var editAddrOk = false;
 var PRODS = {CAF:{name:'Café Diana',ico:'☕',price:75},THE:{name:'Thé Diana',ico:'🍵',price:75},GEL:{name:'Gélules Diana',ico:'✨',price:75}};
-var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 15j',ico:'🌟',price:40},MTH:{name:'Mini-Cure Thé 15j',ico:'🌟',price:40},MCA:{name:'Mini-Cure Café 15j',ico:'🌟',price:40},IRM:{name:'Iron Magic — Prise de Poids',ico:'💪',price:90}};
+var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 15j',ico:'🌟',price:40},MTH:{name:'Mini-Cure Thé 15j',ico:'🌟',price:40},MCA:{name:'Mini-Cure Café 15j',ico:'🌟',price:40},IRM:{name:'Iron Magic — Prise de Poids',ico:'💪',price:90},FIL:{name:'Filtre INOX',ico:'🔩',price:10}};
 
 // Stock — mis à jour depuis JSONbin
-var STOCK = {CAF:999,THE:999,GEL:999,DN:999,SD:999,ST:999,PM:999,GU:999,MGE:999,MTH:999,MCA:999,IRM:999,DAY:999};
+var STOCK = {CAF:999,THE:999,GEL:999,DN:999,SD:999,ST:999,PM:999,GU:999,MGE:999,MTH:999,MCA:999,IRM:999,DAY:999,FIL:999};
 var cachedAllOrders=[];
 var DAYLIA = [
   {id:'DN', name:'🌙 Douce Nuit',  ico:'', desc:'Le soir — détox nocturne, sommeil profond'},
@@ -1179,6 +1187,7 @@ function renderPackCards(){
 function updateFiltreInfo(){
   var dj=clientDejaDaylia(),t=filtreTxt();
   document.querySelectorAll('.packc-filtre[data-filtre]').forEach(function(el){el.textContent=t;el.classList.toggle('deja',dj===true);});
+  var fh=document.getElementById('filHint');if(fh){var hasDay=dTotal()>0;fh.textContent=(dj===true)?'Tu as déjà reçu le tien — tu peux en recommander un ici.':(hasDay?'🎁 Il est offert avec ta 1ère commande Daylia — inutile de l\'acheter.':'🎁 Offert à ta 1ère commande Daylia · ou 10€ seul');fh.style.color=(dj===true)?'#6B7280':'#B45309';}
   var dp=document.getElementById('dayPromo');if(dp){dp.textContent=(dj===true?'ℹ️ Filtre INOX déjà reçu à ta 1ère commande Daylia — non inclus cette fois':'🎁 Filtre INOX offert à ta 1ère commande Daylia !');dp.style.color=dj===true?'#6B7280':'';}
 }
 function _refreshDayliaUI(){Object.keys(dQty).forEach(function(k){var dv=document.getElementById('dv'+k);if(dv)dv.textContent=dQty[k];var di=document.getElementById('di'+k);if(di)di.classList.toggle('on',dQty[k]>0);});var n=dTotal();document.getElementById('pDAY').classList.toggle('on',n>0);document.getElementById('dayPanel').style.display=n>0?'block':'none';}
@@ -1218,7 +1227,7 @@ var modeRelais = 'point';
 
 // Poids en grammes par produit
 var POIDS = {CAF:280, THE:500, GEL:50};
-var POIDS_MINI = {MCA:140, MTH:250, MGE:25, IRM:200}; // Mini-Cures 15j = 1/2 de la cure complète
+var POIDS_MINI = {MCA:140, MTH:250, MGE:25, IRM:200, FIL:40}; // Mini-Cures 15j = 1/2 de la cure complète
 var POIDS_DAYLIA = 100; // par unité (~100g)
 
 function calcPoids(){
