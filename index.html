@@ -1600,6 +1600,20 @@ function fixEncoding(str) {
 function render() {
   // Filtrer les commandes fantôme (soft-deleted) ET supprimées définitivement des compteurs globaux
   var ordersVisibles = orders.filter(function(o){return !o.fantome && !o.deletedAt;});
+  var _idxTel={}, _idxTelN={}, _idxNom={}, _idxParrain={}, _paidTelN={}, _pvCache={};
+  orders.forEach(function(x){
+    var t=(x.tel||'').replace(/\s/g,'');
+    var tn=t.replace(/^0/,'33').replace(/^\+/,'');
+    var n=(x.nom||'').toLowerCase().trim();
+    var p=(x.parrain||'').replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
+    (_idxTel[t]=_idxTel[t]||[]).push(x);
+    (_idxTelN[tn]=_idxTelN[tn]||[]).push(x);
+    if(n) (_idxNom[n]=_idxNom[n]||[]).push(x);
+    if(p) (_idxParrain[p]=_idxParrain[p]||[]).push(x);
+    if(x.payee) _paidTelN[tn]=true;
+  });
+  function _pv(x){ if(_pvCache[x.id]===undefined) _pvCache[x.id]=isParrainageValid(x); return _pvCache[x.id]; }
+  function _candTelNom(t,n){ var seen={},out=[]; (_idxTel[t]||[]).concat(n?(_idxNom[n]||[]):[]).forEach(function(x){ if(!seen[x.id]){seen[x.id]=1;out.push(x);} }); return out; }
   var total   = ordersVisibles.length;
   var livrees = ordersVisibles.filter(function(o){return o.livree;}).length;
   var ca      = ordersVisibles.reduce(function(s,o){return s+(parseFloat(o.total)||0);},0);
@@ -1873,7 +1887,7 @@ function render() {
       var nom = (o.nom||'').toLowerCase().trim();
       var alerteHtml = '';
       var balancePrev = 0;
-      orders.forEach(function(x){
+      _candTelNom(tel,nom).forEach(function(x){
         if(x.id===o.id) return;
         var xCreatedBefore = (x.createdAt||0) < (o.createdAt||Date.now());
         if(!xCreatedBefore) return;
@@ -1887,7 +1901,7 @@ function render() {
       var fantomeCount=0;
       var fantomeOrders=[];
       if(tel){
-        orders.forEach(function(x){
+        (_idxTel[tel]||[]).forEach(function(x){
           if(x.id===o.id) return;
           if(x.deletedAt) return; // exclut les commandes supprimées définitivement
           if(x.fantome && (x.tel||'').replace(/\s/g,'')===tel){
@@ -1903,7 +1917,7 @@ function render() {
       // ═══ Détection commandes multiples en attente ═══
       if(tel && !(o.livree && o.payee)){
         var pendingSame=[];
-        orders.forEach(function(x){
+        (_idxTel[tel]||[]).forEach(function(x){
           if(x.id===o.id) return;
           if(x.fantome) return;
           if(x.deletedAt) return; // exclut les commandes supprimées définitivement
@@ -1939,7 +1953,7 @@ function render() {
       // Compte uniquement les commandes payées (peu importe le mode : livraison, envoi, place)
       var nbCmdsClient=0;
       if(tel){
-        nbCmdsClient=orders.filter(function(x){
+        nbCmdsClient=(_idxTel[tel]||[]).filter(function(x){
           var xt=(x.tel||'').replace(/\s/g,'');
           if(xt!==tel) return false;
           if(x.fantome) return false; // Exclure les fantômes
@@ -1980,7 +1994,7 @@ function render() {
       var nbFilleuleOrders=0;
       if(telClean){
         // Compter les commandes PAYÉES PRÉCÉDENTES (avant celle-ci) de cette personne
-        var nbPaidBefore=orders.filter(function(x){
+        var nbPaidBefore=(_idxTelN[telClean]||[]).filter(function(x){
           if(x.id===o.id) return false;
           if(x.fantome) return false;
           if(!x.payee) return false;
@@ -1992,9 +2006,9 @@ function render() {
         var canUseCredit=(nbPaidBefore>=1);
         if(canUseCredit){
           // Crédit en tant que MARRAINE : +5€ par filleule validée+payée (créée AVANT cette commande)
-          orders.forEach(function(x){
+          (_idxParrain[telClean]||[]).forEach(function(x){
             if(!x.parrain || !x.payee || x.parrStatus==='rejected') return;
-            if(isParrainageValid(x)!==true) return; // ❌ Parrainage non valide (vendeurs différents ou marraine inconnue)
+            if(_pv(x)!==true) return; // ❌ Parrainage non valide (vendeurs différents ou marraine inconnue)
             var pClean=(x.parrain||'').replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
             if(pClean===telClean && (x.createdAt||0) < (o.createdAt||0)){
               nbFilleulesValid++;
@@ -2003,17 +2017,14 @@ function render() {
           });
           // Crédit en tant que FILLEULE : +5€ par commande où elle était filleule
           // ET la marraine doit avoir au moins 1 commande payée
-          orders.forEach(function(x){
+          (_idxTelN[telClean]||[]).forEach(function(x){
             if(!x.parrain || !x.payee || x.parrStatus==='rejected') return;
-            if(isParrainageValid(x)!==true) return; // ❌ Vendeurs différents → pas de crédit
+            if(_pv(x)!==true) return; // ❌ Vendeurs différents → pas de crédit
             var xTel=(x.tel||'').replace(/\s/g,'').replace(/^0/,'33');
             if(xTel!==telClean) return;
             if((x.createdAt||0) >= (o.createdAt||0)) return;
             var marraineTel=(x.parrain||'').replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
-            var marraineHasPaid=orders.some(function(y){
-              var yTel=(y.tel||'').replace(/\s/g,'').replace(/^0/,'33');
-              return y.payee && yTel===marraineTel;
-            });
+            var marraineHasPaid=!!_paidTelN[marraineTel];
             if(marraineHasPaid){
               nbFilleuleOrders++;
               creditAsFilleule+=5;
@@ -2028,7 +2039,7 @@ function render() {
       // ═══ Crédit utilisé : SOMME des creditApplied sur les commandes précédentes de la cliente ═══
       // (avant on lisait clients[k].creditUsed qui n'était jamais mis à jour → solde gonflé)
       var usedFromOrders=0;
-      orders.forEach(function(ox){
+      (_idxTelN[telClean]||[]).forEach(function(ox){
         if(ox.id===o.id) return; // on exclut la commande en cours
         if(ox.fantome||ox.deletedAt) return;
         var oxTel=(ox.tel||'').replace(/\s/g,'').replace(/^0/,'33');
@@ -4744,7 +4755,7 @@ function calcProdsTotal(prodsStr){
     }
   });
   var dianaTotal = dianaCount * 55;
-  var miniTotal = miniCount * 30;
+  var miniTotal = miniCount * 40;
   var ironTotal = ironCount * 90;
   var dayliaTotal = 0;
   if(dianaCount > 0){
@@ -5315,7 +5326,7 @@ function calcBenef(o) {
     var miniMatches = prodsNorm.match(/mini[\s-]*cure[^,+]*?(g[eé]lules?|th[eé]|caf[eé])/gi);
     if(miniMatches) miniCount = miniMatches.length;
   }
-  b += miniCount * 23.50;
+  b += miniCount * 33.50;
   // Retire les Mini-Cures du texte avant la détection Diana pour éviter les doubles comptes
   var prodsNormSansMini = prodsNorm.replace(/(\d+\s*[×x]\s*)?mini[\s-]*cure[^,+]*/gi, '');
 
@@ -5331,7 +5342,7 @@ function calcBenef(o) {
     if(/th[eé]\s*diana/.test(prodsNormSansMini)) dianaCount++;
     if(/g[eé]lules?\s*diana/.test(prodsNormSansMini)) dianaCount++;
   }
-  b += dianaCount * 42;
+  b += dianaCount * 62;
 
   // ═══ DAYLIA : prix variable - (qté × 5€ coût) ═══
   var dayliaQty = 0;
