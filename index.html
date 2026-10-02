@@ -2113,7 +2113,7 @@ function render() {
           // Affiché UNIQUEMENT si la commande contient du Daylia (filtre inox = cadeau qui va avec Daylia)
           var hasDaylia = (o.prods||'').toLowerCase().indexOf('daylia')!==-1;
           if(!hasDaylia) return '';
-          if(o.pack || o.filtreInox) return '<span style="background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900;box-shadow:0 2px 6px rgba(245,158,11,0.3)" title="Filtre INOX offert — à mettre dans le colis">🔩 Filtre INOX à joindre</span>';
+          if(o.filtreInox) return '<span style="background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900;box-shadow:0 2px 6px rgba(245,158,11,0.3)" title="Filtre INOX offert — à mettre dans le colis">🔩 Filtre INOX à joindre</span>';
           // Normalise tel + email pour matcher entre plusieurs formats
           var normTel = function(t){return (t||'').replace(/\s/g,'').replace(/^\+33/,'33').replace(/^0033/,'33').replace(/^0/,'33');};
           var oTelClean = normTel(o.tel);
@@ -5382,8 +5382,21 @@ function calcBenef(o) {
   }
   b+=vertCount*35;
 
-  return b;
+  // ═══ IRON MAGIC (prise de poids) ═══
+  var ironCount=0; var ironRe=/(\d+)\s*[×x]\s*iron\s*magic/gi; var im;
+  while((im=ironRe.exec(prodsNorm))!==null) ironCount+=parseInt(im[1]);
+  if(ironCount===0 && /iron\s*magic/.test(prodsNorm)) ironCount=1;
+
+  // ═══ MARGE RÉELLE = total réellement payé − coût d'achat (PRIX_ACHAT) ═══
+  // Remplace les marges théoriques fixes : tient compte des packs, crédits parrainage, bons fidélité, frais.
+  var PRIX_ACHAT={diana:13, mini:6.5, daylia:5, vert:15, iron:COUT_IRON_MAGIC};
+  var cout=dianaCount*PRIX_ACHAT.diana + miniCount*PRIX_ACHAT.mini + dayliaQty*PRIX_ACHAT.daylia + vertCount*PRIX_ACHAT.vert + ironCount*PRIX_ACHAT.iron;
+  var totalPaye=parseFloat(o.total);
+  if(!isNaN(totalPaye) && totalPaye>0) return Math.round((totalPaye-cout)*100)/100;
+  return b; // secours si total absent : ancien calcul théorique
 }
+// Prix d'achat Iron Magic — À RENSEIGNER (0 = non pris en compte, la marge Iron Magic est alors surestimée)
+var COUT_IRON_MAGIC=0;
 
 function renderStats() {
   var filtered = filterByPeriod(sPeriod);
@@ -5435,6 +5448,7 @@ function renderStats() {
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
     +statCard('💸','Bénéfice net',benef+'€')
     +statCard('💰','CA total',Math.round(ca)+'€')
+    +statCard('🎁','Packs vendus',filtered.filter(function(o){return !!o.pack;}).length)
     +statCard('🛵','Livrées',livrees+' / '+total)
     +statCard('⏳','En attente',attente)
     +statCard('💳','Payées',payees)
