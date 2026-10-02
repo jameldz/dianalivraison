@@ -3703,5 +3703,45 @@ function closeFiche(){
   </div>
 </div>
 
+<style>
+#zimgPop{position:fixed;z-index:9998;display:none;pointer-events:none;background:#fff;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.22);padding:6px}
+#zimgPop img{display:block;object-fit:contain;border-radius:10px}
+#zimgBox{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(20,10,30,.86);padding:20px}
+#zimgBox img{max-height:80vh;object-fit:contain;background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+#zimgBox .zx{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;width:40px;height:40px;border-radius:50%;border:none;background:#fff;font-size:18px;font-weight:800;color:#4C1D95;cursor:pointer}
+</style>
+<script>
+/* Zoom photos produits et packs : survol sur ordinateur, appui sur téléphone (02/10/2026) */
+(function(){
+  var SEL='.prod-top > img, .packc-img';
+  var pop=document.createElement('div'); pop.id='zimgPop'; pop.innerHTML='<img alt="">'; document.body.appendChild(pop);
+  var box=document.createElement('div'); box.id='zimgBox'; box.innerHTML='<button type="button" class="zx" aria-label="Fermer">✕</button><img alt="">'; document.body.appendChild(box);
+  box.addEventListener('click',function(){ box.style.display='none'; });
+  var fine=!!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
+  function isZ(t){ return t && t.matches && t.matches(SEL); }
+  if(fine){
+    document.addEventListener('mouseover',function(e){
+      var t=e.target; if(!isZ(t)) return;
+      var pi=pop.firstChild; pi.src=t.src;
+      var w=Math.round(Math.min(260, Math.max(140, (t.naturalWidth||260)*1.6)));
+      pi.style.width=w+'px'; pi.style.height=w+'px';
+      var r=t.getBoundingClientRect(), x=r.right+12, y=r.top+r.height/2-w/2-6;
+      if(x+w+14>window.innerWidth) x=r.left-w-26;
+      if(x<6) x=6; y=Math.max(6,Math.min(y,window.innerHeight-w-18));
+      pop.style.left=x+'px'; pop.style.top=y+'px'; pop.style.display='block';
+    });
+    document.addEventListener('mouseout',function(e){ if(isZ(e.target)) pop.style.display='none'; });
+    window.addEventListener('scroll',function(){ pop.style.display='none'; },true);
+  } else {
+    document.addEventListener('click',function(e){
+      var t=e.target; if(!isZ(t)) return;
+      e.stopPropagation(); e.preventDefault();
+      var bi=box.querySelector('img'); bi.src=t.src;
+      bi.style.width=Math.round(Math.min(window.innerWidth*0.9, 520, (t.naturalWidth||400)*2.2))+'px';
+      box.style.display='flex';
+    },true);
+  }
+})();
+</script>
 </body>
 </html>
