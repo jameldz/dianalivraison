@@ -1205,6 +1205,7 @@ function choosePack(id){
 }
 function cancelPack(){curPack=null;Object.keys(PACKS).forEach(function(k){var el=document.getElementById('pack_'+k);if(el)el.classList.remove('on');});updatePackStatus();}
 function updatePackStatus(){
+  try{updateFiltreInfo();}catch(e0){}
   var el=document.getElementById('packStatus');if(!el)return;
   if(!curPack){el.style.display='none';return;}
   var p=PACKS[curPack],c=_packCounts();el.style.display='block';
