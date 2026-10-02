@@ -1164,7 +1164,7 @@ function renderPackCards(){
   var h='<div style="font-size:11px;font-weight:900;color:#7C3AED;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">🎁 Nos packs — tarifs dégressifs</div>';
   Object.keys(PACKS).forEach(function(id){var p=PACKS[id],sep=_packSep(p),eco=_packEco(p);
     h+='<div class="packc'+(curPack===id?' on':'')+'" id="pack_'+id+'" onclick="choosePack(\''+id+'\')">'
-      +'<img class="packc-img" src="'+p.img+'" alt="'+p.name+'" loading="lazy">'
+      +'<img class="packc-img" src="'+p.img+'" alt="'+p.name+'" width="88" height="88">'
       +'<div class="packc-body">'
       +'<div class="packc-name">'+p.name+(p.badge?'<span class="packc-badge">'+p.badge+'</span>':'')+'</div>'
       +'<div class="packc-desc">'+p.desc+'</div>'
