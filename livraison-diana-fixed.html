@@ -1980,6 +1980,8 @@ async function checkCagnotteDispo(){
     // Numéro trop court
     document.getElementById('cagnotteBanner').style.display='none';
     window._cagnotteAvailable = 0;
+    cachedAllOrders = [];
+    try{updateFiltreInfo();}catch(e0){}
     return;
   }
   if(telNorm === window._cagnotteLastChecked) return; // déjà vérifié
@@ -2141,8 +2143,9 @@ async function checkCagnotteDispo(){
       }
     } catch(e){
       console.warn('checkCagnotteDispo error',e);
+    } finally {
+      try{updatePackStatus();updateFiltreInfo();}catch(e2){}
     }
-    try{updatePackStatus();updateFiltreInfo();}catch(e2){}
   }, 600);
 }
 
