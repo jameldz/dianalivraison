@@ -1820,7 +1820,9 @@ function updateDayliaRecap(){
 }
 function chQ(id,d){
   var el=document.getElementById('q'+id);
-  el.value=Math.max(1,Math.min(99,parseInt(el.value)+d));
+  var cur=parseInt(el.value)||1;
+  if(d<0 && cur<=1){ el.value=1; var pEl=document.getElementById('p'+id); if(pEl&&pEl.classList.contains('on')) togProd(id); return; } // à 1, « − » retire le produit
+  el.value=Math.max(1,Math.min(99,cur+d));
   updateTotal();
   // Recalculer et mettre à jour TOUS les produits Diana
   var qtyDiana=0;
