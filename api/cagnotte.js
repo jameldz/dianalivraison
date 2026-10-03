@@ -57,8 +57,8 @@ function computeCagnotte(allOrders, telNorm){
   var PARR_10_DEPUIS = 1790805600000;
   function orderTs(o){ if(o && o.createdAt) return +o.createdAt; var m=/^(\d{2})(\d{2})(\d{2})/.exec((o&&o.num)||''); return m? Date.UTC(2000+parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10)) : 0; }
   function gainMarraine(o){ return orderTs(o) >= PARR_10_DEPUIS ? 10 : 5; }
-  // Un parrainage ne compte qu'UNE fois par filleule (sa 1re commande parrainée) — commandes à partir du 3 oct 2026, non rétroactif
-  var PARR_UNIQUE_DEPUIS = 1790978400000;
+  // Un parrainage ne compte qu'UNE fois par filleule (sa 1re commande parrainée) — pour toutes les commandes (décision du 03/10/2026) ; les crédits déjà utilisés restent acquis
+  var PARR_UNIQUE_DEPUIS = 0;
   function parrainageCompte(o){
     var ts = orderTs(o); if(ts < PARR_UNIQUE_DEPUIS) return true;
     var t = _normTel(o.tel); if(!t) return true;
