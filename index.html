@@ -675,12 +675,12 @@ var JBIN = CORRECT_BIN;
 // ═══ WRAPPERS CLOUD : essai direct jsonbin, fallback proxy Vercel /api/cloud ═══
 // Si l'appareil ne peut pas joindre api.jsonbin.io (iPhone bloqué, réseau strict, ITP),
 // on retombe automatiquement sur /api/cloud (serverless function Vercel qui relaie).
-window._cloudUseProxyOnly = false; // flag mémorisant qu'on doit utiliser le proxy (après échec direct)
+window._cloudUseProxyOnly = true; // jsonbin abandonné (quota épuisé en mai 2026) : tout passe par /api/cloud (Upstash)
 async function cloudGET(){
   var directOK = !window._cloudUseProxyOnly;
   if(directOK){
     try {
-      var r = await cloudGET();
+      var r = await fetch('https://api.jsonbin.io/v3/b/'+JBIN+'/latest',{headers:{'X-Master-Key':JKEY}});
       if(r && r.ok) return r;
     } catch(e){}
     // Direct a échoué — on bascule sur proxy pour cette session
@@ -818,10 +818,18 @@ function syncFromJsonbin(){
     if(typeof _doPushCloud==='function') _doPushCloud();
     return; // _doPushCloud fait le merge bidirectionnel, pas besoin de pull séparé
   }
-  cloudGET()
-    .then(function(r){return r.ok?r.json():null;})
+  // ═══ Économie : on lit d'abord la « version » du cloud (quelques octets) ; on ne télécharge tout que si elle a changé ═══
+  fetch('/api/cloud?v=1&t='+Date.now())
+    .then(function(rv){ return rv.ok ? rv.json() : null; })
+    .catch(function(){ return null; })
+    .then(function(vj){
+      if(!vj) return null; // cloud injoignable : on réessaiera au prochain tour
+      if(vj.v && window._cloudVersionVue && vj.v===window._cloudVersionVue) return null; // rien de neuf
+      return cloudGET().then(function(r){return r.ok?r.json():null;});
+    })
     .then(function(d){
       if(!d||!d.record||!Array.isArray(d.record.orders)) return;
+      if(d.record.lastSync) window._cloudVersionVue = d.record.lastSync;
       if(savePending) return;
       // Re-check : nouvelle modif locale arrivée pendant le fetch ?
       if(typeof hasPendingSync==='function' && hasPendingSync()) return;
@@ -832,6 +840,8 @@ function syncFromJsonbin(){
       orders.forEach(function(o){localMap[o.id]=o.lastModified||0;});
       var remoteMap={};
       remoteOrders.forEach(function(o){remoteMap[o.id]=o.lastModified||0;});
+      // Cet appareil a-t-il des commandes absentes du cloud ou plus récentes ? → il devra les renvoyer (auto-réparation)
+      var localAhead=orders.some(function(o){ return !(o.id in remoteMap) || (o.lastModified||0)>(remoteMap[o.id]||0); });
       // Si remote a des commandes que local n'a pas, ou des versions plus récentes → fusionner
       var needsUpdate=false;
       remoteOrders.forEach(function(ro){
@@ -862,6 +872,8 @@ function syncFromJsonbin(){
         migrateOrders();
         render();
       }
+      if(localAhead){ setTimeout(function(){ try{ saveStorage(); }catch(e){} }, 800); }
+      else { try{ window._lastCoreSnap=JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{}}); }catch(e){} }
     }).catch(function(){});
 }
 
@@ -1002,6 +1014,8 @@ function _doPushCloud(){
   // ═══ GARDE-FOU ANTI-ÉCRASEMENT ═══
   // Si on essaie de push beaucoup moins de commandes que la dernière version connue → BLOQUER
   // (évite qu'un onglet vide écrase le cloud plein)
+  // ═══ Pause après échecs répétés (au lieu de bombarder le cloud) : 15 s, 30 s, 1 min, 2 min… max 5 min ═══
+  if(window._pushFails>0 && Date.now()-(window._pushFailAt||0) < Math.min(300000, 15000*Math.pow(2, window._pushFails-1))) return false;
   var lastKnownCount = parseInt(localStorage.getItem('diana_last_safe_count')||'0',10);
   // Alerte si baisse > 5 commandes OU > 10%
   var diff = lastKnownCount - orders.length;
@@ -1028,7 +1042,9 @@ function _doPushCloud(){
     cloudGET()
       .then(function(r){return r.ok?r.json():null;})
       .then(function(d){
-        var cloudOrders = (d && d.record && Array.isArray(d.record.orders)) ? d.record.orders : [];
+        // Jamais d'envoi sans lecture réussie du cloud (sinon on écraserait sans fusionner)
+        if(!d || !d.record || !Array.isArray(d.record.orders)) throw new Error('pull_failed');
+        var cloudOrders = d.record.orders;
         // ═══ MERGE FIELD-LEVEL avec timestamps par flag ═══
         // Pour chaque commande : prend la base (lastModified le plus récent), MAIS
         // pour chaque flag protégé (livree/payee/confirme/clientConfirme), prend
@@ -1156,7 +1172,8 @@ function _doPushCloud(){
           }
         }
         // Maintenant push le merged au cloud
-        var mergedBody = JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{},marraineNotifs:window.marraineNotifs||{},knownMarraines:window.knownMarraines||{},lastSync:Date.now()});
+        var _lsPush=Date.now();
+        var mergedBody = JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{},marraineNotifs:window.marraineNotifs||{},knownMarraines:window.knownMarraines||{},lastSync:_lsPush});
         if(mergedBody === _saveLastPushedSnap){
           try { localStorage.removeItem('diana_pending_sync'); } catch(e){}
           if(typeof render==='function') try{render();}catch(e){}
@@ -1165,19 +1182,23 @@ function _doPushCloud(){
         return cloudPUT(mergedBody).then(function(r){
           if(r.ok){
             _saveLastPushedSnap = mergedBody;
+            window._lastCoreSnap = JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{}});
+            window._cloudVersionVue = _lsPush;
+            window._pushFails = 0;
             lastSaveTime = Date.now();
             window.lastSyncOk = Date.now();
             try { localStorage.setItem('diana_lastSyncOk', String(Date.now())); } catch(e){}
             try { localStorage.removeItem('diana_pending_sync'); } catch(e){}
             if(typeof render==='function') try{render();}catch(e){}
-          } else if(retries<3){
-            retries++;
-            setTimeout(pullMergePush, 2000*retries);
+          } else {
+            window._pushFails=(window._pushFails||0)+1; window._pushFailAt=Date.now();
+            if(retries<1){ retries++; setTimeout(pullMergePush, 5000); }
           }
         });
       })
       .catch(function(e){
-        if(retries<3){retries++;setTimeout(pullMergePush, 2000*retries);}
+        window._pushFails=(window._pushFails||0)+1; window._pushFailAt=Date.now();
+        if(retries<1){retries++;setTimeout(pullMergePush, 5000);}
       });
   }
   pullMergePush();
@@ -1197,6 +1218,7 @@ function _flushCloudBeacon(){
       console.warn('[FlushBeacon] BLOQUÉ — orders='+orders.length+' vs safe='+lastKnownCount);
       return;
     }
+    if(!hasPendingSync()) return; // rien de non envoyé → pas d'envoi complet à chaque mise en arrière-plan
     var body=JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{},lastSync:Date.now()});
     if(body===_saveLastPushedSnap) return;
     // Si on est en mode proxy (jsonbin direct injoignable), utiliser /api/cloud
@@ -1264,7 +1286,9 @@ if(!window._watchdogStarted){
   window._watchdogStarted = true;
   setInterval(function(){
     var snap = JSON.stringify({orders:orders,clients:clients,joursFermes:joursFermes,stock:currentStock||{}});
-    if(snap !== _saveLastPushedSnap || hasPendingSync()){
+    // 1er passage : on prend la référence (avant, la comparaison échouait toujours → renvoi complet toutes les 30 s)
+    if(window._lastCoreSnap===undefined && !hasPendingSync()){ window._lastCoreSnap=snap; return; }
+    if(snap !== window._lastCoreSnap || hasPendingSync()){
       saveStorage();
     }
   }, 30000);
@@ -1489,12 +1513,13 @@ setInterval(function(){
   else updateSyncBadge('pending');
 }, 3000);
 
-// Auto-sync toutes les 15 secondes
+// Auto-sync toutes les 30 secondes, uniquement quand le dashboard est affiché (onglet caché = pas de requêtes)
 setInterval(function(){
   if(savePending) return;
   if(Date.now()-lastSaveTime<10000) return;
+  if(document.visibilityState && document.visibilityState!=='visible') return;
   syncFromJsonbin();
-},15000);
+},30000);
 
 // Sync IMMÉDIAT quand l'utilisateur revient sur l'onglet/app
 // (iOS Safari suspend setInterval en arrière-plan, donc ce listener est essentiel)
