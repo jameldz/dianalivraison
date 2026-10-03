@@ -57,10 +57,25 @@ function computeCagnotte(allOrders, telNorm){
   var PARR_10_DEPUIS = 1790805600000;
   function orderTs(o){ if(o && o.createdAt) return +o.createdAt; var m=/^(\d{2})(\d{2})(\d{2})/.exec((o&&o.num)||''); return m? Date.UTC(2000+parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10)) : 0; }
   function gainMarraine(o){ return orderTs(o) >= PARR_10_DEPUIS ? 10 : 5; }
+  // Un parrainage ne compte qu'UNE fois par filleule (sa 1re commande parrainée) — commandes à partir du 3 oct 2026, non rétroactif
+  var PARR_UNIQUE_DEPUIS = 1790978400000;
+  function parrainageCompte(o){
+    var ts = orderTs(o); if(ts < PARR_UNIQUE_DEPUIS) return true;
+    var t = _normTel(o.tel); if(!t) return true;
+    for(var i=0;i<allOrders.length;i++){
+      var x = allOrders[i];
+      if(x===o || !x.parrain || x.fantome || x.deletedAt || x.parrStatus==='rejected') continue;
+      if(_normTel(x.tel)!==t) continue;
+      var tx = orderTs(x);
+      if(tx < ts || (tx===ts && String(x.num||x.id||'') < String(o.num||o.id||''))) return false;
+    }
+    return true;
+  }
   var creditMarraine = 0, nbFilleules = 0;
   allOrders.forEach(function(o){
     if(!o.parrain || !o.payee || o.fantome || o.parrStatus==='rejected') return;
     if(_normTel(o.parrain)!==telNorm) return;
+    if(!parrainageCompte(o)) return;
     if(o.parrStatus!=='validated'){
       var fV = (o.vendeur||'').toLowerCase().trim();
       if(!fV || (monVendeur && fV!==monVendeur)) return;
@@ -72,6 +87,7 @@ function computeCagnotte(allOrders, telNorm){
   var creditFilleule = 0, nbFoisFilleule = 0;
   mesCommandes.forEach(function(o){
     if(!o.parrain || !o.payee || o.fantome || o.parrStatus==='rejected') return;
+    if(!parrainageCompte(o)) return;
     if(o.parrStatus!=='validated'){
       var marraineTel = _normTel(o.parrain);
       var marraineVend = '';
