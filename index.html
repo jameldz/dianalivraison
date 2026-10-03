@@ -4733,62 +4733,55 @@ var editFieldsData={};
 var EDIT_LABELS={nom:'👤 Nom',tel:'📞 Téléphone',snap:'👻 Snap',email:'📧 Email',addr:'📍 Adresse',prods:'🛍️ Produits',total:'💰 Total',slot:'📅 Créneaux',modeLiv:'🚚 Mode livraison',modePay:'💳 Paiement',vendeur:'🏪 Vendeur',note:'📝 Note',parrain:'🎁 Parrain',parrainTel:'📞 Tél parrain',parrainSnap:'👻 Snap parrain',parrainEmail:'📧 Email parrain'};
 var EDIT_HIDDEN=['id','num','livree','payee','confirme','clientConfirme','createdAt','parrStatus','balance','cadeau','filtre','genre','parrGenre','nbCmd','livGratuite','reduc','filtreInox','pickedSlot','lastModified','creditApplied','modeRelais','fantome','fantomeAt','confirmeAt','completedAt','tel2','tel2Nom'];
 
-function calcProdsTotal(prodsStr){
-  var parts=(prodsStr||'').split(',').map(function(p){return p.trim();}).filter(Boolean);
-  var dianaCount=0, dayliaCount=0, miniCount=0, ironCount=0;
-  parts.forEach(function(p){
-    var pl=p.toLowerCase();
-    // ═══ Iron Magic : prix fixe 90€/u — à détecter EN PREMIER (ne matche ni Diana ni Mini-Cure) ═══
-    if(/iron[\s-]*magic/i.test(pl)){
-      var qtyIrm = pl.match(/(\d+)\s*[×x]/);
-      ironCount += qtyIrm ? parseInt(qtyIrm[1]) : 1;
-      return;
-    }
-    // ═══ Mini-Cure 7j : à détecter AVANT Diana (sinon "Mini-Cure Gélules" matcherait Diana) ═══
-    if(/mini[\s-]*cure/i.test(pl)){
-      var qtyM = pl.match(/(\d+)\s*[×x]/);
-      miniCount += qtyM ? parseInt(qtyM[1]) : 1;
-      return;
-    }
-    // ═══ Cas Daylia combiné : "Thé Daylia — 2× Slim Tea + Super Detox" ═══
-    var dayliaMatch=p.match(/^Thé Daylia\s*[—–-]\s*(.+)$/i);
-    if(dayliaMatch){
-      var variants=dayliaMatch[1].split(/\s*\+\s*/);
-      variants.forEach(function(v){
-        var m=v.trim().match(/^(\d+)\s*[×x]/);
-        dayliaCount+=m?parseInt(m[1]):1;
+// ═══ Lecture des produits d'une commande, tous formats (« 2× Café Diana », « Café Diana x2 », Daylia avec ou sans « Thé Daylia — », étiquette [Pack …]) ═══
+var DAYLIA_V=[['dn','Douce Nuit'],['sd','Super Detox'],['st','Slim Tea'],['pm','Purify Me'],['gu','Skin Glow']];
+function parseProds(str){
+  var r={cafe:0,the:0,gel:0,miniGel:0,miniThe:0,miniCaf:0,iron:0,filtre:0,dn:0,sd:0,st:0,pm:0,gu:0,dayliaX:0,autres:[],pack:''};
+  var s=String(str||'');
+  var mp=s.match(/\[\s*(Pack[^\]]*)\]\s*$/i); if(mp){ r.pack=mp[1].trim(); s=s.slice(0,mp.index); }
+  s.split(',').forEach(function(raw){
+    var it=raw.trim(); if(!it) return;
+    var q=1, m;
+    if((m=it.match(/^(\d+)\s*[×x]\s*(.+)$/i))){ q=parseInt(m[1],10)||1; it=m[2]; }
+    else if((m=it.match(/^(.+?)\s*[×x]\s*(\d+)\s*$/i))){ q=parseInt(m[2],10)||1; it=m[1]; }
+    var n=it.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if(/iron\s*magic/.test(n)){ r.iron+=q; return; }
+    if(/filtre/.test(n)){ r.filtre+=q; return; }
+    if(/mini[\s-]*cure/.test(n)){ if(/gelule/.test(n)) r.miniGel+=q; else if(/cafe/.test(n)) r.miniCaf+=q; else r.miniThe+=q; return; }
+    if(/daylia|douce nuit|super detox|slim tea|purify me|skin glow/.test(n)){
+      var body=n.replace(/^.*?daylia\s*[\u2014\u2013-]?\s*/,''), found=0;
+      body.split('+').forEach(function(part){
+        var pt=part.trim(), pq=1, pm2=pt.match(/^(\d+)\s*[×x]\s*(.+)$/), hit=false; if(pm2){ pq=parseInt(pm2[1],10)||1; pt=pm2[2]; }
+        DAYLIA_V.forEach(function(v){ if(pt.indexOf(v[1].toLowerCase())!==-1){ r[v[0]]+=pq; found+=pq; hit=true; } });
+        if(!hit && /daylia/.test(pt)){ r.dayliaX+=pq; found+=pq; }
       });
+      if(!found) r.dayliaX+=q;
       return;
     }
-    // Ancien format Daylia "Thé Daylia x3"
-    if(pl.indexOf('daylia')!==-1){
-      var qtyMatchD=pl.match(/[x×]\s*(\d+)/);
-      dayliaCount+=qtyMatchD?parseInt(qtyMatchD[1]):1;
-      return;
-    }
-    // Produits Diana
-    if(pl.indexOf('café')!==-1 || pl.indexOf('gélules')!==-1 || pl.indexOf('thé diana')!==-1 || pl.indexOf('diana')!==-1){
-      var qtyMatchP=pl.match(/[x×]\s*(\d+)/);
-      dianaCount+=qtyMatchP?parseInt(qtyMatchP[1]):1;
-    }
+    if(/diana/.test(n)){ if(/cafe/.test(n)) r.cafe+=q; else if(/gelule/.test(n)) r.gel+=q; else if(/\bthe\b/.test(n)) r.the+=q; else r.gel+=q; return; }
+    r.autres.push(raw.trim());
   });
-  var dianaTotal = dianaCount * 55;
-  var miniTotal = miniCount * 40;
-  var ironTotal = ironCount * 90;
-  var dayliaTotal = 0;
-  if(dianaCount > 0){
-    dayliaTotal = dayliaCount * 20;
-  } else {
-    if(dayliaCount===1) dayliaTotal=25;
-    else if(dayliaCount===2) dayliaTotal=45;
-    else if(dayliaCount===3) dayliaTotal=60;
-    else if(dayliaCount>=4) dayliaTotal=dayliaCount*20;
-  }
-  return dianaTotal + dayliaTotal + miniTotal + ironTotal;
+  return r;
 }
+// ═══ Prix : identiques au lien de commande (Diana 75 / 72,50 / 70 € depuis le 1er oct ; 55 € avant) ═══
+var PRIX_DEPUIS=1790805600000; // 1er oct 2026 00:00 Paris
+var PACKS_DASH={'Pack 1 mois':{diana:1,daylia:3,price:130},'Pack 3 mois':{diana:3,daylia:9,price:360}};
+function prixDianaDash(n,ts){ if(ts && ts<PRIX_DEPUIS) return 55; return n>=3?70:(n===2?72.5:75); }
+function prixDayliaTier(n){ return n<=0?0:(n===1?25:n===2?45:n===3?60:60+(n-3)*20); }
+function detailPrix(prodsStr, ts, packName){
+  var p=parseProds(prodsStr), old=!!(ts && ts<PRIX_DEPUIS);
+  var nD=p.cafe+p.the+p.gel, nDay=p.dn+p.sd+p.st+p.pm+p.gu+p.dayliaX, nMini=p.miniGel+p.miniThe+p.miniCaf;
+  var sub=nD*prixDianaDash(nD,ts)+nMini*(old?30:40)+p.iron*90+p.filtre*10+(nD>0?nDay*20:prixDayliaTier(nDay));
+  var pk=(packName!==undefined&&packName!==null)?packName:p.pack, def=PACKS_DASH[pk]||null;
+  var packOk=!!(def && nD===def.diana && nDay===def.daylia), remise=0;
+  if(packOk){ var s=prixDianaDash(def.diana,0)*def.diana+def.daylia*20; remise=Math.max(0,Math.round((s-def.price)*100)/100); }
+  return {p:p,old:old,nD:nD,nDay:nDay,nMini:nMini,sub:Math.round(sub*100)/100,pack:pk||'',packDef:def,packOk:packOk,remise:remise};
+}
+function calcProdsTotal(prodsStr, ts, packName){ var r=detailPrix(prodsStr,ts,packName); return Math.round((r.sub-r.remise)*100)/100; }
 
 function recalcEditTotal(){
-  var subTotal=calcProdsTotal(editFieldsData.prods||'');
+  var dp=detailPrix(editFieldsData.prods||'', editFieldsData.createdAt, editFieldsData.pack);
+  var subTotal=dp.sub;
   var frais=0;
   var ml=editFieldsData.modeLiv||'livraison';
   if(ml==='livraison') frais=5;
@@ -4796,11 +4789,46 @@ function recalcEditTotal(){
   else if(ml==='envoi') frais=6;
   if(editFieldsData.livGratuite) frais=0;
   if(subTotal>=150) frais=0;
-  var newTotal=subTotal+frais;
+  var fid=editFieldsData.fidele11?20:0;
+  var credit=parseFloat(editFieldsData.creditApplied)||0;
+  var base=Math.max(0, subTotal-dp.remise-fid+frais-credit);
+  var newTotal=(editFieldsData.modePay==='lydia')?Math.round(base*1.0328):Math.round(base*100)/100;
   editFieldsData.total=newTotal;
   var totalInput=document.querySelector('#editOrderFields input[data-field="total"]');
   if(totalInput) totalInput.value=newTotal;
+  var rc=document.getElementById('editRecap');
+  if(rc){
+    var f=function(x){return (Math.round(x*100)/100).toString().replace('.',',');};
+    var l=['Produits '+f(subTotal)+'€'];
+    if(dp.remise>0) l.push('Remise '+dp.pack+' −'+f(dp.remise)+'€');
+    if(fid) l.push('Fidélité −20€');
+    if(credit) l.push('Crédit −'+f(credit)+'€');
+    l.push(ml==='place'?'Sur place':(frais>0?'Livraison '+f(frais)+'€':'Livraison offerte'));
+    if(editFieldsData.modePay==='lydia') l.push('Lydia +3,28%');
+    var w='';
+    if(editFieldsData.pack && !dp.packOk && dp.packDef) w+='<div style="color:#B91C1C;font-weight:800;margin-top:3px">⚠️ La composition ne correspond pas au '+editFieldsData.pack+' ('+dp.packDef.diana+' cure'+(dp.packDef.diana>1?'s':'')+' Diana + '+dp.packDef.daylia+' thés Daylia) : remise non appliquée</div>';
+    if(dp.old) w+='<div style="color:#92400E;margin-top:3px">Commande d\'avant le 1er oct : ancien tarif Diana (55€)</div>';
+    if(dp.p.autres.length) w+='<div style="color:#B91C1C;margin-top:3px">⚠️ Article(s) non chiffré(s) : '+dp.p.autres.join(', ')+'</div>';
+    rc.innerHTML='<div>'+l.join(' · ')+' → <b>'+f(newTotal)+'€</b></div>'+w;
+  }
 }
+function recalcEditTotalRecapOnly(){
+  // Affiche le détail du prix à l'ouverture SANS toucher au total enregistré
+  var saved=editFieldsData.total;
+  var ti=document.querySelector('#editOrderFields input[data-field="total"]'); var tv=ti?ti.value:null;
+  recalcEditTotal();
+  var calc=editFieldsData.total;
+  editFieldsData.total=saved; if(ti) ti.value=tv;
+  var rc=document.getElementById('editRecap');
+  if(rc && Math.abs((parseFloat(saved)||0)-calc)>0.01) rc.innerHTML+='<div style="color:#6B7280;margin-top:3px">Total enregistré : '+saved+'€ (le calcul ne s\'applique que si tu modifies les produits)</div>';
+}
+function setEditPack(name){
+  editFieldsData.pack=name||'';
+  rebuildProdsString();
+  renderEditFields();
+  recalcEditTotal();
+}
+
 
 function editOrder(id){
   var o=orders.find(function(x){return x.id===id;});
@@ -4879,40 +4907,25 @@ function changeProdQty(key,delta){
 }
 
 function rebuildProdsString(){
-  var qCafe=parseInt((document.getElementById('qty-cafe')||{}).value)||0;
-  var qThe=parseInt((document.getElementById('qty-the')||{}).value)||0;
-  var qGel=parseInt((document.getElementById('qty-gel')||{}).value)||0;
-  // Variantes Daylia
-  var dayliaVariants=[
-    {key:'qty-day-dn',name:'🌙 Douce Nuit'},
-    {key:'qty-day-sd',name:'✨ Super Detox'},
-    {key:'qty-day-st',name:'🍃 Slim Tea'},
-    {key:'qty-day-pm',name:'💧 Purify Me'},
-    {key:'qty-day-gu',name:'🌟 Skin Glow'}
-  ];
-  // Mini-Cures
-  var qMiniGel=parseInt((document.getElementById('qty-mini-gel')||{}).value)||0;
-  var qMiniThe=parseInt((document.getElementById('qty-mini-the')||{}).value)||0;
-  var qMiniCaf=parseInt((document.getElementById('qty-mini-caf')||{}).value)||0;
-  var qMiniIrm=parseInt((document.getElementById('qty-mini-irm')||{}).value)||0;
-  var parts=[];
-  if(qCafe>0) parts.push('Café Diana'+(qCafe>1?' x'+qCafe:''));
-  if(qThe>0) parts.push('Thé Diana'+(qThe>1?' x'+qThe:''));
-  if(qGel>0) parts.push('Gélules Diana'+(qGel>1?' x'+qGel:''));
-  if(qMiniGel>0) parts.push((qMiniGel>1?qMiniGel+'× ':'1× ')+'Mini-Cure Gélules 15j');
-  if(qMiniThe>0) parts.push((qMiniThe>1?qMiniThe+'× ':'1× ')+'Mini-Cure Thé 15j');
-  if(qMiniCaf>0) parts.push((qMiniCaf>1?qMiniCaf+'× ':'1× ')+'Mini-Cure Café 15j');
-  if(qMiniIrm>0) parts.push((qMiniIrm>1?qMiniIrm+'× ':'1× ')+'Iron Magic — Prise de Poids');
-  // Assembler les variantes Daylia en une seule entrée "Thé Daylia — variants"
-  var dayliaNames=[];
-  dayliaVariants.forEach(function(v){
-    var q=parseInt((document.getElementById(v.key)||{}).value)||0;
-    if(q>0) dayliaNames.push((q>1?q+'× ':'')+v.name);
-  });
-  if(dayliaNames.length>0){
-    parts.push('Thé Daylia — '+dayliaNames.join(' + '));
-  }
-  editFieldsData.prods=parts.join(', ');
+  var g=function(id){ return parseInt((document.getElementById(id)||{}).value)||0; };
+  var qCafe=g('qty-cafe'), qThe=g('qty-the'), qGel=g('qty-gel'), parts=[];
+  if(qCafe>0) parts.push(qCafe+'× Café Diana');
+  if(qThe>0) parts.push(qThe+'× Thé Diana');
+  if(qGel>0) parts.push(qGel+'× Gélules Diana');
+  var mg=g('qty-mini-gel'), mt=g('qty-mini-the'), mc=g('qty-mini-caf');
+  if(mg>0) parts.push(mg+'× Mini-Cure Gélules 15j');
+  if(mt>0) parts.push(mt+'× Mini-Cure Thé 15j');
+  if(mc>0) parts.push(mc+'× Mini-Cure Café 15j');
+  var ir=g('qty-mini-irm'); if(ir>0) parts.push(ir+'× Iron Magic — Prise de Poids');
+  var fi=g('qty-fil'); if(fi>0) parts.push(fi+'× Filtre INOX');
+  var names=[], nDay=0, ex=window._editExtra||{autres:[],dayliaX:0};
+  DAYLIA_V.forEach(function(v){ var q=g('qty-day-'+v[0]); if(q>0){ names.push((q>1?q+'× ':'')+v[1]); nDay+=q; } });
+  if(ex.dayliaX>0){ names.push(ex.dayliaX+'× Thé Daylia (variante non précisée)'); nDay+=ex.dayliaX; }
+  if(names.length) parts.push(((qCafe+qThe+qGel)>0?nDay:1)+'× Thé Daylia — '+names.join(' + '));
+  (ex.autres||[]).forEach(function(a){ parts.push(a); });
+  var s=parts.join(', ');
+  if(editFieldsData.pack && detailPrix(s, editFieldsData.createdAt, editFieldsData.pack).packOk) s+=' ['+editFieldsData.pack+']';
+  editFieldsData.prods=s;
 }
 function editFieldRow(key,val){
   var label=EDIT_LABELS[key]||key;
@@ -4948,124 +4961,42 @@ function editFieldRow(key,val){
       +'</select></div>';
   }
   if(key==='prods'){
-    // Liste des variétés Daylia
-    var DAYLIA_VARIANTS_EDIT=[
-      {key:'day-dn',name:'🌙 Douce Nuit',searchName:'douce nuit'},
-      {key:'day-sd',name:'✨ Super Detox',searchName:'super detox'},
-      {key:'day-st',name:'🍃 Slim Tea',searchName:'slim tea'},
-      {key:'day-pm',name:'💧 Purify Me',searchName:'purify me'},
-      {key:'day-gu',name:'🌟 Skin Glow',searchName:'skin glow'}
-    ];
-    // Parser intelligent : extraire les quantités existantes
-    var lower=(valStr||'').toLowerCase();
-    function getQtyDiana(productKey){
-      var pattern=new RegExp(productKey+'[^,]*?[x×](\\d+)','i');
-      var qm=lower.match(pattern);
-      if(qm) return parseInt(qm[1]);
-      return lower.indexOf(productKey)!==-1?1:0;
-    }
-    function getQtyDaylia(searchName){
-      // Chercher "2× 🍃 Slim Tea" ou "🍃 Slim Tea" dans la chaîne
-      // Le nom peut être précédé d'un "Nx" pour la quantité
-      var re=new RegExp('(\\d+)\\s*[×x]\\s*[^+,]*?'+searchName.replace(/\s+/g,'\\s+'),'i');
-      var m=lower.match(re);
-      if(m) return parseInt(m[1])||1;
-      // Sans quantité : présent = 1
-      if(lower.indexOf(searchName)!==-1) return 1;
-      return 0;
-    }
-    // Mini-Cures 7j : détection par regex SPÉCIFIQUE avant la détection Diana classique
-    function getQtyMini(productKey){
-      // Cherche "1× Mini-Cure Gélules 15j" ou "Mini-Cure Café 15j"
-      var re = new RegExp('(\\d+)\\s*[×x]\\s*mini[\\s-]*cure[^,+]*?'+productKey, 'gi');
-      var qty = 0, m;
-      while((m=re.exec(lower))!==null) qty += parseInt(m[1]);
-      if(qty===0){
-        var re2 = new RegExp('mini[\\s-]*cure[^,+]*?'+productKey, 'gi');
-        var matches = lower.match(re2);
-        if(matches) qty = matches.length;
-      }
-      return qty;
-    }
-    var qtyMiniGel = getQtyMini('g[eé]lules?');
-    var qtyMiniThe = getQtyMini('th[eé]');
-    var qtyMiniCaf = getQtyMini('caf[eé]');
-    var qtyMiniIrm = (function(){
-      var m = lower.match(/(\d+)\s*[×x]\s*iron[\s-]*magic/i);
-      if(m) return parseInt(m[1])||1;
-      return /iron[\s-]*magic/i.test(lower) ? 1 : 0;
-    })();
-    // Retire les Mini-Cures du texte avant détection Diana pour éviter double comptage
-    var lowerSansMini = lower.replace(/(\d+\s*[×x]\s*)?mini[\s-]*cure[^,+]*/gi, '');
-    function getQtyDianaSansMini(productKey){
-      var pattern = new RegExp(productKey+'[^,]*?[x×](\\d+)','i');
-      var qm = lowerSansMini.match(pattern);
-      if(qm) return parseInt(qm[1]);
-      return lowerSansMini.indexOf(productKey)!==-1 ? 1 : 0;
-    }
-    var qtyCafe=getQtyDianaSansMini('café diana');
-    var qtyThe=getQtyDianaSansMini('thé diana');
-    var qtyGel=getQtyDianaSansMini('gélules diana');
-    // Quantités pour chaque variante Daylia
-    var qtyDayliaVariants={};
-    DAYLIA_VARIANTS_EDIT.forEach(function(v){
-      qtyDayliaVariants[v.key]=getQtyDaylia(v.searchName);
-    });
-
+    var P=parseProds(valStr);
+    window._editExtra={autres:P.autres.slice(), dayliaX:P.dayliaX};
+    var oldT=!!(editFieldsData.createdAt && editFieldsData.createdAt<PRIX_DEPUIS);
+    var rowP=function(k,name,qty,bgOn,bdOn){
+      return '<div style="display:flex;align-items:center;gap:8px;background:'+(qty>0?bgOn:'#f5f5f5')+';border:1.5px solid '+(qty>0?bdOn:'#ddd')+';border-radius:10px;padding:8px 10px">'
+        +'<div style="flex:1;font-size:13px;font-weight:800;color:#333;display:flex;align-items:center;gap:7px">'+name+'</div>'
+        +'<button type="button" onclick="changeProdQty(\''+k+'\',-1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid #ddd;background:#fff;font-size:18px;font-weight:900;cursor:pointer;color:#B91C1C">−</button>'
+        +'<input type="text" id="qty-'+k+'" value="'+qty+'" readonly style="width:44px;height:32px;text-align:center;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-weight:900;font-family:inherit;background:#fff;color:#333">'
+        +'<button type="button" onclick="changeProdQty(\''+k+'\',1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid #ddd;background:#fff;font-size:18px;font-weight:900;cursor:pointer;color:#15803D">+</button>'
+        +'</div>';
+    };
+    var sec=function(t,c){ return '<div style="margin-top:6px;font-size:11px;font-weight:800;color:'+c+';padding:4px 2px">'+t+'</div>'; };
     var prodsHtml='<div style="margin:8px 0 4px"><label style="font-size:11px;font-weight:700;color:#555">'+label+' <span style="color:#999;font-weight:500;font-size:10px">(total recalculé auto)</span></label></div>'
       +'<div style="display:flex;flex-direction:column;gap:8px">';
-    // Produits Diana
-    var prodsDiana=[
-      {key:'cafe',name:'☕ Café Diana',qty:qtyCafe},
-      {key:'the',name:'🍵 Thé Diana',qty:qtyThe},
-      {key:'gel',name:'💊 Gélules Diana',qty:qtyGel}
-    ];
-    prodsDiana.forEach(function(p){
-      var bgCol=p.qty>0?'#E8F5E9':'#f5f5f5';
-      var borderCol=p.qty>0?'#66BB6A':'#ddd';
-      prodsHtml+='<div style="display:flex;align-items:center;gap:8px;background:'+bgCol+';border:1.5px solid '+borderCol+';border-radius:10px;padding:8px 10px">'
-        +'<div style="flex:1;font-size:13px;font-weight:800;color:#333">'+p.name+'</div>'
-        +'<button type="button" onclick="changeProdQty(\''+p.key+'\',-1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid #ddd;background:#fff;font-size:18px;font-weight:900;cursor:pointer;color:#B91C1C">−</button>'
-        +'<input type="text" id="qty-'+p.key+'" value="'+p.qty+'" readonly style="width:44px;height:32px;text-align:center;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-weight:900;font-family:inherit;background:#fff;color:#333">'
-        +'<button type="button" onclick="changeProdQty(\''+p.key+'\',1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid #ddd;background:#fff;font-size:18px;font-weight:900;cursor:pointer;color:#15803D">+</button>'
-        +'</div>';
-    });
-    // Séparateur Mini-Cures 7j (Découverte)
-    prodsHtml+='<div style="margin-top:6px;font-size:11px;font-weight:800;color:#E65100;padding:4px 2px">🌟 Mini-Cures Découverte 15j · 30€ pièce</div>';
-    var prodsMini=[
-      {key:'mini-gel',name:'🌟 Mini-Cure Gélules 15j',qty:qtyMiniGel},
-      {key:'mini-the',name:'🌟 Mini-Cure Thé 15j',qty:qtyMiniThe},
-      {key:'mini-caf',name:'🌟 Mini-Cure Café 15j',qty:qtyMiniCaf},
-      {key:'mini-irm',name:'💪 Iron Magic — Prise de Poids',qty:qtyMiniIrm}
-    ];
-    prodsMini.forEach(function(p){
-      var bgCol=p.qty>0?'#FFF3E0':'#f5f5f5';
-      var borderCol=p.qty>0?'#F59E0B':'#ddd';
-      prodsHtml+='<div style="display:flex;align-items:center;gap:8px;background:'+bgCol+';border:1.5px solid '+borderCol+';border-radius:10px;padding:8px 10px">'
-        +'<div style="flex:1;font-size:13px;font-weight:800;color:#333">'+p.name+'</div>'
-        +'<button type="button" onclick="changeProdQty(\''+p.key+'\',-1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid #ddd;background:#fff;font-size:18px;font-weight:900;cursor:pointer;color:#B91C1C">−</button>'
-        +'<input type="text" id="qty-'+p.key+'" value="'+p.qty+'" readonly style="width:44px;height:32px;text-align:center;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-weight:900;font-family:inherit;background:#fff;color:#333">'
-        +'<button type="button" onclick="changeProdQty(\''+p.key+'\',1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid #ddd;background:#fff;font-size:18px;font-weight:900;cursor:pointer;color:#15803D">+</button>'
-        +'</div>';
-    });
-    // Séparateur Daylia
-    prodsHtml+='<div style="margin-top:6px;font-size:11px;font-weight:800;color:#7C3AED;padding:4px 2px">🌿 Variantes Thé Daylia</div>';
-    // 5 variantes Daylia
-    DAYLIA_VARIANTS_EDIT.forEach(function(p){
-      var qty=qtyDayliaVariants[p.key];
-      var bgCol=qty>0?'#F3E8FF':'#f5f5f5';
-      var borderCol=qty>0?'#A855F7':'#ddd';
-      prodsHtml+='<div style="display:flex;align-items:center;gap:8px;background:'+bgCol+';border:1.5px solid '+borderCol+';border-radius:10px;padding:8px 10px">'
-        +'<div style="flex:1;font-size:13px;font-weight:800;color:#333">'+p.name+'</div>'
-        +'<button type="button" onclick="changeProdQty(\''+p.key+'\',-1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid #ddd;background:#fff;font-size:18px;font-weight:900;cursor:pointer;color:#B91C1C">−</button>'
-        +'<input type="text" id="qty-'+p.key+'" value="'+qty+'" readonly style="width:44px;height:32px;text-align:center;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-weight:900;font-family:inherit;background:#fff;color:#333">'
-        +'<button type="button" onclick="changeProdQty(\''+p.key+'\',1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid #ddd;background:#fff;font-size:18px;font-weight:900;cursor:pointer;color:#15803D">+</button>'
-        +'</div>';
-    });
+    prodsHtml+=sec('💊 Cures Diana · '+(oldT?'55€ (tarif d\'avant le 1er oct)':'75€ · 72,50€ dès 2 · 70€ dès 3'),'#15803D');
+    prodsHtml+=rowP('cafe','☕ Café Diana',P.cafe,'#E8F5E9','#66BB6A')+rowP('the','🍵 Thé Diana',P.the,'#E8F5E9','#66BB6A')+rowP('gel','💊 Gélules Diana',P.gel,'#E8F5E9','#66BB6A');
+    prodsHtml+=sec('🌟 Mini-Cures Découverte 15j · '+(oldT?'30':'40')+'€ pièce','#E65100');
+    prodsHtml+=rowP('mini-gel','🌟 Mini-Cure Gélules 15j',P.miniGel,'#FFF3E0','#F59E0B')+rowP('mini-the','🌟 Mini-Cure Thé 15j',P.miniThe,'#FFF3E0','#F59E0B')+rowP('mini-caf','🌟 Mini-Cure Café 15j',P.miniCaf,'#FFF3E0','#F59E0B');
+    prodsHtml+=sec('🧩 Autres produits','#9A3412');
+    prodsHtml+=rowP('mini-irm','<img src="data:image/webp;base64,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" alt="" style="width:26px;height:26px;border-radius:6px;object-fit:cover;background:#fff;border:1px solid #eee">Iron Magic · 90€',P.iron,'#FFF3E0','#F59E0B');
+    prodsHtml+=rowP('fil','<img src="data:image/webp;base64,UklGRk4NAABXRUJQVlA4IEINAAAwPgCdASrIAMgAPjEYikOiIaER6gU0IAMEtLdwufiN+cO1wxa9E/sT3J5CXV/mV9b/3P9j9sv3feG/7j4iPsv/Qb9uAP6vf7b0evxPOH7Na4F6N7A/5z9ZP/Y8lX7v/t/+17iX64/8f13/Y9+4vsefs6R0IHJiK6eFl1XTwsuq6a73L9VQaaPaR//dKDXML0vMiy3Q3/1Z7DkNnMwrOXdWBYoHiG1EnAgM1QKbNmBoDwrZy7rK6JmNO/cEHaJQtRHthnMjdSIasPssNwVnUv/g38B/ByY/la1ypqahrnhju6M4xu3PSMNWmxphKyeNnUfFHCJxvRerZqmpOpzgMyZHgQHo5mvo4tJPzhBTQWXQ80r8d8FA2REZicviIjolDTKwQVz0L6mTbVPRqvmEq0iuePcuikJYPG6rBCR8zd96Z0wBg4+++ExoW3NMIeZa4k3qXh60j47NMji8vrx+2jnarOMSenWTEXG7Gr7tFXzuHoRhvrWz34MR6Z21zfDv0QxURdNuMM3L4ElEbLDHJCpDmixgKTXuE6gmoyvsuLPIHAP981YbhdXil1kCem0zE7X2h91K/Gmo/I305dU8Ppxsg27UtDXTBisq/fb/yOF7RqK+MhR0BChjdko7FyYqohyJIQOSHcI2uDUbhorp4WXVdPCy6rp4WXVLAAD+/9mcAqss0qlC8SsU4IMiebpAEMvanqdof8jT9Jd/5EYputr5KA2kHQtku4HgFFs9WDQlf8W3PililxuFklag3t4P76kEHVxSznA4rKb7dCPMNzLZ5bfTB6kt4bWasXI9bM3PAZZ8SvWesLbLWdK1WqBgy0LvB9ns35wZCs9KrEmO68hiZwTkZyyb/UtuXGQTDy7SJU23acy5tBQ4DVBWe9dIpU3Y7sL4nD0nkywJx0njoN+bwSRj6tl+vuE5o251J+0kVKoN1OSD5Kqy8mcT9rvHncpbW9IInNClop3EnKAxVQeQwZhGK8WSavjVY68coRhDy3WKcbJnxunv5B0vSdxKHYIixoy7Hyqi5+7eAQEme2cJ2eMvQfZbDzZquG4k466uC9GSAu2klp61PYdjTzGFCGuHtW1GTLFdw1V4/UudB4DBlWUxLPSoRzgdqusaW0QxJPvXFfi7S/ZJYndei5s8mswBFLW8oHgu6bkoCFDqymnuPd05fiRM6Xn10YZhqQF9SMrU3E2zhujdxkjVVTJdgl7EJbL9XrtjIPGNwgCXhNDnnm3P/4z2hGTsceV09qqOOsfmoU3ZzRzAh7/37xfwd721YqR4GUNm+CMfFrUPf/JkC/xEvYoA0bDuqKABXsbVdXrU+xE0GD222/8ypn931uamddNuq6SHpmfF/AeX0iA/jqLFNIRagsHSE8eglxkdc7SP+xbeUtud5PPflOonjwvl89a61f4/ksaGaTFPPjj/KBlusnB1YRioX9Mi/rBwlx/tj9ZrWkhcsLQnl8M73rUsrSoHgPo+axg+3AIIqWphG5LVIZ/wy+gUjgewYeB1PTxBJBWy2QRhoumy9DFqQEzffapeba3Eu9Vml4Iv1ioq7aTPl+LrC2XH9/JKMlAH81Y7R2qlyuo7HwXohc+R6TGAz84GZK1gHiwGBv9oe8sp8PqHGXMTeNZEgfnTLoAElJYJvlhgN5q+Rg1pPBqx3+iYa9/1VjMmGa6Be9QWChLoTubpYzn7FkAbtHJIpfdgPs+5xiDvETnl9dO9QXEFRSZ8imS5PqB9Iz9mIxlfHt0nwejNhr6XndJ5Ndf0o+IS5Nnm5d8NVRqmqZGsAgAR+NxHrwn87guPU4VrwkcCTtfa/UEABT4RO6W9j5lGvounajQ7WJiujwyS5VJAaQ4CF+HswR9jFO9l6eC8SxjSfYxT3FHFYyRLQWqe2gjQZMQkNDuGz8l8v40Re+wh9Y967OEF2Y+XtCcvQ/iPp9EL2F/duefu1PqXeTkC7iVObl+BbrBUQpZrKyU3N+xYOEn8F9aiB1Qr7LZVD4h6uvdRCfcH03vvNTAQYMboMH0QaUYiJ/RcPYjNBSIzaCU3v7zk+UaZ0ebYyADheFKctX8fnAVflrABsfQWtp2IudFAOllFbJ/KYJ4yqbeYhzjyEhuPOMw1sUku95N34uZOJnrPk76zT8po5OD9dxsSLbVOPRT9x9YqUJC3+DWnsoxuS5g6m+MT8Jj7C894MP4pLfQGf8y2mol3BPXu7vSiumn7orD6aIbP6QffnwRB+VY18K+c6G+CAnCcQQSyn4T7fuir4Zq/Zl9vmzNW06nNsF8FqjwizXrjQ30pnThI/g87/4RX5fTVDbd2T3jX5YoHYn/yhpBjjpuvJvl7cQyePcwMIN275WG++a/NITK+FzjPRv64JnlzMZK3qqk2u4NWsHO+unReNUxZOCgEwWMV0hebdZReqWMeaXf3hz5IECChHJdyczLfiiWEZGiOW5fXce66vcQuWD63LvjasNKC7FIPBczRcLTPkFyPoLjPiD84vxGGcJyvW/hNGSUKyVAD2vnRwZKli4/YmNJ5g1x1RHjRYp5p6kP+i6aaQrpTRxPbEAK8SgLZAP6gUJXb3EDT2ShagRnVFWBAe+kd8ckQPF+FuJOc8WLPPsKivj7J/sWf/+JXBCNZPIxsV9QzDqf9GVUqz3OibAYez+bKGgNskw0qsVlJa8n3jHbTg8hbQ0dB16m6sSL3CWg13qJOLyETG4032RgWLKEa2w5WHmgHaj0k8/reoUX3FEIc1v/xmgf3XWRXmuxpBROj/lBSl7ZOYmiIGgfypI5J8oGF16KxNauejFDp3pn8uy/wmgE+OKQ/AeVVKs/DZJvywmEWj15i9QRY6PXc0OXDzzcjsWv0IPw3PtAfWBz/LusgCuu3zcOBlXNLuy3O6pGNabfa0fMB4mxUwQF/OYNq5yMe7c5onGkPYdWL8EReWRUOViFEASnbhSrlNnDwjPZEDRDsaWAdSK+gShaD/BX+w8cChSGVliIpvq6AljeZey2+/eDe+Ks7ooSJurtDZQs+1heeBbQQWGWSUhJ2QK+w5fKqI7gl008ItyVGN7kWagDOHqnS5vC2Iarhm4OqBuvhrvUC5fBd3Ln8afD9VQiO3F8gTHGLaDyQtg5Ldsu2lFcp1RCQnBZcS9JZUWWZDGnrVokJgOgtOrpOfG3VqI49PfHQE15czUXEPT/T29m8LayfIfWVZ8/e1FAHDOkE4HEJbjDE+hGR0fetC4j7JauKTTl+Q4htrjeCeLaPn9MXBoYWYHLBTXXwz0hker0urHZhKcdVfASVnN9DFMeOA5YNHVU629w9lYXqRYZwjQIdRosq8uaSLfawl3XxxvgQRKnejuOO95nOyZ2gCkUTOmXp/QN/Pl6CJWfj+1c4CvXD/XGnYEWOrxwDlRdCDYV/r+HeslgVecHVDi/w3ASQUlYeJc+UCKUHAa2gzSLSe3Xwqc3XjB4y9WhAEWPememjRFmYTsB9jreq5R4Jt2AbvVChw0ycB1KFFu1v/QE8PnaHjVrTc/vcnzc9wjxXmiSGUSVzvF5pMHhiO8v/yaEqVlJxIWtarFQOGiaGXyf/bunhH9ArJs3CscNbZ8MOMuEGu9H8wsu/PdChzK7l0fFuh+XaD2UtT7RB22GKQe2waNkR40afSmFxSgQ5H30/PQwvjbny9XAFpogUmVvppJgjZLvH9Pj0CEqXJ6DluafGoU31E31DE8nAUVtUzrc15ytHCzbl7wOV+lb8x8vKKtmcH56fg1UA3d9PFhjZu+fzx77kiyu+4zl4ebnLSr31XjbsCJeawELFwDRIYz0VYxL8P6DmX1ZwIjnUMpiRd+KXI+Cokcer45nZN9MxcSM6frZLLEaMKNjSO+Bg3za7zIH+hY6vGNO9s/GgEigUCPck8JEvOyc/NEl/6POB/IywDCrb7hGKLAnIlqAutohddFocmPL+zn83UFwzo8mz9HTvoDpZctbw14WJHjj3YLcLsFpZLrVhnxMcOaU/OKJfV7B3hZ9/B7UxGhg3zobr4YT47FqYtB13Z/hrVx1zdlYUgd4C7ng+OpicblpVmJ/Yx41UTYjLiEmoscnLv1w9XRGzFYXKY4AbMLdxKpYvUoSqtNNYYUb7o7J0LCHTGIxPeJ8M9jg7YahPAGpxe0JyGCcq9AamxCoQV5oIRFKwchwFWRjyP+zcE6zpYrAFJ6WPkxIFgCQyu7C9iaqlqGrr0HnW+ida17CH9ycTrs9W6JD1l1tvlalXJb1pjMHRpz0NY8TEb6QNSSOHVhNNn0bxif59KYbRaZawwHJ69dOmn6HZkT07qQq0EamqXSDIgV1bbug8l52B6wMvrUlb6smEVgh1KGWtvzdN2dUKXsqMw61ffi7bdiR7vYt+uieOupNYtl4oeych+fX15akGB/eVvutR38/gUN2YyT3o+gE1S/u7LeOcV1wWuogVz8WyQfhtvtBGJa0XUOwPmg3HwzlGJShx5w02o6yirhdih+70lRUiUibXuxOCxjcN2dtALJ61o1CR9ahPXK9VvF+GSMwa7AAAAAAA" alt="" style="width:26px;height:26px;border-radius:6px;object-fit:cover;background:#fff;border:1px solid #eee">Filtre INOX · 10€ <span style="font-weight:600;color:#888;font-size:11px">(vendu seul)</span>',P.filtre,'#FFF3E0','#F59E0B');
+    prodsHtml+=sec('🌿 Variantes Thé Daylia','#7C3AED');
+    var icoD={dn:'🌙',sd:'✨',st:'🍃',pm:'💧',gu:'🌟'};
+    DAYLIA_V.forEach(function(v){ prodsHtml+=rowP('day-'+v[0],icoD[v[0]]+' '+v[1],P[v[0]],'#F3E8FF','#A855F7'); });
+    if(P.dayliaX>0) prodsHtml+='<div style="font-size:11px;color:#92400E;font-weight:700">⚠️ '+P.dayliaX+' thé(s) Daylia sans variante précisée (conservé(s), compté(s) dans le prix)</div>';
     prodsHtml+='</div>';
-    prodsHtml+='<div style="margin-top:6px;font-size:10px;color:#666;font-style:italic">💡 Daylia : 1=25€ · 2=45€ · 3=60€ · 4+=20€/u (mais 20€/u si combiné avec Diana)</div>';
+    prodsHtml+='<div style="margin-top:6px;font-size:10px;color:#666;font-style:italic">💡 Daylia : 1=25€ · 2=45€ · 3=60€ · +20€/u au-delà — 20€/u si pris avec une cure Diana</div>';
+    var pkSel=editFieldsData.pack||'';
+    prodsHtml+=sec('🎁 Pack','#7C3AED')+'<div style="display:flex;gap:6px">'
+      +['','Pack 1 mois','Pack 3 mois'].map(function(n){ var on=(pkSel===n); return '<button type="button" onclick="setEditPack(\''+n+'\')" style="flex:1;padding:8px 4px;border-radius:9px;border:1.5px solid '+(on?'#7C3AED':'#ddd')+';background:'+(on?'#F3E8FF':'#fff')+';font-size:12px;font-weight:800;color:'+(on?'#6D28D9':'#555')+';cursor:pointer;font-family:inherit">'+(n||'Aucun')+(n==='Pack 1 mois'?' · 130€':n==='Pack 3 mois'?' · 360€':'')+'</button>'; }).join('')
+      +'</div>';
+    prodsHtml+='<div id="editRecap" style="margin-top:8px;font-size:11px;color:#444;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:7px 9px;line-height:1.45"></div>';
+    setTimeout(function(){ try{ recalcEditTotalRecapOnly(); }catch(e){} },0);
     return prodsHtml;
   }
+  if(key==='pack') return '';
   if(key==='total'){
     return '<div style="display:flex;align-items:center;gap:6px;margin:8px 0">'
       +'<label style="min-width:90px;font-size:11px;font-weight:700;color:#555">'+label+'</label>'
