@@ -66,7 +66,9 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 .packc-old{font-size:12.5px;color:#9CA3AF;text-decoration:line-through;font-weight:700}
 .packc-save{background:#DCFCE7;color:#166534;font-size:10px;font-weight:900;padding:2px 7px;border-radius:20px;white-space:nowrap}
 .packc-accroche{font-size:11px;font-weight:800;color:#7C3AED}
-.packc-filtre{font-size:10.5px;font-weight:800;color:#B45309;background:#FFF7ED;border:1px solid #FDBA74;border-radius:7px;padding:3px 7px;margin-top:2px;display:inline-block}
+.packc-filtre{display:block;box-sizing:border-box;width:100%;text-align:center;font-size:10.5px;font-weight:600;line-height:1.45;color:#9A3412;background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:7px 8px 8px;margin-top:6px}
+.packc-filtre b{display:block;font-size:12px;font-weight:900;color:#C2410C;margin-bottom:1px}
+.packc-filtre .val{display:inline-block;margin-top:4px;background:#fff;border:1px solid #FDBA74;border-radius:20px;padding:1px 9px;font-size:10px;font-weight:800;color:#C2410C}
 .packc-filtre.deja{color:#6B7280;background:#F3F4F6;border-color:#D1D5DB}
 .packc.on .packc-img{box-shadow:0 3px 10px rgba(124,58,237,.25)}
 .prod:last-child{margin-bottom:0;}
@@ -213,7 +215,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 </div>
 
 <div class="body">
-<div style="background:linear-gradient(135deg,#7C3AED,#5B21B6);border-radius:0 0 14px 14px;padding:14px 16px;margin-bottom:14px;text-align:center"><div style="font-size:13px;color:#EDE9FE;font-weight:700;line-height:1.7">👯 <b style="color:#FCD34D">Parraine tes amies</b> et gagne <b style="color:#FCD34D;font-size:15px">10€</b> de crédit par amie qui commande !<br>🎁 <b style="color:#fff">Ce mois-ci, une petite attention t'attend</b> dans chaque commande.<br>🏆 <b style="color:#FCD34D">Fidélité :</b> ta 11ème commande = <b style="color:#FCD34D;font-size:15px">-20€</b> offerts !</div></div>
+<div style="background:linear-gradient(135deg,#7C3AED,#5B21B6);border-radius:0 0 14px 14px;padding:14px 16px;margin-bottom:14px;text-align:center"><div style="font-size:13px;color:#EDE9FE;font-weight:700;line-height:1.7">👯 <b style="color:#FCD34D">Parraine tes amies</b> et gagne <b style="color:#FCD34D;font-size:15px">10€</b> de crédit par nouvelle amie qui commande !<br>🎁 <b style="color:#fff">Ce mois-ci, une petite attention t'attend</b> dans chaque commande.<br>🏆 <b style="color:#FCD34D">Fidélité :</b> ta 11ème commande = <b style="color:#FCD34D;font-size:15px">-20€</b> offerts !</div></div>
 
 
 <!-- MODE LIVRAISON -->
@@ -374,6 +376,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
         <div style="font-size:14px;font-weight:900;color:#1B5E20">🎉 Gagne <strong>5€ de crédit</strong> sur cette commande !</div>
         <div style="font-size:11px;color:#2E7D32;margin-top:2px">Utilisable dès ta prochaine commande</div>
         <div style="font-size:10px;color:#555;margin-top:3px">Ta marraine gagne aussi 10€ grâce à toi</div>
+        <div style="font-size:11px;color:#1B5E20;font-weight:800;margin-top:5px;line-height:1.35">☝️ Valable une seule fois<br>à ta 1ère commande</div>
       </div>
     </div>
     <div id="parrBody" style="display:block;margin-top:10px">
@@ -1142,8 +1145,8 @@ var dQty = {DN:0,SD:0,ST:0,PM:0,GU:0};
 // price = prix du pack. Le prix barré (somme des produits séparés), l'économie et la remise se calculent tout seuls.
 // Pour supprimer une remise : remettre price = prix séparé → le barré disparaît.
 var PACKS={
-  '1m':{name:'Pack 1 mois',diana:1,daylia:3,price:130,img:'img/pack-1mois.webp',badge:'⭐ Le plus choisi',accroche:'',desc:'1 cure Diana <b>au choix : Gélules, Thé ou Café</b> + 3 thés Daylia',fiche:'PACK1M'},
-  '3m':{name:'Pack 3 mois',diana:3,daylia:9,price:360,img:'img/pack-3mois.webp',badge:'💎 Meilleure valeur',accroche:'120€ le mois',desc:'3 cures Diana, une par mois, <b>au choix : Gélules, Thé ou Café</b> + 9 thés Daylia',fiche:'PACK3M'}
+  '1m':{name:'Pack 1 mois',diana:1,daylia:3,price:130,img:'img/pack-1mois.webp',badge:'⭐ Le plus choisi',accroche:'',desc:'1 cure Diana <b>au choix&nbsp;: Gélules, Thé ou Café</b> + 3 thés Daylia',fiche:'PACK1M'},
+  '3m':{name:'Pack 3 mois',diana:3,daylia:9,price:360,img:'img/pack-3mois.webp',badge:'💎 Meilleure valeur',accroche:'120€ le mois',desc:'3 cures Diana, une par mois, <b>au choix&nbsp;: Gélules, Thé ou Café</b> + 9 thés Daylia',fiche:'PACK3M'}
 };
 var FILTRE_VALEUR=10;
 var curPack=null;
@@ -1165,7 +1168,7 @@ function clientDejaDaylia(){
     return deja||!!(reg[telC2]||reg[telNoPlus]||(emailC2&&reg[emailC2]));
   }catch(e){return null;}
 }
-function filtreTxt(){var dj=clientDejaDaylia();return dj===true?'ℹ️ Filtre INOX : déjà reçu à ta 1ère commande Daylia — non inclus':'🔩 1 filtre INOX offert<br><span style="white-space:nowrap">à ta 1ère commande Daylia</span><br><span style="white-space:nowrap">valeur '+FILTRE_VALEUR+'€</span>';}
+function filtreTxt(){var dj=clientDejaDaylia();return dj===true?'ℹ️ Filtre INOX : déjà reçu à ta 1ère commande Daylia — non inclus':'<b>🎁 1 filtre INOX offert</b>à ta 1ère commande Daylia<br><span class="val">valeur '+FILTRE_VALEUR+'€</span>';}
 function renderPackCards(){
   var box=document.getElementById('packsBox');if(!box)return;
   var h='<div style="font-size:11px;font-weight:900;color:#7C3AED;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">🎁 Nos packs</div>';
@@ -2106,10 +2109,14 @@ async function checkCagnotteDispo(){
       } else {
         var PARR_10_DEPUIS = 1790805600000; // 1er oct 2026 : 5 € avant, 10 € depuis
         var gainMarraine = function(o){ var ts=(o&&o.createdAt)?+o.createdAt:0; return ts >= PARR_10_DEPUIS ? 10 : 5; };
+        var PARR_UNIQUE_DEPUIS = 1790978400000; // 3 oct 2026 : un parrainage ne compte qu'une fois par filleule (non rétroactif)
+        var _pts = function(o){ return (o&&o.createdAt)?+o.createdAt:0; };
+        var parrainageCompte = function(o){ var ts=_pts(o); if(ts<PARR_UNIQUE_DEPUIS) return true; var t=_normTel(o.tel); if(!t) return true; for(var i=0;i<allOrders.length;i++){ var x=allOrders[i]; if(x===o||!x.parrain||x.fantome||x.deletedAt||x.parrStatus==='rejected') continue; if(_normTel(x.tel)!==t) continue; var tx=_pts(x); if(tx<ts||(tx===ts&&String(x.num||x.id||'')<String(o.num||o.id||''))) return false; } return true; };
         var creditMarraine = 0;
         allOrders.forEach(function(o){
           if(!o.parrain || !o.payee || o.fantome || o.parrStatus==='rejected') return;
           if(_normTel(o.parrain)!==telNorm) return;
+          if(!parrainageCompte(o)) return;
           if(o.parrStatus!=='validated'){
             var fV = (o.vendeur||'').toLowerCase().trim();
             if(!fV || (monVendeur && fV!==monVendeur)) return;
@@ -2120,6 +2127,7 @@ async function checkCagnotteDispo(){
         var creditFilleule = 0;
         mesCommandes.forEach(function(o){
           if(!o.parrain || !o.payee || o.fantome || o.parrStatus==='rejected') return;
+          if(!parrainageCompte(o)) return;
           if(o.parrStatus!=='validated'){
             var marraineTel = _normTel(o.parrain);
             var marraineVend = '';
@@ -3541,7 +3549,7 @@ function notifMarraineRecap(){
   if(!lastParrainTel&&!lastParrainSnap){toast('⚠️ Pas de numéro ni snap du parrain');return;}
   var prenom=lastClientNom?lastClientNom.split(' ')[0]:'';
   var label=lastParrGenre==='m'?'parrain':'marraine';
-  var msg='Coucou ! C\'est '+prenom+' 😊\n\nJe viens de passer commande chez Diana Detox grâce à toi 🎁\nTu recevras *+5€ de crédit* sur ta cagnotte dès que ma commande sera validée et payée !\n\n⚠️ Pour que le parrainage compte, il faut que ta filleule *et* toi ayez chacune passé au moins une commande via le formulaire Diana Detox *avec la même vendeuse*.\n\n👉 Suis ta cagnotte ici :\nhttps://dianalivraison.vercel.app/parrain\n\nMerci '+label+' ❤️';
+  var msg='Coucou ! C\'est '+prenom+' 😊\n\nJe viens de passer commande chez Diana Detox grâce à toi 🎁\nTu recevras *+10€ de crédit* sur ta cagnotte dès que ma commande sera validée et payée !\n\n⚠️ Pour que le parrainage compte, il faut que ta filleule *et* toi ayez chacune passé au moins une commande via le formulaire Diana Detox *avec la même vendeuse*.\n\n👉 Suis ta cagnotte ici :\nhttps://dianalivraison.vercel.app/parrain\n\nMerci '+label+' ❤️';
   if(lastParrainTel){
     var tel=lastParrainTel.replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
     window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msg),'_blank');

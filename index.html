@@ -2300,14 +2300,14 @@ async function tog(id, field) {
         if(cleanTel(ox.parrain)===parrTel && isParrainageValid(ox)===true){nbFilleules++;cagnotte+=gainMarraine(ox);}
       });
       // Garde-fou supplémentaire : si comptage = 0, n'envoie pas le message (incohérent)
-      if(nbFilleules===0){
-        toast('⚠️ Parrainage non validé pour '+marrLabel.split(' ')[0]+' (vendeur différent ou marraine sans commande)');
+      if(nbFilleules===0 || isParrainageValid(o)!==true){
+        toast('⚠️ Parrainage non compté pour '+marrLabel.split(' ')[0]+' (déjà compté pour cette cliente, vendeur différent ou marraine sans commande)');
       } else {
       var msgM='🎁 Bonne nouvelle '+marrLabel.split(' ')[0]+' !\n\n'+prenom+' vient de payer sa commande ✅\nTu gagnes *+'+gainMarraine(o)+'€* sur ta cagnotte !\n\n💰 Ta cagnotte : *'+cagnotte+'€* ('+nbFilleules+' filleule'+(nbFilleules>1?'s':'')+' payée'+(nbFilleules>1?'s':'')+')\n';
       if(nbFilleules<20) msgM+='\n🎁 Encore '+(20-nbFilleules)+' filleule'+(20-nbFilleules>1?'s':'')+' pour ta Smartbox Bien-être !\n';
       else if(nbFilleules<30) msgM+='\n🎁 Smartbox débloquée !\n💎 Encore '+(30-nbFilleules)+' filleule'+(30-nbFilleules>1?'s':'')+' pour ta Box Prestige VIP !\n';
       else msgM+='\n💎 Box Prestige VIP débloquée ! Contacte-moi pour la récupérer !\n';
-      msgM+='\n👉 Continue à partager - 10€ par personne qui commande 🚀';
+      msgM+='\n👉 Continue à partager - 10€ par nouvelle personne qui commande 🚀';
       msgM+='\n\n⚠️ Le crédit est utilisable à condition que toi et ta filleule ayez chacune passé au moins une commande via le formulaire Diana Detox *avec la même vendeuse*.';
       msgM+='\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
       queueMessage(parrTel, msgM, marrLabel.split(' ')[0], 'Notifier la marraine ('+marrLabel+')');
@@ -2322,7 +2322,7 @@ async function tog(id, field) {
       var vendeurParam=(o.vendeur||'').toLowerCase();
       var snapParamT=o.snap?'&parrsnap='+encodeURIComponent(o.snap):'';
       var parrainageLink='https://dianalivraison.vercel.app/livraison-diana-fixed.html?parr='+telFilleuleClean+snapParamT+(vendeurParam?'&v='+vendeurParam:'');
-      var msgFilleule='🎉 Bonne nouvelle '+prenom+' !\n\nMerci pour ta commande ✅\nTu as gagné *5€ de crédit* grâce à ton parrainage !\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n⚠️ Condition : ta marraine et toi devez chacune avoir passé au moins une commande via le formulaire Diana Detox *avec la même vendeuse*.\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque personne qui commande avec ton lien, tu gagnes *+10€* de crédit, et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖\u200d♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+parrainageLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
+      var msgFilleule='🎉 Bonne nouvelle '+prenom+' !\n\nMerci pour ta commande ✅\nTu as gagné *5€ de crédit* grâce à ton parrainage !\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n⚠️ Condition : ta marraine et toi devez chacune avoir passé au moins une commande via le formulaire Diana Detox *avec la même vendeuse*.\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque nouvelle personne qui commande avec ton lien, tu gagnes *+10€* de crédit (une seule fois par personne), et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖\u200d♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+parrainageLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
       queueMessage(o.tel, msgFilleule, prenom, 'Crédit filleule pour '+prenom);
       } else {
         // Parrainage non valide : on alerte l'user au lieu de promettre 5€ à la cliente
@@ -2622,9 +2622,24 @@ function cleanTel(t){
 var PARR_10_DEPUIS = 1790805600000; // 2026-10-01 00:00 Paris
 function orderTs(o){ if(o && o.createdAt) return +o.createdAt; var m=/^(\d{2})(\d{2})(\d{2})/.exec((o&&o.num)||''); return m? Date.UTC(2000+parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10)) : 0; }
 function gainMarraine(filleuleOrder){ return orderTs(filleuleOrder) >= PARR_10_DEPUIS ? 10 : 5; }
+// ═══ Un parrainage ne compte qu'UNE fois par filleule (sa 1re commande parrainée) — commandes à partir du 3 oct 2026, non rétroactif ═══
+var PARR_UNIQUE_DEPUIS = 1790978400000; // 2026-10-03 00:00 Paris
+function parrainageCompte(o){
+  var ts=orderTs(o); if(ts < PARR_UNIQUE_DEPUIS) return true;
+  var t=cleanTel(o.tel||''); if(!t) return true;
+  for(var i=0;i<orders.length;i++){
+    var x=orders[i];
+    if(x===o || (o.id && x.id===o.id) || !x.parrain || x.fantome || x.deletedAt || x.parrStatus==='rejected') continue;
+    if(cleanTel(x.tel||'')!==t) continue;
+    var tx=orderTs(x);
+    if(tx<ts || (tx===ts && String(x.num||x.id||'')<String(o.num||o.id||''))) return false;
+  }
+  return true;
+}
 function isParrainageValid(filleuleOrder){
   if(!filleuleOrder || !filleuleOrder.parrain) return false;
   if(filleuleOrder.parrStatus==='rejected') return false;
+  if(!parrainageCompte(filleuleOrder)) return false; // déjà parrainée sur une commande précédente → ne compte plus
   if(filleuleOrder.parrStatus==='validated') return true;
   var mT=cleanTel(filleuleOrder.parrain);
   var fV=(filleuleOrder.vendeur||'').toLowerCase().trim();
@@ -3346,7 +3361,7 @@ function renderBusinessStats(){
   }
 
   // ═══ STATS PARRAINAGE ═══
-  var filleulesPayees=paid.filter(function(o){return o.parrain && o.parrStatus==='validated';});
+  var filleulesPayees=paid.filter(function(o){return o.parrain && o.parrStatus==='validated' && parrainageCompte(o);});
   var nbFilleulesPayees=filleulesPayees.length;
   var caFilleules=sumCA(filleulesPayees);
   // Bénéfice RÉEL des commandes filleules (marge produits)
@@ -4150,7 +4165,7 @@ function renderParrainage(){
           var fVendParam=fOrder&&fOrder.vendeur?'&v='+fOrder.vendeur.toLowerCase():'';
           var fSnapParam=f.snap?'&parrsnap='+encodeURIComponent(f.snap):'';
           var fParrainageLink='https://dianalivraison.vercel.app/livraison-diana-fixed.html?parr='+telCleanF+fSnapParam+fVendParam;
-          var msgF='🎉 Salut '+prenomF+' !\n\nMerci pour ta commande chez Diana Detox ✅\n\nTu as gagné *5€ de crédit* grâce à ton parrainage 🎁\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque personne qui commande avec ton lien, tu gagnes *+10€* de crédit, et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖‍♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+fParrainageLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+fSnapSig;
+          var msgF='🎉 Salut '+prenomF+' !\n\nMerci pour ta commande chez Diana Detox ✅\n\nTu as gagné *5€ de crédit* grâce à ton parrainage 🎁\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque nouvelle personne qui commande avec ton lien, tu gagnes *+10€* de crédit (une seule fois par personne), et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖‍♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+fParrainageLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+fSnapSig;
           var encF=encodeURIComponent(msgF);
           if(telCleanF && /^\d{8,}$/.test(telCleanF)){
             var telSmsF='+'+telCleanF;
@@ -4538,7 +4553,7 @@ function notifyFilleule(orderId){
   var vendParam=o.vendeur?'&v='+o.vendeur.toLowerCase():'';
   var snapParam=o.snap?'&parrsnap='+encodeURIComponent(o.snap):'';
   var parrLink='https://dianalivraison.vercel.app/livraison-diana-fixed.html?parr='+telFilleule+snapParam+vendParam;
-  var msg='🎉 Salut '+prenom+' !\n\nMerci pour ta commande chez Diana Detox ✅\n\nTu as gagné *5€ de crédit* grâce à ton parrainage 🎁\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque personne qui commande avec ton lien, tu gagnes *+10€* de crédit, et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖‍♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+parrLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
+  var msg='🎉 Salut '+prenom+' !\n\nMerci pour ta commande chez Diana Detox ✅\n\nTu as gagné *5€ de crédit* grâce à ton parrainage 🎁\n\n💰 Ces 5€ sont utilisables *à partir* de ta prochaine commande - il te suffit de nous le rappeler quand tu souhaites les utiliser 😊\n\n✨ *Envie de cumuler plus de crédit ?*\nMets ton lien dans ta bio Snap, Insta, TikTok ou partage-le directement à tes copines. Pour chaque nouvelle personne qui commande avec ton lien, tu gagnes *+10€* de crédit (une seule fois par personne), et à 20 filleules tu reçois une *Smartbox Bien-être* 🧖‍♀️ (puis une *Box Prestige VIP* à 30 💎).\n\n👉 Ton lien personnel à partager :\n'+parrLink+'\n\nMerci pour ta confiance ❤️\n\n👻 Snap : '+getVendeurSnap(o.vendeur);
   openMsgApp(o.tel||'', msg, prenom);
 }
 
