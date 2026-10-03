@@ -40,13 +40,43 @@ export default async function handler(req) {
 
   try {
     if (req.method === 'GET') {
+      const url = new URL(req.url);
+      // ═══ ?v=1 : « version » du cloud = valeur lastSync lue à la FIN de la donnée (GETRANGE, ~quelques octets) ═══
+      // Permet au dashboard de ne télécharger les 1,7 Mo que s'il y a eu un changement.
+      if (url.searchParams.get('v') === '1') {
+        const rv = await withTimeout(fetch(`${KV_URL}/getrange/${KEY}/-48/-1`, {
+          headers: { 'Authorization': `Bearer ${KV_TOKEN}` }
+        }), 8000);
+        const dv = await rv.json().catch(() => null);
+        if (!rv.ok || !dv || dv.error) {
+          return new Response(JSON.stringify({ error: 'upstash_unavailable', status: rv.status, message: (dv && dv.error) || 'réponse Upstash invalide' }), {
+            status: 503, headers: { ...CORS, 'Content-Type': 'application/json' }
+          });
+        }
+        const m = (typeof dv.result === 'string') ? dv.result.match(/"lastSync":(\d+)\}\s*$/) : null;
+        return new Response(JSON.stringify({ v: m ? Number(m[1]) : null }), {
+          status: 200, headers: { ...CORS, 'Content-Type': 'application/json' }
+        });
+      }
       const r = await withTimeout(fetch(`${KV_URL}/get/${KEY}`, {
         headers: { 'Authorization': `Bearer ${KV_TOKEN}` }
       }), 15000);
-      const data = await r.json();
+      const data = await r.json().catch(() => null);
+      // ═══ Upstash en erreur (quota, panne…) → on le DIT (503) au lieu de renvoyer un faux « cloud vide » ═══
+      // (un faux cloud vide pousserait le lien de commande à réécrire le cloud avec une seule commande)
+      if (!r.ok || !data || data.error) {
+        return new Response(JSON.stringify({ error: 'upstash_unavailable', status: r.status, message: (data && data.error) || 'réponse Upstash invalide' }), {
+          status: 503, headers: { ...CORS, 'Content-Type': 'application/json' }
+        });
+      }
       let record = { orders: [], lastSync: 0 };
-      if (data && typeof data.result === 'string' && data.result.length > 0) {
-        try { record = JSON.parse(data.result); } catch (e) {}
+      if (typeof data.result === 'string' && data.result.length > 0) {
+        try { record = JSON.parse(data.result); }
+        catch (e) {
+          return new Response(JSON.stringify({ error: 'cloud_illisible' }), {
+            status: 503, headers: { ...CORS, 'Content-Type': 'application/json' }
+          });
+        }
       }
       // Format compatible jsonbin (dashboard attend {record:..., metadata:...})
       return new Response(JSON.stringify({
@@ -60,31 +90,21 @@ export default async function handler(req) {
 
     if (req.method === 'PUT') {
       const bodyText = await req.text();
-      // ═══ GARDE-FOU : refuse push 0 si cloud a déjà >= 10 ═══
+      // ═══ GARDE-FOU : refuse un envoi qui ferait fondre le cloud (vide, ou >20 % plus petit) ═══
+      // Mesure légère : STRLEN (taille en octets de la donnée actuelle), sans retélécharger 1,7 Mo.
       try {
-        const parsed = JSON.parse(bodyText);
-        if (parsed && Array.isArray(parsed.orders) && parsed.orders.length === 0) {
-          try {
-            const cur = await withTimeout(fetch(`${KV_URL}/get/${KEY}`, {
-              headers: { 'Authorization': `Bearer ${KV_TOKEN}` }
-            }), 6000);
-            if (cur.ok) {
-              const curData = await cur.json();
-              if (curData && typeof curData.result === 'string' && curData.result.length > 0) {
-                try {
-                  const curRec = JSON.parse(curData.result);
-                  const curOrders = (curRec && curRec.orders) || [];
-                  if (curOrders.length >= 10) {
-                    return new Response(JSON.stringify({
-                      error: 'BLOCKED_EMPTY_PUSH',
-                      message: 'Refuse de push 0 commandes alors que cloud a ' + curOrders.length,
-                      cloudCount: curOrders.length
-                    }), { status: 409, headers: { ...CORS, 'Content-Type': 'application/json' } });
-                  }
-                } catch (e) {}
-              }
-            }
-          } catch (e) {}
+        const newBytes = new TextEncoder().encode(bodyText).length;
+        const sl = await withTimeout(fetch(`${KV_URL}/strlen/${KEY}`, {
+          headers: { 'Authorization': `Bearer ${KV_TOKEN}` }
+        }), 6000);
+        const sd = await sl.json().catch(() => null);
+        const curBytes = (sl.ok && sd && typeof sd.result === 'number') ? sd.result : 0;
+        if (curBytes >= 20000 && newBytes < curBytes * 0.8) {
+          return new Response(JSON.stringify({
+            error: 'BLOCKED_SHRINK_PUSH',
+            message: 'Refuse un envoi de ' + newBytes + ' octets alors que le cloud en contient ' + curBytes,
+            cloudBytes: curBytes
+          }), { status: 409, headers: { ...CORS, 'Content-Type': 'application/json' } });
         }
       } catch (e) {}
 
@@ -110,9 +130,9 @@ export default async function handler(req) {
         });
       }
 
-      // Réponse format compatible jsonbin
+      // Réponse allégée (ne renvoie plus toute la donnée)
       let recordOut = {};
-      try { recordOut = JSON.parse(bodyText); } catch (e) {}
+      try { const p = JSON.parse(bodyText); recordOut = { lastSync: p.lastSync || 0, count: Array.isArray(p.orders) ? p.orders.length : 0 }; } catch (e) {}
       return new Response(JSON.stringify({
         record: recordOut,
         metadata: { id: KEY, backend: 'upstash', upstashResult: result }
