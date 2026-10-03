@@ -2109,7 +2109,7 @@ async function checkCagnotteDispo(){
       } else {
         var PARR_10_DEPUIS = 1790805600000; // 1er oct 2026 : 5 € avant, 10 € depuis
         var gainMarraine = function(o){ var ts=(o&&o.createdAt)?+o.createdAt:0; return ts >= PARR_10_DEPUIS ? 10 : 5; };
-        var PARR_UNIQUE_DEPUIS = 1790978400000; // 3 oct 2026 : un parrainage ne compte qu'une fois par filleule (non rétroactif)
+        var PARR_UNIQUE_DEPUIS = 0; // un parrainage ne compte qu'une fois par filleule, pour toutes les commandes (crédits déjà utilisés conservés)
         var _pts = function(o){ return (o&&o.createdAt)?+o.createdAt:0; };
         var parrainageCompte = function(o){ var ts=_pts(o); if(ts<PARR_UNIQUE_DEPUIS) return true; var t=_normTel(o.tel); if(!t) return true; for(var i=0;i<allOrders.length;i++){ var x=allOrders[i]; if(x===o||!x.parrain||x.fantome||x.deletedAt||x.parrStatus==='rejected') continue; if(_normTel(x.tel)!==t) continue; var tx=_pts(x); if(tx<ts||(tx===ts&&String(x.num||x.id||'')<String(o.num||o.id||''))) return false; } return true; };
         var creditMarraine = 0;

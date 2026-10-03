@@ -2622,8 +2622,8 @@ function cleanTel(t){
 var PARR_10_DEPUIS = 1790805600000; // 2026-10-01 00:00 Paris
 function orderTs(o){ if(o && o.createdAt) return +o.createdAt; var m=/^(\d{2})(\d{2})(\d{2})/.exec((o&&o.num)||''); return m? Date.UTC(2000+parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10)) : 0; }
 function gainMarraine(filleuleOrder){ return orderTs(filleuleOrder) >= PARR_10_DEPUIS ? 10 : 5; }
-// ═══ Un parrainage ne compte qu'UNE fois par filleule (sa 1re commande parrainée) — commandes à partir du 3 oct 2026, non rétroactif ═══
-var PARR_UNIQUE_DEPUIS = 1790978400000; // 2026-10-03 00:00 Paris
+// ═══ Un parrainage ne compte qu'UNE fois par filleule (sa 1re commande parrainée) — rétroactif depuis le 03/10/2026 : les crédits déjà utilisés restent acquis ═══
+var PARR_UNIQUE_DEPUIS = 0; // 0 = s'applique à toutes les commandes (décision du 03/10/2026)
 function parrainageCompte(o){
   var ts=orderTs(o); if(ts < PARR_UNIQUE_DEPUIS) return true;
   var t=cleanTel(o.tel||''); if(!t) return true;
@@ -5412,10 +5412,10 @@ function calcBenef(o) {
   if(!isNaN(totalPaye) && totalPaye>0) return Math.round((totalPaye-cout)*100)/100;
   return b; // secours si total absent : ancien calcul théorique
 }
-// Prix d'achat Iron Magic — À RENSEIGNER (0 = non pris en compte, la marge Iron Magic est alors surestimée)
-var COUT_IRON_MAGIC=0;
-// Prix d'achat du filtre INOX (vendu 10€ ou offert à la 1ère commande Daylia) — À RENSEIGNER
-var COUT_FILTRE_INOX=0;
+// Prix d'achat Iron Magic : 16 € (donné le 03/10/2026)
+var COUT_IRON_MAGIC=16;
+// Prix d'achat du filtre INOX (vendu 10€ ou offert à la 1ère commande Daylia) — 2,5 € (donné le 03/10/2026)
+var COUT_FILTRE_INOX=2.5;
 
 function renderStats() {
   var filtered = filterByPeriod(sPeriod);
