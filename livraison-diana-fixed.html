@@ -612,7 +612,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 <div class="card" id="cardDispo" style="display:none">
   <div class="card-hdr"><span class="step" id="sDispo">5</span><h2>Quand es-tu disponible ?</h2></div>
   <div class="card-body">
-    <div id="banner24h" style="display:none;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:9px;padding:10px 13px;font-size:12px;color:#7C2D12;margin-bottom:12px;font-weight:700;line-height:1.5">🛵 Livraison à domicile <strong>entre 18h et 22h</strong> : on fait une tournée dans tout Marseille, impossible de livrer tout le monde à 18h pile 🙏<br><span style="font-weight:600;color:#92400E">Choisis ton jour, et reste disponible sur tout le créneau : l'heure exacte dépend de la tournée.</span></div>
+    <div id="banner24h" style="display:none;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:9px;padding:10px 13px;font-size:12px;color:#7C2D12;margin-bottom:12px;font-weight:700;line-height:1.5">🛵 Livraison à domicile <strong>entre 18h et 22h</strong> : on fait une tournée dans tout Marseille, impossible de livrer tout le monde à 18h pile 🙏<br><span style="font-weight:600;color:#92400E">Tu peux indiquer ton heure préférée : on fait au mieux, mais elle n'est pas garantie. Reste disponible sur tout le créneau.</span></div>
     <div id="bannerPrecommande" style="display:none" style="background:linear-gradient(135deg,#EDE9FE,#DDD6FE);border:2px solid #7C3AED;border-radius:12px;padding:12px 16px;margin-bottom:12px;text-align:center"><div style="font-size:13px;font-weight:900;color:#5B21B6">📅 Produits disponibles en PRÉCOMMANDE uniquement</div><div style="font-size:11px;color:#6D28D9;margin-top:3px;font-weight:600">Stock en cours de réapprovisionnement — Ta commande sera traitée dès réception du stock</div></div>
     <div id="bannerUrgence" style="display:none;background:linear-gradient(135deg,#FFF0F0,#FFE0E0);border:1.5px solid #FF4444;border-radius:9px;padding:9px 13px;font-size:12px;font-weight:800;color:#CC0000;margin-bottom:12px;text-align:center;animation:blink 1.2s ease-in-out infinite">🔥 Stock limité — Commande vite avant rupture !</div>
     <div style="font-size:11px;color:var(--k2);margin-bottom:8px">Clique sur une date puis choisis tes créneaux <strong style="color:var(--rd)">*</strong></div>
@@ -664,8 +664,15 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
       </div>
       <!-- Livraison à domicile : un seul créneau, 18h-22h (tournée dans tout Marseille) -->
       <div id="dmLiv" style="display:none">
-        <div class="slot" data-v="18h-22h" onclick="toggleDispoSlot(this)"><div class="slot-ico">🛵</div><div style="flex:1"><div class="slot-lbl">Livraison du soir</div><div class="slot-range">entre 18h et 22h</div></div><div class="slot-chk">✓</div></div>
-        <div style="font-size:11px;color:#92400E;font-weight:700;margin-top:6px;line-height:1.45">⏳ L'heure exacte dépend de la tournée : reste disponible jusqu'à 22h.</div>
+        <div class="slot" data-v="18h-22h" onclick="toggleDispoSlot(this)"><div class="slot-ico">🛵</div><div style="flex:1"><div class="slot-lbl">Peu importe</div><div class="slot-range">entre 18h et 22h</div></div><div class="slot-chk">✓</div></div>
+        <div style="font-size:11px;font-weight:800;color:var(--k2);margin:10px 0 6px">Ou ton heure préférée :</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="slot2" data-v="18h-19h" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">18h – 19h</div><div class="slot-chk">✓</div></div>
+          <div class="slot2" data-v="19h-20h" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">19h – 20h</div><div class="slot-chk">✓</div></div>
+          <div class="slot2" data-v="20h-21h" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">20h – 21h</div><div class="slot-chk">✓</div></div>
+          <div class="slot2" data-v="21h-22h" onclick="toggleDispoSlot(this)"><div class="slot2-lbl">21h – 22h</div><div class="slot-chk">✓</div></div>
+        </div>
+        <div style="font-size:11px;color:#92400E;font-weight:700;margin-top:8px;line-height:1.45">⏳ Ta préférence nous aide à organiser la tournée, mais elle n'est pas garantie : l'heure exacte dépend du trajet dans Marseille. Reste disponible jusqu'à 22h.</div>
       </div>
       <div id="dm0">
         <div class="slot" data-v="Matin (8h-12h)" onclick="toggleDispoSlot(this)"><div class="slot-ico">🌅</div><div style="flex:1"><div class="slot-lbl">Matin</div><div class="slot-range">8h-12h</div></div><div class="slot-chk">✓</div></div>
@@ -2316,9 +2323,14 @@ function livDateOk(ymd,dow){
   return false;
 }
 function livRepriseOuverte(){return true;} // des jours de livraison sont de nouveau proposés en continu
-// Remise en main propre (sur place) : 14h-20h, puis 12h-minuit à partir du lundi 23 nov. 2026 (tous les jours)
-function livPlaceHeures(ymd){return (ymd!==null&&ymd!==undefined&&ymd>=livRepriseReguliere())?[12,24]:[14,20];}
-function livPlaceLabel(){return livYmd(new Date())>=livRepriseReguliere()?'tous les jours de 12h à minuit':'tous les jours de 14h à 20h, puis de 12h à minuit à partir du lundi 23 novembre';}
+// Remise en main propre (sur place) : 14h-20h, puis 12h-minuit à partir du lundi 23 nov. 2026 ; le dimanche à partir de 15h
+function livPlaceHeures(ymd){
+  var ok=(ymd!==null&&ymd!==undefined);
+  var nouveau=ok&&ymd>=livRepriseReguliere();
+  var dim=ok&&new Date(Math.floor(ymd/10000),Math.floor(ymd/100)%100-1,ymd%100).getDay()===0;
+  return [dim?15:(nouveau?12:14), nouveau?24:20];
+}
+function livPlaceLabel(){return livYmd(new Date())>=livRepriseReguliere()?'tous les jours de 12h à minuit (le dimanche à partir de 15h)':'tous les jours de 14h à 20h, puis de 12h à minuit dès le lundi 23 novembre (le dimanche à partir de 15h)';}
 function livJoursLabel(){
   var jj=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
   var mm=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
@@ -2513,11 +2525,14 @@ function openDatePanel(val,idx){
     document.getElementById('dmLiv').style.display='block';
     document.getElementById('errSlots').style.display='none';
     var stL=dispoState[val];
-    var slL=document.querySelector('#dmLiv .slot');
-    var nowL=new Date();var tropTard=(idx===0)&&(nowL.getHours()+nowL.getMinutes()/60+1>=22);
-    slL.classList.toggle('disabled',tropTard);
-    if(tropTard){stL.slots=[];}else if(stL.slots.indexOf('18h-22h')===-1){stL.slots=['18h-22h'];}
-    slL.classList.toggle('on',stL.slots.indexOf('18h-22h')!==-1);
+    var nowL=new Date();var hMinL=(idx===0)?(nowL.getHours()+nowL.getMinutes()/60+1):0;
+    document.querySelectorAll('#dmLiv .slot,#dmLiv .slot2').forEach(function(el){
+      var v=el.dataset.v;var past=(v==='18h-22h')?(hMinL>=22):(hMinL>=parseInt(v));
+      el.classList.toggle('disabled',past);
+      if(past){var k=stL.slots.indexOf(v);if(k!==-1)stL.slots.splice(k,1);}
+    });
+    if(!stL.slots.length&&hMinL<22)stL.slots=['18h-22h'];
+    document.querySelectorAll('#dmLiv .slot,#dmLiv .slot2').forEach(function(el){el.classList.toggle('on',stL.slots.indexOf(el.dataset.v)!==-1);});
     updateDateDot(val);
     document.getElementById('dateSlotPanel').style.display='block';
     return;
@@ -2622,6 +2637,13 @@ function toggleDispoSlot(el){
     document.querySelectorAll('#dm30min .slot2').forEach(function(s){s.classList.remove('on');});
     dispoState[activeDate].slots=[v];
     el.classList.add('on');
+  } else if(modeLiv==='livraison' && el.closest && el.closest('#dmLiv')){
+    // Livraison : « Peu importe (18h-22h) » OU une/des heure(s) préférée(s)
+    var xL=arr.indexOf(v);
+    if(v==='18h-22h'){dispoState[activeDate].slots=(xL===-1)?['18h-22h']:[];}
+    else{if(xL===-1){arr.push(v);var kL=arr.indexOf('18h-22h');if(kL!==-1)arr.splice(kL,1);}else arr.splice(xL,1);}
+    var curL=dispoState[activeDate].slots;
+    document.querySelectorAll('#dmLiv .slot,#dmLiv .slot2').forEach(function(s){s.classList.toggle('on',curL.indexOf(s.dataset.v)!==-1);});
   } else {
     var x=arr.indexOf(v);
     if(x===-1)arr.push(v);else arr.splice(x,1);
@@ -2949,7 +2971,7 @@ function handleSubmit(){
     dispoData.forEach(function(d){
       var isDimDate = /^Dim\b/i.test(d.date||'');
       var __ymdP = (modeLiv==='place') ? livYmdFromLabel(d.date) : null;
-      var effectiveMin = (__ymdP!==null && __ymdP>=livRepriseReguliere()) ? 12 : (isDimDate ? Math.max(modeMinHour, 14) : modeMinHour);
+      var effectiveMin = (__ymdP!==null) ? livPlaceHeures(__ymdP)[0] : (isDimDate ? Math.max(modeMinHour, 14) : modeMinHour);
       if(effectiveMin === 0) return;
       (d.slots||[]).forEach(function(s){
         var m = s.match(/(\d+)h/);
@@ -2962,7 +2984,7 @@ function handleSubmit(){
     });
     if(slotsInterdits.length > 0){
       document.getElementById('datesGrid').scrollIntoView({behavior:'smooth',block:'center'});
-      var lbl = reasons.indexOf('dimanche')>=0 ? 'Dimanche : à partir de 14h uniquement' : (modeLiv==='livraison'?'Livraison Marseille : à partir de 14h':'Récupération sur place : à partir de 10h');
+      var lbl = reasons.indexOf('dimanche')>=0 ? 'Dimanche : à partir de '+(modeLiv==='place'?'15h':'14h')+' uniquement' : (modeLiv==='livraison'?'Livraison Marseille : à partir de 14h':'Récupération sur place : à partir de 10h');
       toast('⚠️ '+lbl+' — créneaux refusés : '+slotsInterdits.slice(0,2).join(' ; '));
       if(typeof updateSlotAvailability === 'function') updateSlotAvailability();
       return;
