@@ -1568,7 +1568,7 @@ function updateSlotAvailability(){
 }
 
 function setModeLiv(m){
-  if(m==='livraison'&&(function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261006;})())m='place';
+  if(m==='livraison'&&(function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261006;})()&&!livRepriseOuverte())m='place';
   // Livraison à domicile réactivée
   var pauseLivDate=new Date(2024,0,1,0,0,0); // date passée → pas de pause
   if(m==='livraison' && new Date()<pauseLivDate){
@@ -1659,7 +1659,7 @@ function setModeLiv(m){
   if(h2Dispo) h2Dispo.textContent=m==='place'?'Quand prévois-tu de venir ? (optionnel)':'Quand es-tu disponible ?';
   // Livraison possible le jour même — on ne grise plus aujourd'hui
   var todayChip=document.getElementById('dchip0');
-  if(todayChip && todayChip.textContent.indexOf('Fermé')===-1){
+  if(todayChip && todayChip.textContent.indexOf('Fermé')===-1 && !todayChip.classList.contains('liv-restricted')){
     todayChip.classList.remove('disabled');
     todayChip.style.opacity='';
     todayChip.style.pointerEvents='';
@@ -1738,7 +1738,8 @@ async function init() {
   await buildDates();
   buildDaylia();
   // Appliquer le mode actuel (envoi par défaut, ou celui que l'utilisateur a déjà cliqué)
-  if((function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261006;})()){var b=document.getElementById('mLiv');if(b){b.style.opacity='0.4';b.style.pointerEvents='none';var s=b.querySelector('.mode-sub');if(s)s.textContent='Reprise bientôt';}var grid=document.getElementById('mLiv')&&document.getElementById('mLiv').parentNode;if(grid&&!document.getElementById('noteLivPause')){var n=document.createElement('div');n.id='noteLivPause';n.style.cssText='grid-column:1/-1;background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:10px;padding:10px 12px;font-size:12px;color:#7C2D12;font-weight:700;text-align:center;line-height:1.5';n.innerHTML='🛵 Les livraisons à domicile reprennent bientôt — on te préviendra sur <b>Snap</b> 👻<br><span style="font-weight:600;color:#92400E">En attendant : récupération sur place tous les jours de 14h à 20h, ou envoi Mondial Relay.</span>';grid.appendChild(n);}if(modeLiv==='livraison')modeLiv='place';}
+  if((function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261006;})()&&!livRepriseOuverte()){var b=document.getElementById('mLiv');if(b){b.style.opacity='0.4';b.style.pointerEvents='none';var s=b.querySelector('.mode-sub');if(s)s.textContent='Reprise bientôt';}var grid=document.getElementById('mLiv')&&document.getElementById('mLiv').parentNode;if(grid&&!document.getElementById('noteLivPause')){var n=document.createElement('div');n.id='noteLivPause';n.style.cssText='grid-column:1/-1;background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:10px;padding:10px 12px;font-size:12px;color:#7C2D12;font-weight:700;text-align:center;line-height:1.5';n.innerHTML='🛵 Les livraisons à domicile reprennent bientôt — on te préviendra sur <b>Snap</b> 👻<br><span style="font-weight:600;color:#92400E">En attendant : récupération sur place tous les jours de 14h à 20h, ou envoi Mondial Relay.</span>';grid.appendChild(n);}if(modeLiv==='livraison')modeLiv='place';}
+  else if(livRepriseOuverte()){var gridR=document.getElementById('mLiv')&&document.getElementById('mLiv').parentNode;if(gridR&&!document.getElementById('noteLivReprise')){var nr=document.createElement('div');nr.id='noteLivReprise';nr.style.cssText='grid-column:1/-1;background:#DCFCE7;border:1.5px solid #22C55E;border-radius:10px;padding:10px 12px;font-size:12px;color:#14532D;font-weight:700;text-align:center;line-height:1.5';nr.innerHTML='🛵 Livraison à domicile : <b>'+livJoursLabel()+'</b>, de 18h à minuit (Marseille)<br><span style="font-weight:600;color:#166534">Les autres jours : récupération sur place de 14h à 20h, ou envoi Mondial Relay.</span>';gridR.appendChild(nr);}}
   setModeLiv(modeLiv);
 }
 
@@ -2289,6 +2290,47 @@ async function buildDates(){
   if(typeof applyLivDayRestriction==='function') applyLivDayRestriction();
 }
 
+// === REPRISE livraison à domicile (màj 07/11/2026) ===
+// • Exceptionnel : lundi 9 + samedi 14 nov. 2026 (avant le départ au Maroc).
+// • Pas de livraison du 15 au 22 nov. 2026 (Maroc).
+// • À partir du lundi 23 nov. 2026 : tous les lundis et jeudis (JOURS_LIVRAISON_DOM).
+function livRepriseDates(){return [20261109,20261114];}
+function livRepriseReguliere(){return 20261123;}
+function livYmd(d){return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
+function livDateOk(ymd,dow){
+  if(livRepriseDates().indexOf(ymd)!==-1)return true;
+  if(ymd>=livRepriseReguliere()||ymd<20261006)return JOURS_LIVRAISON_DOM.indexOf(dow)!==-1;
+  return false;
+}
+function livRepriseOuverte(){return true;} // des jours de livraison sont de nouveau proposés en continu
+function livJoursLabel(){
+  var jj=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  var mm=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  var t=livYmd(new Date()),R=livRepriseReguliere();
+  if(t>=R)return 'tous les lundis et jeudis';
+  var dR=new Date(Math.floor(R/10000),Math.floor(R/100)%100-1,R%100);
+  var depuis=' à partir du '+jj[dR.getDay()]+' '+dR.getDate()+' '+mm[dR.getMonth()];
+  var exc=livRepriseLabel();
+  return exc?exc+', puis tous les lundis et jeudis'+depuis:'tous les lundis et jeudis'+depuis;
+}
+function livRepriseLabel(){
+  var jj=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  var mm=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  var t=livYmd(new Date());
+  var ds=livRepriseDates().filter(function(x){return x>=t;}).map(function(x){return new Date(Math.floor(x/10000),Math.floor(x/100)%100-1,x%100);});
+  if(!ds.length)return '';
+  var parts=ds.map(function(d){return jj[d.getDay()]+' '+d.getDate();});
+  var last=parts.pop();
+  return (parts.length?parts.join(', ')+' et ':'')+last+' '+mm[ds[ds.length-1].getMonth()];
+}
+function livYmdFromLabel(lbl){
+  var mm=['jan.','fév.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+  var m=(lbl||'').match(/^\S+\s+(\d+)\s+(\S+)/);if(!m)return null;
+  var mo=mm.indexOf(m[2]);if(mo<0)return null;
+  var now=new Date(),y=now.getFullYear();if(mo<now.getMonth()-6)y++;
+  return y*10000+(mo+1)*100+parseInt(m[1],10);
+}
+
 // === PATCH livraison domicile Lun/Mer/Sam 18h-00h ===
 var JOURS_LIVRAISON_DOM=(function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20260930;})()?[1,4]:[1,3,4,6];
 function applyLivDayRestriction(){
@@ -2300,7 +2342,7 @@ function applyLivDayRestriction(){
       var v = b.getAttribute('data-v');
       var hadFermeTag = b.querySelector('div[style*="EF4444"]') !== null;
       var _dt=new Date();_dt.setDate(_dt.getDate()+parseInt(i||0));var _ymd=_dt.getFullYear()*10000+(_dt.getMonth()+1)*100+_dt.getDate();var apresArret=_ymd>=20261006;
-      if(isLiv && (JOURS_LIVRAISON_DOM.indexOf(dow) === -1 || apresArret)){
+      if(isLiv && !livDateOk(_ymd,dow)){
         b.classList.add('disabled','liv-restricted');
         b.style.opacity = '0.35';
         b.style.cursor = 'not-allowed';
@@ -2896,10 +2938,11 @@ function handleSubmit(){
     dispoData.forEach(function(d){
       var k = ((d.date||'').slice(0,3)).toLowerCase();
       var dow = __dowMap[k];
-      if(dow !== undefined && __allowedDows.indexOf(dow) === -1){
+      var __ry = livYmdFromLabel(d.date);
+      var __dateOk = (__ry!==null && dow!==undefined) ? livDateOk(__ry,dow) : (dow===undefined || __allowedDows.indexOf(dow)!==-1);
+      if(!__dateOk){
         __badDays.push(d.date);
       }
-      var __dm=(d.date||'').match(/(\d+)\s*oct/i);if(__dm&&parseInt(__dm[1])>=6)__badDays.push(d.date);
       (d.slots||[]).forEach(function(s){
         var m = s.match(/(\d+)h/);
         if(m){
@@ -2912,7 +2955,7 @@ function handleSubmit(){
     if(__badDays.length > 0){
       document.getElementById('datesGrid').scrollIntoView({behavior:'smooth',block:'center'});
       var __nomsJ={0:'Dimanche',1:'Lundi',2:'Mardi',3:'Mercredi',4:'Jeudi',5:'Vendredi',6:'Samedi'};
-      toast('🛵 Livraison à domicile : uniquement '+JOURS_LIVRAISON_DOM.map(function(x){return __nomsJ[x];}).join(' / ')+'. Jour refusé : '+__badDays[0]);
+      toast('🛵 Livraison à domicile : '+livJoursLabel()+'. Jour refusé : '+__badDays[0]);
       if(typeof applyLivDayRestriction === 'function') applyLivDayRestriction();
       return;
     }
