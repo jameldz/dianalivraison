@@ -2324,13 +2324,25 @@ function livDateOk(ymd,dow){
 }
 function livRepriseOuverte(){return true;} // des jours de livraison sont de nouveau proposés en continu
 // Remise en main propre (sur place) : 14h-20h, puis 12h-minuit à partir du lundi 23 nov. 2026 ; le dimanche à partir de 15h
+// Pendant le voyage au Maroc (dim. 15 → sam. 21 nov. 2026) : sur place de 18h à 22h
+function livPlaceVoyage(ymd){return ymd!==null&&ymd!==undefined&&ymd>=20261115&&ymd<=20261121;}
 function livPlaceHeures(ymd){
   var ok=(ymd!==null&&ymd!==undefined);
+  if(livPlaceVoyage(ymd))return [18,22];
   var nouveau=ok&&ymd>=livRepriseReguliere();
   var dim=ok&&new Date(Math.floor(ymd/10000),Math.floor(ymd/100)%100-1,ymd%100).getDay()===0;
   return [dim?15:(nouveau?12:14), nouveau?24:20];
 }
-function livPlaceLabel(){return livYmd(new Date())>=livRepriseReguliere()?'tous les jours de 12h à minuit (le dimanche à partir de 15h)':'tous les jours de 14h à 20h, puis de 12h à minuit dès le lundi 23 novembre (le dimanche à partir de 15h)';}
+function livPlaceLabel(){
+  var t=livYmd(new Date());
+  if(t>=livRepriseReguliere())return 'tous les jours de 12h à minuit (le dimanche à partir de 15h)';
+  var p=[];
+  if(t<20261115)p.push('14h–20h (dimanche dès 15h)','du 15 au 21 nov. : 18h–22h');
+  else if(t<=20261121)p.push('18h–22h jusqu\'au 21 nov.');
+  else p.push('14h–20h (dimanche dès 15h)');
+  p.push('dès le 23 nov. : 12h–minuit (dimanche dès 15h)');
+  return p.join(' · ');
+}
 function livJoursLabel(){
   var jj=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
   var mm=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
@@ -2984,7 +2996,7 @@ function handleSubmit(){
     });
     if(slotsInterdits.length > 0){
       document.getElementById('datesGrid').scrollIntoView({behavior:'smooth',block:'center'});
-      var lbl = reasons.indexOf('dimanche')>=0 ? 'Dimanche : à partir de '+(modeLiv==='place'?'15h':'14h')+' uniquement' : (modeLiv==='livraison'?'Livraison Marseille : à partir de 14h':'Récupération sur place : à partir de 10h');
+      var lbl = (modeLiv==='place') ? 'Remise en main propre : créneau en dehors des horaires de ce jour' : (reasons.indexOf('dimanche')>=0 ? 'Dimanche : à partir de 14h uniquement' : 'Livraison Marseille : à partir de 14h');
       toast('⚠️ '+lbl+' — créneaux refusés : '+slotsInterdits.slice(0,2).join(' ; '));
       if(typeof updateSlotAvailability === 'function') updateSlotAvailability();
       return;
