@@ -235,6 +235,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
     <div class="stat"><div class="stat-val" id="sLiv">0</div><div class="stat-lbl">Livrées</div></div>
     <div class="stat"><div class="stat-val" id="sCa">0</div><div class="stat-lbl">📦 À expédier</div></div>
   </div>
+  <div id="cadeauBand" style="margin:-8px 18px 14px;padding:7px 12px;border-radius:9px;background:rgba(232,200,112,0.15);border:1px solid rgba(232,200,112,0.4);color:#E8C870;font-size:11.5px;font-weight:800;text-align:center"></div>
 </div>
 
 <div class="route-wrap">
@@ -656,6 +657,29 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 </div>
 
 <script>
+// ═══ CADEAU COLIS — UN SEUL ENDROIT À CHANGER ═══
+// Offert dès qu'une commande contient au moins 1 cure Diana (Café/Thé/Gélules, hors mini-cures et Daylia seul).
+// Pour passer aux bijoux : changer lib, ico, stock et depuis (date de début du nouveau stock).
+var CADEAU={lib:'Chaussettes à paillettes',ico:'🧦',stock:667,depuis:'2026-11-12'};
+function hasCureDiana(o){
+  return (o.prods||'').split(',').some(function(it){var x=it.toLowerCase();return x.indexOf('diana')!==-1&&x.indexOf('mini')===-1;});
+}
+function cadeauBadge(o){
+  if(!hasCureDiana(o)) return '';
+  return '<span style="background:linear-gradient(135deg,#EC4899,#BE185D);color:#fff;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900;box-shadow:0 2px 6px rgba(236,72,153,0.3)" title="Cadeau offert dès 1 cure Diana — à mettre dans le colis">'+CADEAU.ico+' '+CADEAU.lib+' à joindre</span>';
+}
+function majCadeauStock(){
+  var el=document.getElementById('cadeauBand'); if(!el) return;
+  var t0=new Date(CADEAU.depuis+'T00:00:00').getTime();
+  var all=(typeof orders!=='undefined'&&orders)||[];
+  var conc=all.filter(function(o){return !o.fantome&&!o.deletedAt&&(o.createdAt||parseInt(o.id)||0)>=t0&&hasCureDiana(o);});
+  var donnes=conc.filter(function(o){return o.livree;}).length;
+  var aPrep=conc.filter(function(o){return !o.livree;}).length;
+  var reste=CADEAU.stock-donnes;
+  el.style.color=reste<=50?'#FCA5A5':'#E8C870';
+  el.textContent=CADEAU.ico+' '+CADEAU.lib+' : '+reste+' en stock · '+donnes+' offert'+(donnes>1?'s':'')+' · '+aPrep+' à joindre'+(reste<=50?' — ⚠️ stock bas':'');
+}
+
 var VENDEUR = '33651511861';
 var orders  = [];
 var clients = {};
@@ -1651,6 +1675,7 @@ function render() {
   document.getElementById('sLiv').textContent   = livrees;
   var aExpedier = ordersVisibles.filter(function(o){return o.modeLiv==='envoi'&&o.payee&&!o.livree;}).length;
   document.getElementById('sCa').textContent    = aExpedier;
+  majCadeauStock();
   var _rb=document.getElementById('routeBtn'); if(_rb) _rb.disabled = false;
 
   // Compteurs vendeurs (commandes en cours uniquement)
@@ -2137,6 +2162,7 @@ function render() {
         +'<div style="display:flex;align-items:center;gap:3px"><input type="number" value="'+(o.total||0)+'" style="width:60px;padding:4px 6px;border:1.5px solid var(--bdr);border-radius:7px;font-size:15px;font-weight:900;color:var(--rd);font-family:inherit;text-align:center;background:var(--lt)" onchange="quickEditTotal(\''+o.id+'\',this.value)"><span style="font-size:15px;font-weight:900;color:var(--rd)">€</span></div>'
         
         
+        +cadeauBadge(o)
         +(function(){
           // ═══ Badge filtre INOX explicite ═══
           // Affiché UNIQUEMENT si la commande contient du Daylia (filtre inox = cadeau qui va avec Daylia)
