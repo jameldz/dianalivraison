@@ -467,6 +467,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 <div class="card" id="cardProd">
   <div class="card-hdr"><span class="step" id="sProd">4</span><h2>Que veux-tu commander ?</h2></div>
   <div class="card-body">
+    <div id="bannerPrecoProd" style="display:none;background:linear-gradient(135deg,#EDE9FE,#DDD6FE);border:2px solid #7C3AED;border-radius:12px;padding:12px 16px;margin-bottom:12px;text-align:center"><div style="font-size:14px;font-weight:900;color:#5B21B6">📅 Rupture de stock : précommande ouverte</div><div style="font-size:12px;color:#6D28D9;margin-top:4px;font-weight:600">Victimes de notre succès 💜 Tu peux commander dès maintenant : ta commande sera préparée et expédiée dès le retour du stock.</div></div>
     <div id="packsBox" style="margin-bottom:12px"></div>
     <div id="degressifBox" style="margin:2px 0 10px;padding:10px 12px;background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border:1.5px solid #6EE7B7;border-radius:12px;text-align:center">
       <div style="font-size:13px;font-weight:900;color:#047857">📉 Plus tu prends de cures, moins elles coûtent</div>
@@ -613,7 +614,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
   <div class="card-hdr"><span class="step" id="sDispo">5</span><h2>Quand es-tu disponible ?</h2></div>
   <div class="card-body">
     <div id="banner24h" style="display:none;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:9px;padding:10px 13px;font-size:12px;color:#7C2D12;margin-bottom:12px;font-weight:700;line-height:1.5">🛵 Livraison à domicile <strong>entre 18h et 22h</strong> : on fait une tournée dans tout Marseille, impossible de livrer tout le monde à 18h pile 🙏<br><span style="font-weight:600;color:#92400E">Tu peux indiquer ton heure préférée : on fait au mieux, mais elle n'est pas garantie. Reste disponible sur tout le créneau.</span></div>
-    <div id="bannerPrecommande" style="display:none" style="background:linear-gradient(135deg,#EDE9FE,#DDD6FE);border:2px solid #7C3AED;border-radius:12px;padding:12px 16px;margin-bottom:12px;text-align:center"><div style="font-size:13px;font-weight:900;color:#5B21B6">📅 Produits disponibles en PRÉCOMMANDE uniquement</div><div style="font-size:11px;color:#6D28D9;margin-top:3px;font-weight:600">Stock en cours de réapprovisionnement — Ta commande sera traitée dès réception du stock</div></div>
+    <div id="bannerPrecommande" style="display:none;background:linear-gradient(135deg,#EDE9FE,#DDD6FE);border:2px solid #7C3AED;border-radius:12px;padding:12px 16px;margin-bottom:12px;text-align:center"><div style="font-size:13px;font-weight:900;color:#5B21B6">📅 Produits disponibles en PRÉCOMMANDE uniquement</div><div style="font-size:11px;color:#6D28D9;margin-top:3px;font-weight:600">Stock en cours de réapprovisionnement — Ta commande sera traitée dès réception du stock</div></div>
     <div id="bannerUrgence" style="display:none;background:linear-gradient(135deg,#FFF0F0,#FFE0E0);border:1.5px solid #FF4444;border-radius:9px;padding:9px 13px;font-size:12px;font-weight:800;color:#CC0000;margin-bottom:12px;text-align:center;animation:blink 1.2s ease-in-out infinite">🔥 Stock limité — Commande vite avant rupture !</div>
     <div style="font-size:11px;color:var(--k2);margin-bottom:8px">Clique sur une date puis choisis tes créneaux <strong style="color:var(--rd)">*</strong></div>
     <div class="dates-grid" id="datesGrid"></div>
@@ -1156,6 +1157,8 @@ var PRODS = {CAF:{name:'Café Diana',ico:'☕',price:75},THE:{name:'Thé Diana',
 var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 15j',ico:'🌟',price:40},MTH:{name:'Mini-Cure Thé 15j',ico:'🌟',price:40},MCA:{name:'Mini-Cure Café 15j',ico:'🌟',price:40},IRM:{name:'Iron Magic — Prise de Poids',ico:'💪',price:90},FIL:{name:'Filtre INOX',ico:'🔩',price:10}};
 
 // Stock — mis à jour depuis JSONbin
+// PRÉCOMMANDE GLOBALE : true = tous les produits affichés en rupture / précommande (sans date). Remettre à false au retour du stock.
+var PRECOMMANDE_GLOBALE = true;
 var STOCK = {CAF:999,THE:999,GEL:999,DN:999,SD:999,ST:999,PM:999,GU:999,MGE:999,MTH:999,MCA:999,IRM:999,DAY:999,FIL:999};
 var cachedAllOrders=[];
 var DAYLIA = [
@@ -1757,6 +1760,7 @@ async function init() {
   }catch(e){}
   await buildDates();
   buildDaylia();
+  if(PRECOMMANDE_GLOBALE)updateStockDisplay();
   // Appliquer le mode actuel (envoi par défaut, ou celui que l'utilisateur a déjà cliqué)
   if((function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261006;})()&&!livRepriseOuverte()){var b=document.getElementById('mLiv');if(b){b.style.opacity='0.4';b.style.pointerEvents='none';var s=b.querySelector('.mode-sub');if(s)s.textContent='Reprise bientôt';}var grid=document.getElementById('mLiv')&&document.getElementById('mLiv').parentNode;if(grid&&!document.getElementById('noteLivPause')){var n=document.createElement('div');n.id='noteLivPause';n.style.cssText='grid-column:1/-1;background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:10px;padding:10px 12px;font-size:12px;color:#7C2D12;font-weight:700;text-align:center;line-height:1.5';n.innerHTML='🛵 Les livraisons à domicile reprennent bientôt — on te préviendra sur <b>Snap</b> 👻<br><span style="font-weight:600;color:#92400E">En attendant : récupération sur place tous les jours de 14h à 20h, ou envoi Mondial Relay.</span>';grid.appendChild(n);}if(modeLiv==='livraison')modeLiv='place';}
   else if(livRepriseOuverte()){var gridR=document.getElementById('mLiv')&&document.getElementById('mLiv').parentNode;if(gridR&&!document.getElementById('noteLivReprise')){var nr=document.createElement('div');nr.id='noteLivReprise';nr.style.cssText='grid-column:1/-1;background:#DCFCE7;border:1.5px solid #22C55E;border-radius:10px;padding:10px 12px;font-size:12px;color:#14532D;font-weight:700;text-align:center;line-height:1.5';nr.innerHTML='🛵 Livraison à domicile : <b>'+livJoursLabel()+'</b>, entre 18h et 22h (Marseille)<br><span style="font-weight:600;color:#166534">🏠 Remise en main propre : '+livPlaceLabel()+'. Ou envoi Mondial Relay 📦</span>';gridR.appendChild(nr);}}
@@ -1764,6 +1768,7 @@ async function init() {
 }
 
 function updateStockDisplay(){
+  if(PRECOMMANDE_GLOBALE){Object.keys(STOCK).forEach(function(k){STOCK[k]=0;});['bannerPrecommande','bannerPrecoProd'].forEach(function(i){var e=document.getElementById(i);if(e)e.style.display='block';});}
   var stockFaible=false;
   // Griser les produits en rupture
   Object.keys(STOCK).forEach(function(id){
