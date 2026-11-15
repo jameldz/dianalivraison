@@ -2350,18 +2350,18 @@ function livPlaceHeures(ymd){
   if(livPlaceVoyage(ymd))return [18,22];
   var nouveau=ok&&ymd>=livRepriseReguliere();
   var dim=ok&&new Date(Math.floor(ymd/10000),Math.floor(ymd/100)%100-1,ymd%100).getDay()===0;
-  if(nouveau)return [18,22]; // à partir du 23/11 : sur place de 18h à 22h, tous les jours
+  if(nouveau)return [12,22]; // à partir du 23/11 : sur place de 12h à 22h, tous les jours (appeler avant)
   return [dim?15:14, 20];
 }
 function livPlaceLabel(){
   var t=livYmd(new Date());
-  if(PRECOMMANDE_GLOBALE&&t<livRepriseReguliere())return 'à partir du lundi 23 nov., tous les jours de 18h à 22h';
-  if(t>=livRepriseReguliere())return 'tous les jours de 18h à 22h';
+  if(PRECOMMANDE_GLOBALE&&t<livRepriseReguliere())return 'à partir du lundi 23 nov., tous les jours de 12h à 22h <b style="color:#DC2626">📞 appelle avant de venir, au cas où on ne serait pas là</b>';
+  if(t>=livRepriseReguliere())return 'tous les jours de 12h à 22h <b style="color:#DC2626">📞 appelle avant de venir, au cas où on ne serait pas là</b>';
   var p=[];
   if(t<20261115)p.push('14h–20h (dimanche dès 15h)','du 15 au 21 nov. : 18h–22h');
   else if(t<=20261121)p.push('18h–22h jusqu\'au 21 nov.');
   else p.push('14h–20h (dimanche dès 15h)');
-  p.push('dès le 23 nov. : 18h–22h');
+  p.push('dès le 23 nov. : 12h–22h (appelle avant de venir)');
   return p.join(' · ');
 }
 function livJoursLabel(){
@@ -3436,6 +3436,7 @@ function handleSubmit(){
       
       +(rdvStr?'\n📅 '+rdvStr:'')
       +'\n📍 Caisse d\'Epargne, Place Saint Eugène 13007'
+      +'\n📞 Appelle avant de venir, au cas où on ne serait pas là'
       +'\n\n💵 Paiement en espèces sur place. À bientôt !';
     shortConfirm+=precoNote;
     confirmMsg=shortConfirm+packMsg+fideliteMsg+fidele11Msg+surpriseMsg+snapInstructions;
