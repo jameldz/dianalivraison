@@ -1159,6 +1159,8 @@ var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 15j',ico:'🌟',price:40},MTH:{n
 // Stock — mis à jour depuis JSONbin
 // PRÉCOMMANDE GLOBALE : true = tous les produits affichés en rupture / précommande (sans date). Remettre à false au retour du stock.
 var PRECOMMANDE_GLOBALE = true;
+// Pendant la précommande : aucune date (sur place ou livraison) avant cette date
+var PRECO_DATE_MIN = '2026-11-22';
 var STOCK = {CAF:999,THE:999,GEL:999,DN:999,SD:999,ST:999,PM:999,GU:999,MGE:999,MTH:999,MCA:999,IRM:999,DAY:999,FIL:999};
 var cachedAllOrders=[];
 var DAYLIA = [
@@ -1682,7 +1684,7 @@ function setModeLiv(m){
   if(h2Dispo) h2Dispo.textContent=m==='place'?'Quand prévois-tu de venir ? (optionnel)':'Quand es-tu disponible ?';
   // Livraison possible le jour même — on ne grise plus aujourd'hui
   var todayChip=document.getElementById('dchip0');
-  if(todayChip && todayChip.textContent.indexOf('Fermé')===-1 && !todayChip.classList.contains('liv-restricted')){
+  if(todayChip && todayChip.textContent.indexOf('Fermé')===-1 && todayChip.textContent.indexOf('Rupture')===-1 && !todayChip.classList.contains('liv-restricted')){
     todayChip.classList.remove('disabled');
     todayChip.style.opacity='';
     todayChip.style.pointerEvents='';
@@ -2304,11 +2306,12 @@ async function buildDates(){
     var val=jj[d.getDay()]+' '+d.getDate()+' '+mm[d.getMonth()];
     var dateStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     var isClosed=(jf.semaine||[]).indexOf(d.getDay())!==-1||(jf.dates||[]).indexOf(dateStr)!==-1;
+    var isPreco=PRECOMMANDE_GLOBALE&&dateStr<PRECO_DATE_MIN; if(isPreco)isClosed=true;
     dispoState[val]={slots:[],de:'',ju:''};
     dispoDateIdx[val]=i;
     h+='<div class="date-btn'+(isClosed?' disabled':'')+'" id="dchip'+i+'" data-v="'+val+'" data-i="'+i+'" data-dow="'+d.getDay()+'"'+(isClosed?'':' onclick="selectDate(\''+val+'\','+i+')"')+'>'
       +'<div class="dday">'+lbl+'</div><div class="dnum">'+d.getDate()+'</div><div class="dmois">'+mm[d.getMonth()]+'</div>'
-      +(isClosed?'<div style="font-size:9px;color:var(--re,#EF4444);font-weight:800">Fermé</div>':'<div id="ddot'+i+'" style="display:none;width:6px;height:6px;background:var(--rd);border-radius:50%;margin:2px auto 0"></div>')
+      +(isClosed?'<div style="font-size:9px;color:var(--re,#EF4444);font-weight:800">'+(isPreco?'Rupture':'Fermé')+'</div>':'<div id="ddot'+i+'" style="display:none;width:6px;height:6px;background:var(--rd);border-radius:50%;margin:2px auto 0"></div>')
       +'</div>';
   }
   g.innerHTML=h;
