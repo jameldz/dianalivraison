@@ -2350,17 +2350,18 @@ function livPlaceHeures(ymd){
   if(livPlaceVoyage(ymd))return [18,22];
   var nouveau=ok&&ymd>=livRepriseReguliere();
   var dim=ok&&new Date(Math.floor(ymd/10000),Math.floor(ymd/100)%100-1,ymd%100).getDay()===0;
-  return [dim?15:(nouveau?12:14), nouveau?24:20];
+  if(nouveau)return [18,24]; // à partir du 23/11 : sur place de 18h à minuit, tous les jours
+  return [dim?15:14, 20];
 }
 function livPlaceLabel(){
   var t=livYmd(new Date());
-  if(PRECOMMANDE_GLOBALE&&t<livRepriseReguliere())return 'à partir du lundi 23 nov., tous les jours de 12h à minuit (le dimanche à partir de 15h)';
-  if(t>=livRepriseReguliere())return 'tous les jours de 12h à minuit (le dimanche à partir de 15h)';
+  if(PRECOMMANDE_GLOBALE&&t<livRepriseReguliere())return 'à partir du lundi 23 nov., tous les jours de 18h à minuit';
+  if(t>=livRepriseReguliere())return 'tous les jours de 18h à minuit';
   var p=[];
   if(t<20261115)p.push('14h–20h (dimanche dès 15h)','du 15 au 21 nov. : 18h–22h');
   else if(t<=20261121)p.push('18h–22h jusqu\'au 21 nov.');
   else p.push('14h–20h (dimanche dès 15h)');
-  p.push('dès le 23 nov. : 12h–minuit (dimanche dès 15h)');
+  p.push('dès le 23 nov. : 18h–minuit');
   return p.join(' · ');
 }
 function livJoursLabel(){
