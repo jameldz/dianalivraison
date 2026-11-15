@@ -614,7 +614,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
   <div class="card-hdr"><span class="step" id="sDispo">5</span><h2>Quand es-tu disponible ?</h2></div>
   <div class="card-body">
     <div id="banner24h" style="display:none;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:9px;padding:10px 13px;font-size:12px;color:#7C2D12;margin-bottom:12px;font-weight:700;line-height:1.5">🛵 Livraison à domicile <strong>entre 18h et 22h</strong> : on fait une tournée dans tout Marseille, impossible de livrer tout le monde à 18h pile 🙏<br><span style="font-weight:600;color:#92400E">Tu peux indiquer ton heure préférée : on fait au mieux, mais elle n'est pas garantie. Reste disponible sur tout le créneau.</span></div>
-    <div id="bannerPrecommande" style="display:none;background:linear-gradient(135deg,#EDE9FE,#DDD6FE);border:2px solid #7C3AED;border-radius:12px;padding:12px 16px;margin-bottom:12px;text-align:center"><div style="font-size:13px;font-weight:900;color:#5B21B6">📅 Produits disponibles en PRÉCOMMANDE uniquement</div><div style="font-size:11px;color:#6D28D9;margin-top:3px;font-weight:600">Stock en cours de réapprovisionnement — Ta commande sera traitée dès réception du stock</div></div>
+    <div id="bannerPrecommande" style="display:none;background:linear-gradient(135deg,#EDE9FE,#DDD6FE);border:2px solid #7C3AED;border-radius:12px;padding:12px 16px;margin-bottom:12px;text-align:center"><div style="font-size:13px;font-weight:900;color:#5B21B6">📅 Précommande : ta date est réservée sous réserve du stock</div><div style="font-size:12px;color:#6D28D9;margin-top:4px;font-weight:600;line-height:1.5">Choisis ta date comme d'habitude (par exemple le 23). Si le stock est arrivé, on te livre ce jour-là ✅<br>S'il n'est pas encore là, ta livraison est <b>reportée</b> et on te prévient avant pour fixer une nouvelle date 💜</div></div>
     <div id="bannerUrgence" style="display:none;background:linear-gradient(135deg,#FFF0F0,#FFE0E0);border:1.5px solid #FF4444;border-radius:9px;padding:9px 13px;font-size:12px;font-weight:800;color:#CC0000;margin-bottom:12px;text-align:center;animation:blink 1.2s ease-in-out infinite">🔥 Stock limité — Commande vite avant rupture !</div>
     <div style="font-size:11px;color:var(--k2);margin-bottom:8px">Clique sur une date puis choisis tes créneaux <strong style="color:var(--rd)">*</strong></div>
     <div class="dates-grid" id="datesGrid"></div>
@@ -3387,6 +3387,7 @@ function handleSubmit(){
   } else if(dispoData.length>1){
     rdvStr = dispoData.map(function(d){return d.date+' ('+d.slots.join(', ')+')';}).join('\n');
   }
+  var precoNote = PRECOMMANDE_GLOBALE ? (modeLiv==='envoi' ? '\n\n📅 *Précommande* : ton colis sera expédié dès le retour du stock, on te tient au courant 💜' : '\n\n📅 *Précommande* : cette date est réservée sous réserve du stock. S\'il n\'est pas encore arrivé, ta livraison sera reportée et on te prévient avant pour fixer une nouvelle date 💜') : '';
   var confirmMsg;
   var shortConfirm; // version courte pour le lien WA (pas de double encodage)
   if(modeLiv==='envoi'){
@@ -3412,6 +3413,7 @@ function handleSubmit(){
       +paySection
       +'\n\n📦 Dès que ton paiement est reçu, tu recevras un mail à ton adresse ('+email+') avec le lien pour choisir ton point Mondial Relay.'
       +'\n👉 Merci de me renvoyer un message une fois ton point choisi 🙏';
+    shortConfirm+=precoNote;
     confirmMsg=shortConfirm+packMsg+fideliteMsg+fidele11Msg+surpriseMsg;
   } else if(modeLiv==='place'){
     shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 '+total.toFixed(2)+'€'
@@ -3419,6 +3421,7 @@ function handleSubmit(){
       +(rdvStr?'\n📅 '+rdvStr:'')
       +'\n📍 Caisse d\'Epargne, Place Saint Eugène 13007'
       +'\n\n💵 Paiement en espèces sur place. À bientôt !';
+    shortConfirm+=precoNote;
     confirmMsg=shortConfirm+packMsg+fideliteMsg+fidele11Msg+surpriseMsg+snapInstructions;
   } else {
     shortConfirm='Bonjour '+nom.split(' ')[0]+' ! Commande #'+num+' confirmée ✅\n\n📦 '+prods.map(function(p){return p.qty+'x '+p.name;}).join(', ')+'\n💰 '+total.toFixed(2)+'€'
@@ -3426,6 +3429,7 @@ function handleSubmit(){
       +(rdvStr?'\n📅 '+rdvStr:'')
       +'\n📍 '+addr+(cp?', '+cp:'')
       +'\n\n💵 Paiement en espèces à la livraison. À bientôt !';
+    shortConfirm+=precoNote;
     confirmMsg=shortConfirm+fideliteMsg;
   }
   // Rappel subtil avant/après
