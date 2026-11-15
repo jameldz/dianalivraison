@@ -1165,6 +1165,7 @@ var PRECO_DATE_MIN = '2026-11-23';
 var BLACK_FRIDAY = true;
 var BF_PRIX_CURE = 59;
 var BF_PACKS = {'1m':109,'3m':299};
+var BF_MINI = {MGE:29,MTH:29,MCA:29,IRM:69}; // prix Black Friday mini-cures (au lieu de 40 €) et Iron Magic (au lieu de 90 €)
 var STOCK = {CAF:999,THE:999,GEL:999,DN:999,SD:999,ST:999,PM:999,GU:999,MGE:999,MTH:999,MCA:999,IRM:999,DAY:999,FIL:999};
 var cachedAllOrders=[];
 var DAYLIA = [
@@ -1183,6 +1184,7 @@ var PACKS={
   '3m':{name:'Pack 3 mois',diana:3,daylia:9,price:360,img:'img/pack-3mois.webp',badge:'💎 Meilleure valeur',accroche:'120€ le mois',desc:'3 cures Diana, une par mois, <b>au choix&nbsp;: Gélules, Thé ou Café</b> + 9 thés Daylia',fiche:'PACK3M'}
 };
 if(BLACK_FRIDAY){Object.keys(BF_PACKS).forEach(function(k){if(PACKS[k])PACKS[k].price=BF_PACKS[k];});PACKS['3m'].accroche='≈100€ le mois';}
+if(BLACK_FRIDAY){Object.keys(BF_MINI).forEach(function(k){if(MINI_PRODS[k]){MINI_PRODS[k].oldPrice=MINI_PRODS[k].price;MINI_PRODS[k].price=BF_MINI[k];}});}
 var FILTRE_VALEUR=10;
 var curPack=null;
 function _dayliaTier(n){return n<=0?0:(n===1?25:n===2?45:n===3?60:60+(n-3)*20);}
@@ -1775,7 +1777,7 @@ async function init() {
 }
 
 function updateStockDisplay(){
-  if(BLACK_FRIDAY){var bl=document.getElementById('bfLine');if(bl)bl.style.display='block';['GEL','THE','CAF'].forEach(function(k){var e=document.querySelector('#p'+k+' .prod-price');if(e&&e.innerHTML.indexOf('<s')===-1)e.innerHTML='<s style="color:#9CA3AF">75 €</s> <b style="color:#DC2626">'+BF_PRIX_CURE+' €</b> / unité · 🖤 Black Friday';});var dg=document.getElementById('degressifBox');if(dg){dg.style.background='#111';dg.style.borderColor='#111';dg.innerHTML='<div style="font-size:13px;font-weight:900;color:#FDE68A">🖤 BLACK FRIDAY : toutes les cures Diana à 59 €</div><div style="font-size:12px;font-weight:700;color:#fff;margin-top:3px">Gélules, Thé ou Café · dès 1 cure · au lieu de 75 €</div>';}}
+  if(BLACK_FRIDAY){var bl=document.getElementById('bfLine');if(bl)bl.style.display='block';['GEL','THE','CAF'].forEach(function(k){var e=document.querySelector('#p'+k+' .prod-price');if(e&&e.innerHTML.indexOf('<s')===-1)e.innerHTML='<s style="color:#9CA3AF">75 €</s> <b style="color:#DC2626">'+BF_PRIX_CURE+' €</b> / unité · 🖤 Black Friday';});Object.keys(BF_MINI).forEach(function(k){var e=document.querySelector('#p'+k+' .prod-price');var t=document.getElementById('t'+k);if(t&&/^\d+€$/.test(t.textContent.trim())&&!document.getElementById('p'+k).classList.contains('on'))t.textContent=BF_MINI[k]+'€';if(e&&e.innerHTML.indexOf('<s')===-1){var old=MINI_PRODS[k].oldPrice;e.innerHTML=e.innerHTML.replace(old+' €','<s style="color:#9CA3AF">'+old+' €</s> <b style="color:#DC2626">'+BF_MINI[k]+' €</b> 🖤');}});document.querySelectorAll('div').forEach(function(d){if(d.children.length===0&&d.textContent.indexOf('40€/sachet')!==-1)d.innerHTML=d.innerHTML.replace('40€/sachet','<s>40€</s> <b style="color:#DC2626">29€</b>/sachet 🖤 Black Friday');});var dg=document.getElementById('degressifBox');if(dg){dg.style.background='#111';dg.style.borderColor='#111';dg.innerHTML='<div style="font-size:13px;font-weight:900;color:#FDE68A">🖤 BLACK FRIDAY : toutes les cures Diana à 59 €</div><div style="font-size:12px;font-weight:700;color:#fff;margin-top:3px">Gélules, Thé ou Café · dès 1 cure · au lieu de 75 €</div>';}}
   if(PRECOMMANDE_GLOBALE){Object.keys(STOCK).forEach(function(k){STOCK[k]=0;});['bannerPrecommande','bannerPrecoProd'].forEach(function(i){var e=document.getElementById(i);if(e)e.style.display='block';});}
   var stockFaible=false;
   // Griser les produits en rupture
@@ -2350,6 +2352,7 @@ function livPlaceHeures(ymd){
 }
 function livPlaceLabel(){
   var t=livYmd(new Date());
+  if(PRECOMMANDE_GLOBALE&&t<livRepriseReguliere())return 'à partir du lundi 23 nov., tous les jours de 12h à minuit (le dimanche à partir de 15h)';
   if(t>=livRepriseReguliere())return 'tous les jours de 12h à minuit (le dimanche à partir de 15h)';
   var p=[];
   if(t<20261115)p.push('14h–20h (dimanche dès 15h)','du 15 au 21 nov. : 18h–22h');
