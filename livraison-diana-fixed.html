@@ -1204,7 +1204,7 @@ function renderPackCards(){
     h+='<div class="packc'+(curPack===id?' on':'')+'" id="pack_'+id+'" onclick="choosePack(\''+id+'\')">'
       +'<img class="packc-img" src="'+p.img+'" alt="'+p.name+'" width="88" height="88">'
       +'<div class="packc-body">'
-      +'<div class="packc-name">'+p.name+(p.badge?'<span class="packc-badge">'+p.badge+'</span>':'')+(p.fiche?'<button class="btn-info" onclick="event.stopPropagation();openFiche(\''+p.fiche+'\')" style="background:#fff;border:1px solid #C4B5FD;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:#7C3AED;cursor:pointer;font-family:inherit">💡 Conseils</button>':'')+'</div>'
+      +'<div class="packc-name">'+p.name+(p.badge?'<span class="packc-badge">'+p.badge+'</span>':'')+(PRECOMMANDE_GLOBALE?' <span style="font-size:10px;color:#7C3AED;font-weight:800;background:#EDE9FE;padding:2px 5px;border-radius:4px;white-space:nowrap">📅 PRÉCOMMANDE</span>':'')+(p.fiche?'<button class="btn-info" onclick="event.stopPropagation();openFiche(\''+p.fiche+'\')" style="background:#fff;border:1px solid #C4B5FD;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:#7C3AED;cursor:pointer;font-family:inherit">💡 Conseils</button>':'')+'</div>'
       +'<div class="packc-desc">'+p.desc+'</div>'
       +'<div class="packc-priceline"><span class="packc-price">'+fmtEur(p.price)+'€</span>'+(eco>0?'<s class="packc-old">'+fmtEur(sep)+'€</s><span class="packc-save">Tu économises '+fmtEur(eco)+'€</span>':'')+'</div>'
       +(p.accroche?'<div class="packc-accroche">'+p.accroche+'</div>':'')
