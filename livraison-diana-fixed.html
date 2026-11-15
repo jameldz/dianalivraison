@@ -467,7 +467,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cr);color:var(--ink);min-h
 <div class="card" id="cardProd">
   <div class="card-hdr"><span class="step" id="sProd">4</span><h2>Que veux-tu commander ?</h2></div>
   <div class="card-body">
-    <div id="bannerPrecoProd" style="display:none;background:linear-gradient(135deg,#FEE2E2,#FECACA);border:2px solid #DC2626;border-radius:12px;padding:12px 16px;margin-bottom:12px;text-align:center"><div style="font-size:14px;font-weight:900;color:#B91C1C">📅 Rupture de stock : précommande ouverte</div><div style="font-size:15px;font-weight:900;color:#B91C1C;margin-top:4px;text-transform:uppercase;letter-spacing:.5px">⚠️ Stock limité</div><div style="font-size:12px;color:#991B1B;margin-top:4px;font-weight:600">Victimes de notre succès 💜 Tu peux commander dès maintenant : ta commande sera préparée et expédiée dès le retour du stock.<br><b>⭐ Les précommandes sont servies en premier, dans l'ordre d'arrivée.</b></div></div>
+    <div id="bannerPrecoProd" style="display:none;background:linear-gradient(135deg,#FEE2E2,#FECACA);border:2px solid #DC2626;border-radius:12px;padding:12px 16px;margin-bottom:12px;text-align:center"><div style="font-size:14px;font-weight:900;color:#B91C1C">📅 Rupture de stock : précommande ouverte</div><div style="font-size:15px;font-weight:900;color:#B91C1C;margin-top:4px;text-transform:uppercase;letter-spacing:.5px">⚠️ Stock limité</div><div id="bfLine" style="display:none;background:#111;color:#FDE68A;border-radius:8px;padding:8px 10px;margin:8px 0 2px;font-size:14px;font-weight:900">🖤 PRIX BLACK FRIDAY GARANTI EN PRÉCOMMANDE<br><span style="font-size:13px;color:#fff">La cure à <s style="opacity:.7">75 €</s> <span style="color:#FDE68A;font-size:16px">59 €</span></span></div><div style="font-size:12px;color:#991B1B;margin-top:4px;font-weight:600">Victimes de notre succès 💜 Tu peux commander dès maintenant : ta commande sera préparée et expédiée dès le retour du stock.<br><b>⭐ Les précommandes sont servies en premier, dans l'ordre d'arrivée.</b></div></div>
     <div id="packsBox" style="margin-bottom:12px"></div>
     <div id="degressifBox" style="margin:2px 0 10px;padding:10px 12px;background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border:1.5px solid #6EE7B7;border-radius:12px;text-align:center">
       <div style="font-size:13px;font-weight:900;color:#047857">📉 Plus tu prends de cures, moins elles coûtent</div>
@@ -1161,6 +1161,10 @@ var MINI_PRODS = {MGE:{name:'Mini-Cure Gélules 15j',ico:'🌟',price:40},MTH:{n
 var PRECOMMANDE_GLOBALE = true;
 // Pendant la précommande : aucune date (sur place ou livraison) avant cette date
 var PRECO_DATE_MIN = '2026-11-22';
+// BLACK FRIDAY : true = cure Diana à 59 € (au lieu de 75 €), Pack 1 mois 109 €, Pack 3 mois 299 €. Remettre à false pour revenir aux prix normaux.
+var BLACK_FRIDAY = true;
+var BF_PRIX_CURE = 59;
+var BF_PACKS = {'1m':109,'3m':299};
 var STOCK = {CAF:999,THE:999,GEL:999,DN:999,SD:999,ST:999,PM:999,GU:999,MGE:999,MTH:999,MCA:999,IRM:999,DAY:999,FIL:999};
 var cachedAllOrders=[];
 var DAYLIA = [
@@ -1178,6 +1182,7 @@ var PACKS={
   '1m':{name:'Pack 1 mois',diana:1,daylia:3,price:130,img:'img/pack-1mois.webp',badge:'⭐ Le plus choisi',accroche:'',desc:'1 cure Diana <b>au choix&nbsp;: Gélules, Thé ou Café</b> + 3 thés Daylia',fiche:'PACK1M'},
   '3m':{name:'Pack 3 mois',diana:3,daylia:9,price:360,img:'img/pack-3mois.webp',badge:'💎 Meilleure valeur',accroche:'120€ le mois',desc:'3 cures Diana, une par mois, <b>au choix&nbsp;: Gélules, Thé ou Café</b> + 9 thés Daylia',fiche:'PACK3M'}
 };
+if(BLACK_FRIDAY){Object.keys(BF_PACKS).forEach(function(k){if(PACKS[k])PACKS[k].price=BF_PACKS[k];});PACKS['3m'].accroche='≈100€ le mois';}
 var FILTRE_VALEUR=10;
 var curPack=null;
 function _dayliaTier(n){return n<=0?0:(n===1?25:n===2?45:n===3?60:60+(n-3)*20);}
@@ -1770,6 +1775,7 @@ async function init() {
 }
 
 function updateStockDisplay(){
+  if(BLACK_FRIDAY){var bl=document.getElementById('bfLine');if(bl)bl.style.display='block';['GEL','THE','CAF'].forEach(function(k){var e=document.querySelector('#p'+k+' .prod-price');if(e&&e.innerHTML.indexOf('<s')===-1)e.innerHTML='<s style="color:#9CA3AF">75 €</s> <b style="color:#DC2626">'+BF_PRIX_CURE+' €</b> / unité · 🖤 Black Friday';});var dg=document.getElementById('degressifBox');if(dg){dg.style.background='#111';dg.style.borderColor='#111';dg.innerHTML='<div style="font-size:13px;font-weight:900;color:#FDE68A">🖤 BLACK FRIDAY : toutes les cures Diana à 59 €</div><div style="font-size:12px;font-weight:700;color:#fff;margin-top:3px">Gélules, Thé ou Café · dès 1 cure · au lieu de 75 €</div>';}}
   if(PRECOMMANDE_GLOBALE){Object.keys(STOCK).forEach(function(k){STOCK[k]=0;});['bannerPrecommande','bannerPrecoProd'].forEach(function(i){var e=document.getElementById(i);if(e)e.style.display='block';});}
   var stockFaible=false;
   // Griser les produits en rupture
@@ -1829,7 +1835,7 @@ function togProd(id){
       var q=parseInt(document.getElementById('q'+k).value)||1;
       document.getElementById('t'+k).textContent=fmtEur(prix*q)+'€';
     } else {
-      document.getElementById('t'+k).textContent='75€';
+      document.getElementById('t'+k).textContent=(BLACK_FRIDAY?BF_PRIX_CURE:75)+'€';
     }
   });
   // Mini-Cures à prix fixe 30€/unité
@@ -1881,6 +1887,7 @@ function chQ(id,d){
 }
 function fmtEur(v){v=Math.round(v*100)/100;return Number.isInteger(v)?String(v):v.toFixed(2).replace('.',',');}
 function getPrixDiana(qtyTotale){
+  if(BLACK_FRIDAY) return BF_PRIX_CURE;
   if(qtyTotale>=3) return 70;
   if(qtyTotale===2) return 72.5;
   return 75;
@@ -1966,7 +1973,7 @@ function updateTotal(){
   var badges='';
   if(reducLabel) badges+='<div style="background:linear-gradient(135deg,#22C55E,#15803D);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;text-align:center">'+reducLabel+'</div>';
   // ═══ Tarif dégressif Diana annoncé dans le total (hors pack, le pack affiche déjà son économie) ═══
-  try{ var _nDg=_packCounts().diana, _pk=(typeof curPack!=='undefined'&&curPack&&_packOk()); if(_nDg>=2 && !_pk){ var _ecoDg=_nDg*75-_nDg*getPrixDiana(_nDg); if(_ecoDg>0) badges+='<div style="background:#ECFDF5;color:#047857;border:1.5px solid #6EE7B7;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;text-align:center">📉 Tarif dégressif : tu économises <span style="white-space:nowrap">'+fmtEur(_ecoDg)+' €</span></div>'; } }catch(eDg){}
+  try{ var _nDg=_packCounts().diana, _pk=(typeof curPack!=='undefined'&&curPack&&_packOk()); if((_nDg>=2||(BLACK_FRIDAY&&_nDg>=1)) && !_pk){ var _ecoDg=_nDg*75-_nDg*getPrixDiana(_nDg); if(_ecoDg>0) badges+='<div style="background:'+(BLACK_FRIDAY?'#111;color:#FDE68A;border:1.5px solid #111':'#ECFDF5;color:#047857;border:1.5px solid #6EE7B7')+';border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;text-align:center">'+(BLACK_FRIDAY?'🖤 Prix Black Friday':'📉 Tarif dégressif')+' : tu économises <span style="white-space:nowrap">'+fmtEur(_ecoDg)+' €</span></div>'; } }catch(eDg){}
   if(hasParr) badges+='<div style="background:linear-gradient(135deg,#7C3AED,#5B21B6);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;text-align:center">🎁 +5€ de crédit gagné !</div>';
   if(livGratuite) badges+='<div style="background:linear-gradient(135deg,#22C55E,#15803D);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;text-align:center">🚚 Livraison OFFERTE (commande ≥150€)</div>';
 
