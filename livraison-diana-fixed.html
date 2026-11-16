@@ -1773,6 +1773,15 @@ async function init() {
   if((function(){var d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()>=20261006;})()&&!livRepriseOuverte()){var b=document.getElementById('mLiv');if(b){b.style.opacity='0.4';b.style.pointerEvents='none';var s=b.querySelector('.mode-sub');if(s)s.textContent='Reprise bientôt';}var grid=document.getElementById('mLiv')&&document.getElementById('mLiv').parentNode;if(grid&&!document.getElementById('noteLivPause')){var n=document.createElement('div');n.id='noteLivPause';n.style.cssText='grid-column:1/-1;background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:10px;padding:10px 12px;font-size:12px;color:#7C2D12;font-weight:700;text-align:center;line-height:1.5';n.innerHTML='🛵 Les livraisons à domicile reprennent bientôt — on te préviendra sur <b>Snap</b> 👻<br><span style="font-weight:600;color:#92400E">En attendant : récupération sur place tous les jours de 14h à 20h, ou envoi Mondial Relay.</span>';grid.appendChild(n);}if(modeLiv==='livraison')modeLiv='place';}
   else if(livRepriseOuverte()){if(!document.getElementById('noteLivReprise')){var _mi=function(id,html){var c=document.getElementById(id);if(!c)return;var d=document.createElement('div');d.className='mode-info';d.style.cssText='font-size:10px;line-height:1.35;color:#374151;font-weight:600;margin-top:5px;border-top:1px dashed #E5C7D0;padding-top:5px';d.innerHTML=html;c.appendChild(d);};var _avant=livYmd(new Date())<livRepriseReguliere();_mi('mLiv',(PRECOMMANDE_GLOBALE?'<b style="color:#DC2626">Si stock ⚠️</b><br>':'')+'<b>Lun & jeu</b>'+(_avant?' dès le 23/11':'')+'<br>18h – 22h');_mi('mPlace','<b>Tous les jours</b>'+(_avant?' dès le 23/11':'')+'<br>12h – 22h<br><b style="color:#DC2626">📞 Appelle avant</b>');_mi('mEnvoi','Partout en France 📦');var mk=document.createElement('span');mk.id='noteLivReprise';mk.style.display='none';document.body.appendChild(mk);}}
   setModeLiv(modeLiv);
+  // ═══ Cliente connue (profil enregistré sur ce téléphone) : elle ne retape jamais son numéro,
+  // donc on lance nous-mêmes la recherche de crédit parrainage + les contrôles de parrainage. ═══
+  try{
+    if(returning && profil && profil.tel){
+      var _fTelInit=document.getElementById('fTel');
+      if(_fTelInit && !_fTelInit.value.trim()) _fTelInit.value=profil.tel;
+      checkCagnotteDispo({fromInit:true});
+    }
+  }catch(eCgInit){}
 }
 
 function updateStockDisplay(){
@@ -1947,6 +1956,14 @@ function updateTotal(){
   if(!prods.length){bar.classList.remove('show');return;}
   bar.classList.add('show');
   var sub=prods.reduce(function(s,p){return s+p.total;},0);
+  // ═══ Crédit parrainage : (ré)appliqué automatiquement dès qu'il y a des produits (plafonné au panier) ═══
+  if(window._cagnotteAuto && (parseFloat(window._cagnotteAvailable)||0)>0){
+    var _cgNew=Math.min(parseFloat(window._cagnotteAvailable)||0, sub);
+    window._cagnotteApplied=_cgNew;
+    var _cgAm=document.getElementById('cagnotteAppliedAmount'); if(_cgAm) _cgAm.textContent=fmtEur(_cgNew);
+    var _cgAp=document.getElementById('cagnotteApplied'); if(_cgAp) _cgAp.style.display=_cgNew>0?'block':'none';
+    var _cgUb=document.getElementById('cagnotteUseBtn'); if(_cgUb && _cgNew>0){_cgUb.textContent='✓ Appliqué';_cgUb.disabled=true;_cgUb.style.opacity='0.6';_cgUb.style.cursor='default';}
+  }
   var frais=calcFraisEnvoi();
   // Réductions simples
   var reduc=0;
@@ -1975,12 +1992,12 @@ function updateTotal(){
   if(reducLabel) badges+='<div style="background:linear-gradient(135deg,#22C55E,#15803D);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;text-align:center">'+reducLabel+'</div>';
   // ═══ Tarif dégressif Diana annoncé dans le total (hors pack, le pack affiche déjà son économie) ═══
   try{ var _nDg=_packCounts().diana, _pk=(typeof curPack!=='undefined'&&curPack&&_packOk()); if((_nDg>=2||(BLACK_FRIDAY&&_nDg>=1)) && !_pk){ var _ecoDg=_nDg*75-_nDg*getPrixDiana(_nDg); if(_ecoDg>0) badges+='<div style="background:'+(BLACK_FRIDAY?'#111;color:#FDE68A;border:1.5px solid #111':'#ECFDF5;color:#047857;border:1.5px solid #6EE7B7')+';border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;text-align:center">'+(BLACK_FRIDAY?'🖤 Prix Black Friday':'📉 Tarif dégressif')+' : tu économises <span style="white-space:nowrap">'+fmtEur(_ecoDg)+' €</span></div>'; } }catch(eDg){}
-  if(hasParr) badges+='<div style="background:linear-gradient(135deg,#7C3AED,#5B21B6);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;text-align:center">🎁 +5€ de crédit gagné !</div>';
+  if(hasParr && !(typeof parrainFraudeType==='function' && parrainFraudeType())) badges+='<div style="background:linear-gradient(135deg,#7C3AED,#5B21B6);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;text-align:center">🎁 +5€ de crédit gagné !</div>';
   if(livGratuite) badges+='<div style="background:linear-gradient(135deg,#22C55E,#15803D);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;text-align:center">🚚 Livraison OFFERTE (commande ≥150€)</div>';
 
   // Crédit cagnotte appliqué par la cliente
   var creditApplied = parseFloat(window._cagnotteApplied||0);
-  var creditLine = creditApplied>0 ? '<div class="tline"><span class="dim">💰 Crédit cagnotte</span><span style="color:#15803D;font-weight:900">-'+creditApplied.toFixed(2)+' €</span></div>' : '';
+  var creditLine = creditApplied>0 ? '<div class="tline"><span class="dim">💰 Crédit parrainage</span><span style="font-weight:900">-'+fmtEur(creditApplied)+' €</span></div>' : '';
   document.getElementById('totalLines').innerHTML=badges+prods.map(function(p){return '<div class="tline"><span class="dim">'+p.ico+' '+p.name+(p.qty>1?' ×'+p.qty:'')+(p.sub?' <span style="color:#7C3AED;font-weight:800">· '+p.sub+'</span>':'')+'</span><span>'+fmtEur(p.total)+' €</span></div>';}).join('')+(reduc?'<div class="tline"><span class="dim">🎁 Réduction</span><span style="color:#22C55E;font-weight:900">-'+reduc.toFixed(2)+' €</span></div>':'')+creditLine;
   var finalAvantCredit = sub+frais-reduc;
   var creditEffectif = Math.min(creditApplied, finalAvantCredit);
@@ -2030,13 +2047,16 @@ function _normTel(t){
   return t;
 }
 
-async function checkCagnotteDispo(){
+async function checkCagnotteDispo(opts){
+  var _fromInit = !!(opts && opts.fromInit); // lancé au chargement pour une cliente connue
   var tel = document.getElementById('fTel').value.trim();
   var telNorm = _normTel(tel);
   if(!telNorm || telNorm.length<9){
     // Numéro trop court
     document.getElementById('cagnotteBanner').style.display='none';
     window._cagnotteAvailable = 0;
+    window._cagnotteLastChecked = '';
+    resetCagnotteApplied();
     cachedAllOrders = [];
     try{updateFiltreInfo();}catch(e0){}
     return;
@@ -2071,7 +2091,7 @@ async function checkCagnotteDispo(){
       cachedAllOrders = _cg ? mesCommandes : allOrders;
 
       // ═══ FIDÉLITÉ VENDEUR : si cliente connue, forcer le vendeur de sa 1ère commande ═══
-      if(mesCommandes.length > 0){
+      if(!_fromInit && mesCommandes.length > 0){
         var originalVendeur = (mesCommandes[0].vendeur||'').toLowerCase().trim();
         if(originalVendeur && VENDEURS[originalVendeur] && originalVendeur !== vendeurKey){
           var ancien = vendeur && vendeur.nom ? vendeur.nom : vendeurKey;
@@ -2097,7 +2117,7 @@ async function checkCagnotteDispo(){
       }
 
       // ═══ AUTO-FILL CLIENTE CONNUE : pré-remplir les champs vides ═══
-      if(mesCommandes.length>0){
+      if(!_fromInit && mesCommandes.length>0){
         var derniereCmd = mesCommandes[mesCommandes.length-1];
         function _fillIfEmpty(id, val){
           var el = document.getElementById(id);
@@ -2138,6 +2158,7 @@ async function checkCagnotteDispo(){
         // 1ère commande de la cliente → pas encore de crédit utilisable
         document.getElementById('cagnotteBanner').style.display='none';
         window._cagnotteAvailable = 0;
+        resetCagnotteApplied();
         return;
       }
       var monVendeur = (mesCommandes[0] && (mesCommandes[0].vendeur||'').toLowerCase().trim()) || '';
@@ -2200,26 +2221,52 @@ async function checkCagnotteDispo(){
         if(nbFoisFilleule>0) src.push(nbFoisFilleule+' parrainage filleule');
         document.getElementById('cagnotteAmount').textContent = creditDispo;
         document.getElementById('cagnotteSource').textContent = 'Source : '+src.join(' + ') + (creditUsed>0 ? ' (− '+creditUsed+'€ déjà utilisés)' : '');
+        // Cliente connue : le bloc « Tes informations » est masqué → on place le bandeau en haut de « Que veux-tu commander ? »
+        try{
+          var _cgBn=document.getElementById('cagnotteBanner'), _cgCid=document.getElementById('cardId'), _cgProd=document.getElementById('cardProd');
+          var _cgBody=_cgProd && _cgProd.querySelector('.card-body');
+          if(_cgBn && _cgCid && _cgBody && _cgCid.style.display==='none' && _cgBn.parentNode!==_cgBody){
+            _cgBn.style.marginTop='0'; _cgBn.style.marginBottom='14px';
+            _cgBody.insertBefore(_cgBn, _cgBody.firstChild);
+          }
+        }catch(eMv){}
         document.getElementById('cagnotteBanner').style.display = 'block';
         setTimeout(function(){ if(typeof applyCagnotte==='function' && (window._cagnotteApplied||0)<creditDispo) applyCagnotte(); }, 300);
       } else {
         document.getElementById('cagnotteBanner').style.display = 'none';
+        resetCagnotteApplied();
       }
     } catch(e){
       console.warn('checkCagnotteDispo error',e);
     } finally {
       try{updatePackStatus();updateFiltreInfo();}catch(e2){}
+      try{checkParrainFraude();updateTotal();}catch(e3){}
     }
   }, 600);
+}
+
+function resetCagnotteApplied(){
+  window._cagnotteAuto = false;
+  if((parseFloat(window._cagnotteApplied)||0)>0){
+    window._cagnotteApplied = 0;
+    window._cagnotteCreditEffectif = 0;
+    var ap=document.getElementById('cagnotteApplied'); if(ap) ap.style.display='none';
+    var ub=document.getElementById('cagnotteUseBtn'); if(ub){ub.textContent='✓ Utiliser';ub.disabled=false;ub.style.opacity='';ub.style.cursor='pointer';}
+    try{updateTotal();}catch(e){}
+  }
 }
 
 function applyCagnotte(){
   var dispo = parseFloat(window._cagnotteAvailable||0);
   if(dispo<=0) return;
+  // Le crédit est ensuite (ré)appliqué automatiquement à chaque mise à jour du panier
+  window._cagnotteAuto = true;
   // Plafonné au montant du panier
   var prods = getProds();
   if(!prods.length){
-    alert('Choisis d\'abord tes produits avant d\'appliquer ton crédit 💰');
+    // Pas encore de produits : il sera déduit automatiquement dès le choix (plus d'alerte bloquante)
+    var _ubW=document.getElementById('cagnotteUseBtn');
+    if(_ubW){_ubW.textContent='✓ Sera déduit';_ubW.disabled=true;_ubW.style.opacity='0.6';_ubW.style.cursor='default';}
     return;
   }
   var sub = prods.reduce(function(s,p){return s+p.total;},0);
@@ -3315,8 +3362,10 @@ function handleSubmit(){
   }
   if(hasDayliaCmd && clientDejaDaylia()!==true) filtreInox=true;
   // Application du crédit cagnotte choisi par la cliente
+  if(window._cagnotteAuto && (parseFloat(window._cagnotteAvailable)||0)>0){ window._cagnotteApplied=Math.min(parseFloat(window._cagnotteAvailable)||0, sub); }
   var creditPanier = parseFloat(window._cagnotteApplied||0);
   var creditEffective = Math.min(creditPanier, sub+frais-reduc);
+  window._cagnotteCreditEffectif = creditEffective;
   var totalBase=sub+frais-reduc-creditEffective;
   // Si paiement Lydia : on inflate le total pour couvrir les frais Lydia (3.28%)
   // Comme ça la cliente paie le bon montant et on reçoit le net attendu

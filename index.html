@@ -2225,6 +2225,9 @@ function render() {
           if(ps === 'rejected'){
             return '<span style="background:#FEE2E2;color:#991B1B;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900" title="Vendeurs différents ou conditions non remplies">❌ Parrainage refusé</span>';
           }
+          if(typeof parrainageCompte==='function' && !parrainageCompte(o)){
+            return '<span style="background:#F3F4F6;color:#6B7280;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900" title="Cette cliente a déjà été parrainée sur une commande précédente : un parrainage ne compte qu\'une fois, aucun crédit pour la marraine">ℹ️ Déjà parrainée — 0 €</span>';
+          }
           if(ps === 'flagged'){
             return '<span style="background:#FEF3C7;color:#92400E;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900" title="À vérifier : marraine inconnue / même adresse / etc.">⚠️ À vérifier</span>';
           }
