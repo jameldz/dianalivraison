@@ -2209,6 +2209,7 @@ async function checkCagnotteDispo(opts){
           creditFilleule += 5;
         });
         mesCommandes.forEach(function(o){
+          if(o.fantome || o.deletedAt) return; // crédit d'une commande fantôme/supprimée : rendu à la cliente
           if(o.creditApplied) creditUsed += parseFloat(o.creditApplied)||0;
         });
         creditDispo = Math.max(0, (creditMarraine + creditFilleule) - creditUsed);

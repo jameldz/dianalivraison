@@ -1652,9 +1652,9 @@ function render() {
   var _idxTel={}, _idxTelN={}, _idxNom={}, _idxParrain={}, _paidTelN={}, _pvCache={}, _idxEmail={}, _idxTelF={};
   orders.forEach(function(x){
     var t=(x.tel||'').replace(/\s/g,'');
-    var tn=t.replace(/^0/,'33').replace(/^\+/,'');
+    var tn=cleanTel(t); // même normalisation partout : « +33… », « 06… », « 0033… » → « 33… »
     var n=(x.nom||'').toLowerCase().trim();
-    var p=(x.parrain||'').replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
+    var p=cleanTel(x.parrain);
     (_idxTel[t]=_idxTel[t]||[]).push(x);
     (_idxTelN[tn]=_idxTelN[tn]||[]).push(x);
     if(n) (_idxNom[n]=_idxNom[n]||[]).push(x);
@@ -1663,6 +1663,7 @@ function render() {
     var e=(x.email||'').toLowerCase().trim(); if(e) (_idxEmail[e]=_idxEmail[e]||[]).push(x);
     var tf=t.replace(/^\+33/,'33').replace(/^0033/,'33').replace(/^0/,'33'); if(tf) (_idxTelF[tf]=_idxTelF[tf]||[]).push(x);
   });
+  var _cuIdx=creditUsedIndex(); // crédit parrainage déjà utilisé, par cliente (fantômes/supprimées rendues)
   function _pv(x){ if(_pvCache[x.id]===undefined) _pvCache[x.id]=isParrainageValid(x); return _pvCache[x.id]; }
   function _candTelNom(t,n){ var seen={},out=[]; (t?(_idxTel[t]||[]):[]).concat(n?(_idxNom[n]||[]):[]).forEach(function(x){ if(!seen[x.id]){seen[x.id]=1;out.push(x);} }); return out; }
   function _candTelFEmail(tf,e){ var seen={},out=[]; (tf?(_idxTelF[tf]||[]):[]).concat(e?(_idxEmail[e]||[]):[]).forEach(function(x){ if(!seen[x.id]){seen[x.id]=1;out.push(x);} }); return out; }
@@ -2044,7 +2045,9 @@ function render() {
       // - Le crédit n'est utilisable QU'À PARTIR DE LA 2ÈME COMMANDE de la personne
       //   (donc elle doit avoir AU MOINS 1 commande payée AVANT celle-ci)
       // - Le crédit filleule n'est utilisable QUE SI la marraine a aussi au moins 1 commande payée
-      var telClean=tel.replace(/^0/,'33').replace(/^\+/,'');
+      // ⚠️ Numéros normalisés avec cleanTel partout : avant, un numéro saisi « +33… » ne matchait
+      // jamais (le « + » restait d'un côté) → aucun crédit détecté pour ces clientes.
+      var telClean=cleanTel(tel);
       var creditAsMarraine=0;
       var creditAsFilleule=0;
       var nbFilleulesValid=0;
@@ -2053,10 +2056,9 @@ function render() {
         // Compter les commandes PAYÉES PRÉCÉDENTES (avant celle-ci) de cette personne
         var nbPaidBefore=(_idxTelN[telClean]||[]).filter(function(x){
           if(x.id===o.id) return false;
-          if(x.fantome) return false;
+          if(x.fantome||x.deletedAt) return false;
           if(!x.payee) return false;
-          var xTel=(x.tel||'').replace(/\s/g,'').replace(/^0/,'33');
-          return xTel===telClean && (x.createdAt||0) < (o.createdAt||0);
+          return cleanTel(x.tel)===telClean && (x.createdAt||0) < (o.createdAt||0);
         }).length;
         // Le crédit n'est utilisable QU'À PARTIR DE LA 2ÈME COMMANDE
         // → il faut au moins 1 commande payée précédente
@@ -2066,7 +2068,7 @@ function render() {
           (_idxParrain[telClean]||[]).forEach(function(x){
             if(!x.parrain || !x.payee || x.parrStatus==='rejected') return;
             if(_pv(x)!==true) return; // ❌ Parrainage non valide (vendeurs différents ou marraine inconnue)
-            var pClean=(x.parrain||'').replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
+            var pClean=cleanTel(x.parrain);
             if(pClean===telClean && (x.createdAt||0) < (o.createdAt||0)){
               nbFilleulesValid++;
               creditAsMarraine+=gainMarraine(x);
@@ -2077,10 +2079,9 @@ function render() {
           (_idxTelN[telClean]||[]).forEach(function(x){
             if(!x.parrain || !x.payee || x.parrStatus==='rejected') return;
             if(_pv(x)!==true) return; // ❌ Vendeurs différents → pas de crédit
-            var xTel=(x.tel||'').replace(/\s/g,'').replace(/^0/,'33');
-            if(xTel!==telClean) return;
+            if(cleanTel(x.tel)!==telClean) return;
             if((x.createdAt||0) >= (o.createdAt||0)) return;
-            var marraineTel=(x.parrain||'').replace(/\s/g,'').replace(/^0/,'33').replace(/^\+/,'');
+            var marraineTel=cleanTel(x.parrain);
             var marraineHasPaid=!!_paidTelN[marraineTel];
             if(marraineHasPaid){
               nbFilleuleOrders++;
@@ -2093,21 +2094,11 @@ function render() {
       // Plafond 120€ d'accumulation
       var CREDIT_CAP_ORDER=120;
       creditDispo=Math.min(creditDispo,CREDIT_CAP_ORDER);
-      // ═══ Crédit utilisé : SOMME des creditApplied sur les commandes précédentes de la cliente ═══
-      // (avant on lisait clients[k].creditUsed qui n'était jamais mis à jour → solde gonflé)
-      var usedFromOrders=0;
-      (_idxTelN[telClean]||[]).forEach(function(ox){
-        if(ox.id===o.id) return; // on exclut la commande en cours
-        if(ox.fantome||ox.deletedAt) return;
-        var oxTel=(ox.tel||'').replace(/\s/g,'').replace(/^0/,'33');
-        if(oxTel===telClean && ox.creditApplied){
-          usedFromOrders += parseFloat(ox.creditApplied)||0;
-        }
-      });
-      var usedFromClient=(clients[telClean]&&clients[telClean].creditUsed)||0;
-      var creditUsed=Math.max(usedFromOrders, usedFromClient); // prend le plus grand pour ne jamais sous-estimer
+      // ═══ Crédit utilisé : calcul unique (voir creditUsedIndex) ═══
+      // Le crédit posé sur une commande FANTÔME ou SUPPRIMÉE est rendu à la cliente.
+      var creditUsed=creditUsedFor(_cuIdx, tel, o); // on exclut la commande en cours
       var soldeDispo=Math.max(0, Math.min(CREDIT_CAP_ORDER, creditDispo-creditUsed));
-      if(soldeDispo>0 && !o.creditApplied){
+      if(soldeDispo>0 && !o.creditApplied && !o.fantome && !o.deletedAt){
         var sourceTxt='';
         if(creditAsMarraine>0 && creditAsFilleule>0){
           sourceTxt=nbFilleulesValid+' filleule'+(nbFilleulesValid>1?'s':'')+' + crédit filleule';
@@ -2240,7 +2231,9 @@ function render() {
           // Pas de statut encore (en attente d'auto-validation au paiement)
           return '<span style="background:#F3F4F6;color:#6B7280;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900">🎁 +5€ (en attente)</span>';
         })():'')
-        +(o.creditApplied?'<span style="background:#FEF3C7;color:#92400E;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900">💰 -'+o.creditApplied+'€ crédit</span>':'')
+        +(o.creditApplied?((o.fantome||o.deletedAt)
+          ?'<span style="background:#F3F4F6;color:#6B7280;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900" title="Commande fantôme ou supprimée : ce crédit est rendu à la cliente pour sa prochaine commande">↩️ '+o.creditApplied+'€ crédit rendu</span>'
+          :'<span style="background:#FEF3C7;color:#92400E;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900">💰 -'+o.creditApplied+'€ crédit</span>'):'')
         +'<button onclick="delOrder(\''+o.id+'\')" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--k3)">🗑</button>'
         +'</div></div>'
         +alerteHtml
@@ -2270,7 +2263,7 @@ function render() {
         +'<button class="abtn" onclick="callClient(\''+o.tel+'\')"><span class="i">📞</span>Appeler</button>'
         +'<button class="abtn" onclick="navTo(\''+o.addr+'\')"><span class="i">🗺️</span>Maps</button>'
         +'<button class="abtn" onclick="openCadeau(\''+o.id+'\')"><span class="i">🎁</span>'+(o.cadeau?'Cadeau ✓':'Cadeau')+'</button>'
-        +'<button class="abtn'+(o.creditApplied>0?' gn':'')+'" onclick="openCreditParrainage(\''+o.id+'\')" title="Saisir le crédit parrainage appliqué sur cette commande"><span class="i">💰</span>'+(o.creditApplied>0?'-'+o.creditApplied+'€':'Crédit')+'</button>'
+        +'<button class="abtn'+(o.creditApplied>0&&!o.fantome&&!o.deletedAt?' gn':'')+'" onclick="openCreditParrainage(\''+o.id+'\')" title="Saisir le crédit parrainage appliqué sur cette commande"><span class="i">💰</span>'+(o.creditApplied>0&&!o.fantome&&!o.deletedAt?'-'+o.creditApplied+'€':'Crédit')+'</button>'
         +(o.modePay==='paypal'?'<button class="abtn" style="background:#FEF3C7;color:#92400E;border-color:#F59E0B" onclick="openPayManque(\''+o.id+'\')"><span class="i">💸</span>Manque</button>':'')
         +(function(){
           var sv=o.sav, ouvert=!!(sv&&sv.journal&&sv.journal.length&&sv.statut!=='resolu');
@@ -2672,6 +2665,56 @@ function cleanTel(t){
 }
 
 // ═══════════════════════════════════════════════════════
+// Crédit parrainage DÉJÀ UTILISÉ par une cliente — calcul unique
+// (carte commande, onglet Parrainage, onglet Clientes, « Utiliser »)
+// = somme des creditApplied sur ses commandes VIVANTES (ni fantôme, ni supprimée).
+// L'ancien compteur clients[].creditUsed reste un filet de sécurité (on prend le plus grand),
+// MAIS on en retire le crédit posé sur ses commandes fantômes/supprimées :
+// ce crédit-là est RENDU à la cliente et repart dans sa cagnotte.
+// ═══════════════════════════════════════════════════════
+function creditUsedIndex(){
+  var idx={};
+  function s(t){ return idx[t]||(idx[t]={vivant:0,rendu:0,compteur:0}); }
+  (orders||[]).forEach(function(o){
+    var c=parseFloat(o&&o.creditApplied)||0; if(c<=0) return;
+    var t=cleanTel(o.tel); if(!t) return;
+    if(o.fantome||o.deletedAt) s(t).rendu+=c; else s(t).vivant+=c;
+  });
+  Object.keys(clients||{}).forEach(function(k){
+    var u=parseFloat(clients[k]&&clients[k].creditUsed)||0; if(u<=0) return;
+    var t=cleanTel(k); if(t) s(t).compteur+=u;
+  });
+  return idx;
+}
+// sauf : commande à exclure (ex. la commande affichée)
+function creditUsedFor(idx, tel, sauf){
+  var t=cleanTel(tel), e=t&&idx[t]; if(!e) return 0;
+  var vivant=e.vivant;
+  if(sauf && !sauf.fantome && !sauf.deletedAt) vivant-=parseFloat(sauf.creditApplied)||0;
+  return Math.max(vivant, Math.max(0, e.compteur-e.rendu));
+}
+// Met à jour l'ancien compteur clients[].creditUsed (+ ajout / − retrait, jamais sous 0)
+function ajusterCompteurCredit(tel, delta){
+  delta=parseFloat(delta)||0; if(!delta) return;
+  var t=cleanTel(tel); if(!t) return;
+  if(delta>0){
+    if(!clients[t]) clients[t]={};
+    clients[t].creditUsed=Math.round(((parseFloat(clients[t].creditUsed)||0)+delta)*100)/100;
+    clients[t].lastModified=Date.now();
+    return;
+  }
+  var reste=-delta;
+  Object.keys(clients).forEach(function(k){
+    if(reste<=0 || !clients[k] || cleanTel(k)!==t) return;
+    var u=parseFloat(clients[k].creditUsed)||0; if(u<=0) return;
+    var retire=Math.min(u,reste);
+    clients[k].creditUsed=Math.round((u-retire)*100)/100;
+    clients[k].lastModified=Date.now();
+    reste-=retire;
+  });
+}
+
+// ═══════════════════════════════════════════════════════
 // Parrainage : valide UNIQUEMENT si filleule et marraine
 // sont chez le MÊME vendeur. Sinon → pas de crédit.
 // Renvoie : true (validé) | false (rejeté) | null (marraine inconnue, à vérifier)
@@ -2743,6 +2786,7 @@ async function toggleFantome(id){
     // Fallback
     if(!confirm('Retirer le statut Fantôme de cette commande ?')) return;
     o.fantome=false;
+    alerteCreditReutilise(o);
     o.fantomeAt=Date.now();
     o.lastModified=Date.now();
     await saveStorage();
@@ -2846,6 +2890,21 @@ async function confirmFantomeOn(){
   toast('🚫 '+o.nom+' marquée fantôme');
 }
 
+// ═══ Une commande fantôme REVIENT : son crédit parrainage a peut-être déjà été reporté ailleurs ═══
+// (pendant qu'elle était fantôme, ce crédit était rendu à la cliente) → on prévient pour éviter de le compter 2 fois
+function alerteCreditReutilise(o){
+  var c=parseFloat(o&&o.creditApplied)||0; if(c<=0) return;
+  var t=cleanTel(o.tel); if(!t) return;
+  var autres=orders.filter(function(x){
+    return x.id!==o.id && !x.fantome && !x.deletedAt && (parseFloat(x.creditApplied)||0)>0
+      && cleanTel(x.tel)===t && (x.createdAt||0)>(o.createdAt||0);
+  });
+  if(!autres.length) return;
+  var msg='⚠️ Crédit parrainage : les '+c+'€ de cette commande ont sans doute déjà été reportés sur '+autres.map(function(x){return '#'+x.num;}).join(', ')+' — vérifie le total avant d\'encaisser';
+  o.note=(o.note?o.note+'\n':'')+msg;
+  setTimeout(function(){ toast(msg); }, 600);
+}
+
 function cancelFantomeOff(){ document.getElementById('fantomeOffOverlay').style.display='none'; }
 async function confirmFantomeOff(){
   var ov = document.getElementById('fantomeOffOverlay');
@@ -2853,6 +2912,7 @@ async function confirmFantomeOff(){
   var o = orders.find(function(x){return x.id===id;});
   if(!o){ ov.style.display='none'; return; }
   o.fantome=false;
+  alerteCreditReutilise(o);
   o.fantomeAt=Date.now();
   o.lastModified=Date.now();
   ov.style.display='none';
@@ -3181,6 +3241,8 @@ function openCreditParrainage(id){
   if(val===null)return; // annulé
   var n=parseFloat(String(val).replace(',','.').replace(/[^\d.-]/g,''));
   if(isNaN(n)||n<0){toast('⚠️ Montant invalide');return;}
+  // Garde l'ancien compteur clients[].creditUsed en phase : avant, un crédit retiré ici restait « utilisé »
+  ajusterCompteurCredit(o.tel, n-(parseFloat(current)||0));
   o.creditApplied=n;
   o.lastModified=Date.now();
   saveStorage();
@@ -4043,6 +4105,7 @@ function getParrainageData(){
 
   // Calculer cagnotte (5€ par filleule VALIDÉE + PAYÉE uniquement, plafonné à 120€)
   var CREDIT_CAP=120;
+  var _cuIdxM=creditUsedIndex();
   Object.keys(marraines).forEach(function(k){
     var validatedPaid=marraines[k].filleules.filter(function(f){return f.status==='validated' && f.paid;}).length;
     var validatedUnpaid=marraines[k].filleules.filter(function(f){return f.status==='validated' && !f.paid;}).length;
@@ -4054,18 +4117,8 @@ function getParrainageData(){
     marraines[k].cagnotteBrute=cagnotteBrute;
     marraines[k].cagnotte=Math.min(cagnotteBrute,CREDIT_CAP);
     marraines[k].capReached=cagnotteBrute>=CREDIT_CAP;
-    // ═══ Crédit utilisé : SOMME des creditApplied sur les commandes de la marraine (source de vérité) ═══
-    // Avant on lisait juste clients[k].creditUsed qui n'était jamais mis à jour → solde gonflé.
-    var usedFromOrders=0;
-    orders.forEach(function(o){
-      if(o.fantome||o.deletedAt) return;
-      var oTel=(o.tel||'').replace(/\s/g,'').replace(/^0/,'33');
-      if(oTel===k && o.creditApplied){
-        usedFromOrders += parseFloat(o.creditApplied)||0;
-      }
-    });
-    var usedFromClient=(clients[k]&&clients[k].creditUsed)||0;
-    var used=Math.max(usedFromOrders, usedFromClient); // prend le plus grand pour ne jamais sous-estimer
+    // ═══ Crédit utilisé : calcul unique (voir creditUsedIndex) — crédit des fantômes/supprimées rendu ═══
+    var used=creditUsedFor(_cuIdxM, k);
     marraines[k].creditUsed=used;
     marraines[k].solde=Math.max(0, Math.min(CREDIT_CAP, marraines[k].cagnotte-used));
   });
@@ -4627,12 +4680,10 @@ async function applyCreditToOrder(orderId, soldeDispo){
   if(isNaN(montant)||montant<=0||montant>maxDeduc){toast('⚠️ Montant invalide (max '+maxDeduc+'€)');return;}
 
   // Appliquer
-  var telKey=(o.tel||'').replace(/\s/g,'').replace(/^0/,'33');
   o.total=Math.round((totalCmd-montant)*100)/100;
-  o.creditApplied=(o.creditApplied||0)+montant;
+  o.creditApplied=(parseFloat(o.creditApplied)||0)+montant;
   o.lastModified=Date.now();
-  if(!clients[telKey]) clients[telKey]={};
-  clients[telKey].creditUsed=(clients[telKey].creditUsed||0)+montant;
+  ajusterCompteurCredit(o.tel, montant);
   await saveStorage();
   render();
   toast('💰 '+montant+'€ déduits de #'+o.num+' (total: '+o.total+'€)');
@@ -4652,7 +4703,7 @@ async function useCredit(key){
     if(!ox.parrain||!ox.payee) return;
     if(cleanTel(ox.parrain)===marraineTel && isParrainageValid(ox)===true){cagnotte+=gainMarraine(ox);}
   });
-  var used=(clients[key]&&clients[key].creditUsed)||0;
+  var used=creditUsedFor(creditUsedIndex(), key); // crédit des commandes fantômes/supprimées rendu
   var dispo=cagnotte-used;
 
   if(dispo<=0){toast('⚠️ Cagnotte vide : '+dispo+'€');return;}
@@ -4663,8 +4714,7 @@ async function useCredit(key){
     if(!m) return;
     m=parseFloat(m);
     if(isNaN(m)||m<=0||m>dispo){toast('⚠️ Montant invalide');return;}
-    if(!clients[key]) clients[key]={};
-    clients[key].creditUsed=(clients[key].creditUsed||0)+m;
+    ajusterCompteurCredit(key, m);
     await saveStorage();
     renderParrainage();
     toast('💰 '+m+'€ de crédit utilisé !');
@@ -4694,10 +4744,9 @@ async function useCredit(key){
 
   // Appliquer
   selectedOrder.total=Math.round((parseFloat(selectedOrder.total)-montant)*100)/100;
-  selectedOrder.creditApplied=(selectedOrder.creditApplied||0)+montant;
+  selectedOrder.creditApplied=(parseFloat(selectedOrder.creditApplied)||0)+montant;
   selectedOrder.lastModified=Date.now();
-  if(!clients[key]) clients[key]={};
-  clients[key].creditUsed=(clients[key].creditUsed||0)+montant;
+  ajusterCompteurCredit(key, montant);
   await saveStorage();
   renderParrainage();
   render();
@@ -6437,10 +6486,10 @@ function renderClientes(){
       map[filleuleKey].cagnotteSrc.foisFilleule++;
     }
   });
-  // Soustrait ce qui a déjà été utilisé (clients[telIntl].creditUsed)
+  // Soustrait ce qui a déjà été utilisé — calcul unique (crédit des commandes fantômes/supprimées rendu)
+  var _cuIdxC = creditUsedIndex();
   Object.keys(map).forEach(function(key){
-    var intlT = cleanTel(map[key].tel);
-    var used = (clients[intlT] && clients[intlT].creditUsed) || 0;
+    var used = creditUsedFor(_cuIdxC, map[key].tel);
     map[key].cagnotteUsed = used;
     map[key].cagnotteDispo = Math.max(0, map[key].cagnotte - used);
   });

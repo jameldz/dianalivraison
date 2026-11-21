@@ -105,8 +105,10 @@ function computeCagnotte(allOrders, telNorm){
     creditFilleule += 5;
   });
 
+  // Crédit posé sur une commande FANTÔME ou SUPPRIMÉE : jamais payée → rendu à la cliente (repart dans sa cagnotte)
   var creditUsed = 0;
   mesCommandes.forEach(function(o){
+    if(o.fantome || o.deletedAt) return;
     if(o.creditApplied) creditUsed += parseFloat(o.creditApplied)||0;
   });
 
